@@ -11,7 +11,7 @@ import { Button } from "@/components/Button/Button";
 import styles from "./page.module.scss";
 
 const statusOrder: WatchStatus[] = ["watching", "plan_to_watch", "completed", "on_hold", "dropped"];
-const sortByOptions: string[] = ["name", "rating"];
+const sortByOptions: string[] = ["added", "name", "rating", "rating (personal)"];
 const PAGE_SIZE = 48;
 
 interface ImportResult {
@@ -35,7 +35,7 @@ export default function MyListPage() {
     const [activeTab, setActiveTab] = useState<WatchStatus | "all">("all");
     const [page, setPage] = useState(1);
     const [searchQuery, setSearchQuery] = useState("");
-    const [sortBy, setSortBy] = useState("name");
+    const [sortBy, setSortBy] = useState("added");
     const [showImportModal, setShowImportModal] = useState(false);
     const [importing, setImporting] = useState(false);
     const [importResult, setImportResult] = useState<ImportResult | null>(null);
@@ -53,47 +53,38 @@ export default function MyListPage() {
     }, [activeTab, getAllWatched, getListByStatus]);
 
     const filteredItems = useMemo(() => {
-        const comparator = (a: WatchedAnime, b: WatchedAnime) => {
+        const query = searchQuery.trim().toLowerCase();
+
+        const items = getTabItems().filter(item => {
+            const anime = animeData.get(item.animeId);
+            if (!anime) {
+                return false;
+            }
+            return !query || anime.title.toLowerCase().includes(query);
+        });
+
+        return items.sort((a, b) => {
             const animeA = animeData.get(a.animeId);
             const animeB = animeData.get(b.animeId);
-            if (!animeA && !animeB) {
+
+            if (!animeA || !animeB) {
+                return !animeA && !animeB ? 0 : !animeA ? 1 : -1;
+            }
+
+            if (sortBy === "rating") {
+                return (animeB.mean ?? 0) - (animeA.mean ?? 0);
+            }
+
+            if (sortBy === "rating (personal)") {
+                return (b.rating ?? 0) - (a.rating ?? 0);
+            }
+
+            if (sortBy === "added") {
                 return 0;
             }
-            if (!animeA && animeB) {
-                return 1;
-            }
-            if (animeA && !animeB) {
-                return -1;
-            }
-            if (animeA && animeB) {
-                switch (sortBy) {
-                    case "name":
-                        if (animeA.title === animeB.title) {
-                            return 0;
-                        }
-                        if (animeA.title > animeB.title) {
-                            return 1;
-                        }
-                        return -1;
-                    case "rating":
-                        return (animeB.mean ?? 0) - (animeA.mean ?? 0);
-                }
-            }
-            return 0;
-        };
-        const items = getTabItems();
-        return items
-            .filter(item => {
-                const anime = animeData.get(item.animeId);
-                if (!anime) {
-                    return false;
-                }
-                if (!searchQuery.trim()) {
-                    return true;
-                }
-                return anime.title.toLowerCase().includes(searchQuery.toLowerCase());
-            })
-            .sort(comparator);
+
+            return animeA.title.localeCompare(animeB.title);
+        });
     }, [getTabItems, searchQuery, sortBy, animeData]);
 
     const watchedItems = getAllWatched();
