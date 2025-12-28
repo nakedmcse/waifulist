@@ -13,6 +13,30 @@ interface AnimeCardProps {
     showStatus?: boolean;
 }
 
+function formatDateAdded(dateString: string): string {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+    if (diffDays === 0) {
+        return "Today";
+    }
+    if (diffDays === 1) {
+        return "Yesterday";
+    }
+    if (diffDays < 7) {
+        return `${diffDays} days ago`;
+    }
+    if (diffDays < 30) {
+        return `${Math.floor(diffDays / 7)} weeks ago`;
+    }
+    if (diffDays < 365) {
+        return `${Math.floor(diffDays / 30)} months ago`;
+    }
+    return date.toLocaleDateString();
+}
+
 export function AnimeCard({ anime, showStatus = true }: AnimeCardProps) {
     const { getWatchData } = useWatchList();
     const watchData = getWatchData(anime.id);
@@ -47,6 +71,12 @@ export function AnimeCard({ anime, showStatus = true }: AnimeCardProps) {
                     {anime.media_type && <span className={styles.type}>{anime.media_type.toUpperCase()}</span>}
                     {anime.num_episodes && <span className={styles.episodes}>{anime.num_episodes} eps</span>}
                 </div>
+                {watchData && (
+                    <div className={styles.dateAdded} title={new Date(watchData.dateAdded).toLocaleString()}>
+                        <i className="bi bi-calendar-plus" />
+                        {formatDateAdded(watchData.dateAdded)}
+                    </div>
+                )}
             </div>
         </Link>
     );

@@ -83,3 +83,16 @@
 .episodes {
     color: var(--text-secondary);
 }
+
+.dateAdded {
+    display: flex;
+    align-items: center;
+    gap: $spacing-xs;
+    margin-top: $spacing-xs;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+
+    i {
+        font-size: 0.7rem;
+    }
+}
