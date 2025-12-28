@@ -49,6 +49,15 @@ export function Header() {
                 </nav>
 
                 <div className={styles.actions}>
+                    <a
+                        href="https://github.com/VictoriqueMoe/waifulist"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={styles.githubLink}
+                        title="View on GitHub"
+                    >
+                        <i className="bi bi-github" />
+                    </a>
                     <ThemeSelector />
                     {!loading && (
                         <>
