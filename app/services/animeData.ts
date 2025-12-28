@@ -1,15 +1,15 @@
-import fs from "fs";
-import path from "path";
 import Fuse, { IFuseOptions } from "fuse.js";
 import { Anime } from "@/types/anime";
 
+const CSV_URL =
+    "https://raw.githubusercontent.com/meesvandongen/anime-dataset/refs/heads/main/data/anime-standalone.csv";
 const CDN_BASE_URL = "https://raw.githubusercontent.com/meesvandongen/anime-dataset/main/data";
 
 let animeCache: Anime[] | null = null;
 let animeByIdCache: Map<number, Anime> | null = null;
 let animeTitleIndex: Map<string, Anime> | null = null;
 let fuseIndex: Fuse<Anime> | null = null;
-let usingLocalData = false;
+let lastFetchTime: Date | null = null;
 
 function normalizeTitle(title: string): string {
     return title
@@ -128,22 +128,10 @@ function parseCSVContent(csvContent: string): Anime[] {
     return anime;
 }
 
-function loadLocalCSV(): string | null {
-    try {
-        const csvPath = path.join(process.cwd(), "data", "anime.csv");
-        if (fs.existsSync(csvPath)) {
-            return fs.readFileSync(csvPath, "utf-8");
-        }
-    } catch (error) {
-        console.warn("Failed to load local CSV:", error);
-    }
-    return null;
-}
-
 async function fetchRemoteCSV(): Promise<string | null> {
     try {
-        console.log("Fetching anime data from CDN...");
-        const response = await fetch(`${CDN_BASE_URL}/anime-standalone.csv`);
+        console.log("Fetching anime data from remote CSV...");
+        const response = await fetch(CSV_URL, { cache: "no-store" });
         if (!response.ok) {
             throw new Error(`Failed to fetch: ${response.status}`);
         }
@@ -159,24 +147,38 @@ export async function loadAnimeData(): Promise<Anime[]> {
         return animeCache;
     }
 
-    const localCSV = loadLocalCSV();
-    if (localCSV) {
-        console.log("Using local anime data");
-        usingLocalData = true;
-        animeCache = parseCSVContent(localCSV);
-        return animeCache;
-    }
-
     const remoteCSV = await fetchRemoteCSV();
     if (remoteCSV) {
-        console.log("Using remote anime data from CDN");
-        usingLocalData = false;
+        console.log("Loaded anime data from remote CSV");
         animeCache = parseCSVContent(remoteCSV);
+        lastFetchTime = new Date();
         return animeCache;
     }
 
     console.error("No anime data available");
     return [];
+}
+
+export function clearCache(): void {
+    animeCache = null;
+    animeByIdCache = null;
+    animeTitleIndex = null;
+    fuseIndex = null;
+    console.log("Anime data cache cleared");
+}
+
+export async function refreshAnimeData(): Promise<{ success: boolean; count: number; fetchTime: Date | null }> {
+    clearCache();
+    const data = await loadAnimeData();
+    return {
+        success: data.length > 0,
+        count: data.length,
+        fetchTime: lastFetchTime,
+    };
+}
+
+export function getLastFetchTime(): Date | null {
+    return lastFetchTime;
 }
 
 async function fetchAnimeFromCDN(id: number): Promise<Anime | null> {
@@ -277,7 +279,7 @@ export async function searchAnime(query: string, limit: number = 20): Promise<An
     const results = fuse.search(query, { limit: limit * 3 });
     const items = results.map(result => result.item);
 
-    return items.sort((a, b) => (a.rank || Infinity) - (b.rank || Infinity)).slice(0, limit);
+    return items.sort((a, b) => (b.mean || 0) - (a.mean || 0)).slice(0, limit);
 }
 
 const FEATURED_ANIME_IDS = [8425, 41457, 4789, 27775, 22297, 1195, 355];
@@ -305,16 +307,12 @@ export async function getPopularAnime(limit: number = 20): Promise<Anime[]> {
     const featuredSet = new Set(FEATURED_ANIME_IDS);
 
     return allAnime
-        .filter(anime => anime.mean && anime.rank && !featuredSet.has(anime.id))
-        .sort((a, b) => (a.rank || Infinity) - (b.rank || Infinity))
+        .filter(anime => anime.mean && !featuredSet.has(anime.id))
+        .sort((a, b) => (b.mean || 0) - (a.mean || 0))
         .slice(0, limit);
 }
 
 export async function getHomePageAnime(): Promise<{ featured: Anime[]; popular: Anime[] }> {
     const [featured, popular] = await Promise.all([getFeaturedAnime(), getPopularAnime(20)]);
     return { featured, popular };
-}
-
-export function isUsingLocalData(): boolean {
-    return usingLocalData;
 }
