@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Anime, WatchStatus, watchStatusLabels } from "@/types/anime";
+import { Anime, WatchStatus, watchStatusLabels, SortType } from "@/types/anime";
 import { useAuth } from "@/contexts/AuthContext";
 import { useWatchList } from "@/contexts/WatchListContext";
 import { getAnimeBatch } from "@/services/animeService";
@@ -11,6 +11,7 @@ import { Button } from "@/components/Button/Button";
 import styles from "./page.module.scss";
 
 const statusOrder: WatchStatus[] = ["watching", "plan_to_watch", "completed", "on_hold", "dropped"];
+const sortByOptions: SortType[] = ["added", "name", "rating", "rating (personal)"];
 const PAGE_SIZE = 48;
 
 interface ImportResult {
@@ -34,6 +35,7 @@ export default function MyListPage() {
     const [activeTab, setActiveTab] = useState<WatchStatus | "all">("all");
     const [page, setPage] = useState(1);
     const [searchQuery, setSearchQuery] = useState("");
+    const [sortBy, setSortBy] = useState<SortType>("added");
     const [showImportModal, setShowImportModal] = useState(false);
     const [importing, setImporting] = useState(false);
     const [importResult, setImportResult] = useState<ImportResult | null>(null);
@@ -51,18 +53,39 @@ export default function MyListPage() {
     }, [activeTab, getAllWatched, getListByStatus]);
 
     const filteredItems = useMemo(() => {
-        const items = getTabItems();
-        return items.filter(item => {
+        const query = searchQuery.trim().toLowerCase();
+
+        const items = getTabItems().filter(item => {
             const anime = animeData.get(item.animeId);
             if (!anime) {
                 return false;
             }
-            if (!searchQuery.trim()) {
-                return true;
-            }
-            return anime.title.toLowerCase().includes(searchQuery.toLowerCase());
+            return !query || anime.title.toLowerCase().includes(query);
         });
-    }, [getTabItems, searchQuery, animeData]);
+
+        return items.sort((a, b) => {
+            const animeA = animeData.get(a.animeId);
+            const animeB = animeData.get(b.animeId);
+
+            if (!animeA || !animeB) {
+                return !animeA && !animeB ? 0 : !animeA ? 1 : -1;
+            }
+
+            if (sortBy === "rating") {
+                return (animeB.mean ?? 0) - (animeA.mean ?? 0);
+            }
+
+            if (sortBy === "rating (personal)") {
+                return (b.rating ?? 0) - (a.rating ?? 0);
+            }
+
+            if (sortBy === "added") {
+                return 0;
+            }
+
+            return animeA.title.localeCompare(animeB.title);
+        });
+    }, [getTabItems, searchQuery, sortBy, animeData]);
 
     const watchedItems = getAllWatched();
     const watchedIdsKey = watchedItems
@@ -120,6 +143,11 @@ export default function MyListPage() {
 
     const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         setSearchQuery(e.target.value);
+        setPage(1);
+    }, []);
+
+    const handleSortByChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+        setSortBy(e.target.value as SortType);
         setPage(1);
     }, []);
 
@@ -290,6 +318,14 @@ export default function MyListPage() {
                             {watchStatusLabels[status]} ({counts[status]})
                         </Button>
                     ))}
+                    <label style={{ marginLeft: 24, translate: "0px 8px" }}>Sort By:</label>
+                    <select value={sortBy} onChange={e => handleSortByChange(e)} style={{ marginLeft: 8 }}>
+                        {sortByOptions.map(opt => (
+                            <option key={opt} value={opt}>
+                                {opt}
+                            </option>
+                        ))}
+                    </select>
                 </div>
 
                 {loading || contextLoading ? (
