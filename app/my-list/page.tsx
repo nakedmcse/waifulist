@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Anime, WatchedAnime, WatchStatus, watchStatusLabels, SortType } from "@/types/anime";
+import { Anime, WatchStatus, watchStatusLabels, SortType } from "@/types/anime";
 import { useAuth } from "@/contexts/AuthContext";
 import { useWatchList } from "@/contexts/WatchListContext";
 import { getAnimeBatch } from "@/services/animeService";
