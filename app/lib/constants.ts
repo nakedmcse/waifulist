@@ -1,1 +1,1 @@
-export const ANIME_BATCH_SIZE = 500;
+export const ANIME_BATCH_SIZE = 250;

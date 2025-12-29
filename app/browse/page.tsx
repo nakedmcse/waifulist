@@ -11,11 +11,12 @@ import { AnimeCard } from "@/components/AnimeCard/AnimeCard";
 import { Pagination } from "@/components/Pagination/Pagination";
 import styles from "./page.module.scss";
 
-const PAGE_SIZE = 100;
+const PAGE_SIZE = 24;
 
 function BrowseContent() {
     const searchParams = useSearchParams();
     const initialQuery = searchParams.get("q") || "";
+    const initialPage = parseInt(searchParams.get("page") || "1", 10);
 
     const { searchAnimeSilent, browseAnimeSilent } = useAnime();
     const { isLoading } = useLoading();
@@ -24,7 +25,7 @@ function BrowseContent() {
     const [anime, setAnime] = useState<Anime[]>([]);
     const [loading, setLoading] = useState(true);
     const [query, setQuery] = useState(initialQuery);
-    const [page, setPage] = useState(1);
+    const [page, setPage] = useState(initialPage);
     const [totalCount, setTotalCount] = useState(0);
     const searchIdRef = useRef(0);
     const lastFetchedSettingsRef = useRef<string | null>(null);
@@ -80,7 +81,7 @@ function BrowseContent() {
             return;
         }
         lastFetchedSettingsRef.current = settingsKey;
-        performSearch(initialQuery, 1, settings.browse.sort, settings.browse.hideSpecials);
+        performSearch(initialQuery, initialPage, settings.browse.sort, settings.browse.hideSpecials);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [settingsLoading, settings.browse.sort, settings.browse.hideSpecials]);
 
@@ -96,6 +97,7 @@ function BrowseContent() {
             } else {
                 url.searchParams.delete("q");
             }
+            url.searchParams.delete("page");
             window.history.replaceState({}, "", url);
         },
         [performSearch, sort, hideSpecials],
@@ -106,6 +108,14 @@ function BrowseContent() {
             setPage(newPage);
             performSearch(query, newPage, sort, hideSpecials);
             window.scrollTo({ top: 0, behavior: "smooth" });
+
+            const url = new URL(window.location.href);
+            if (newPage > 1) {
+                url.searchParams.set("page", String(newPage));
+            } else {
+                url.searchParams.delete("page");
+            }
+            window.history.replaceState({}, "", url);
         },
         [performSearch, query, sort, hideSpecials],
     );

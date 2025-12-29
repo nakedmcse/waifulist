@@ -12,6 +12,12 @@ const eslintConfig = [
             curly: ["error", "all"],
         },
     },
+    {
+        files: ["**/opengraph-image.tsx"],
+        rules: {
+            "@next/next/no-img-element": "off",
+        },
+    },
 ];
 
 export default eslintConfig;

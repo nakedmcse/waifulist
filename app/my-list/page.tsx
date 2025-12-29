@@ -2,10 +2,11 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Anime } from "@/types/anime";
+import { Anime, SortType } from "@/types/anime";
 import { useAuth } from "@/contexts/AuthContext";
 import { useWatchList } from "@/contexts/WatchListContext";
 import { useLoading } from "@/contexts/LoadingContext";
+import { useSettings } from "@/contexts/SettingsContext";
 import { useAnime, useBackup } from "@/hooks";
 import { AnimeListView, WatchedItem } from "@/components/AnimeListView/AnimeListView";
 import { Button } from "@/components/Button/Button";
@@ -22,8 +23,16 @@ export default function MyListPage() {
     const { user, loading: authLoading } = useAuth();
     const { getAllWatched, bulkAddToWatchList, refreshList, loading: contextLoading } = useWatchList();
     const { isLoading } = useLoading();
+    const { settings, loading: settingsLoading, updateMyListSettings } = useSettings();
     const { getAnimeBatchSilent } = useAnime();
     const { backupList } = useBackup();
+
+    const handleSortChange = useCallback(
+        (sort: SortType) => {
+            updateMyListSettings({ sort });
+        },
+        [updateMyListSettings],
+    );
 
     useEffect(() => {
         if (!authLoading && !user) {
@@ -291,6 +300,8 @@ export default function MyListPage() {
                 loading={(loading || contextLoading) && !isLoading}
                 headerActions={headerActions}
                 showStatusBadge={true}
+                initialSort={settingsLoading ? "added" : (settings.myList.sort as SortType) || "added"}
+                onSortChange={handleSortChange}
             />
 
             {showImportModal && (
@@ -306,7 +317,7 @@ export default function MyListPage() {
                         <div className={styles.modalBody}>
                             {!importing && !importResult && !importError && (
                                 <>
-                                    <p>Select a JSON backup file to restore your watchlist:</p>
+                                    <p>Select a text file with one anime title per line:</p>
                                     <div className={styles.fileInput}>
                                         <input
                                             ref={fileInputRef}
@@ -435,7 +446,7 @@ export default function MyListPage() {
                         </div>
 
                         <div className={styles.modalBody}>
-                            <p>Select a text file with one anime title per line:</p>
+                            <p>Select a JSON backup file to restore your watchlist:</p>
                             <div className={styles.fileInput}>
                                 <input
                                     ref={fileInputRef}
