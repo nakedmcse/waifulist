@@ -77,16 +77,19 @@ export async function getAnimeBatch(ids: number[]): Promise<Map<number, Anime>> 
     }
 }
 
-export async function getPopularAnime(limit: number = 20): Promise<Anime[]> {
+export async function getPopularAnime(
+    limit: number = 20,
+    offset: number = 0,
+): Promise<{ anime: Anime[]; total: number }> {
     try {
-        const response = await fetch(`/api/anime?limit=${limit}`);
+        const response = await fetch(`/api/anime?limit=${limit}&offset=${offset}`);
         if (!response.ok) {
-            return [];
+            return { anime: [], total: 0 };
         }
         return await response.json();
     } catch (error) {
         console.error("Failed to fetch popular anime:", error);
-        return [];
+        return { anime: [], total: 0 };
     }
 }
 

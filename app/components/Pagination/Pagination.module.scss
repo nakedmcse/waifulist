@@ -1,0 +1,15 @@
+@use "../../styles/variables" as *;
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: $spacing-md;
+    margin-top: $spacing-xl;
+    padding: $spacing-md;
+}
+
+.pageInfo {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+}

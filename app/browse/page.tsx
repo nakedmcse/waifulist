@@ -6,7 +6,10 @@ import { Anime } from "@/types/anime";
 import { getPopularAnime, searchAnime } from "@/services/animeService";
 import { SearchBar } from "@/components/SearchBar/SearchBar";
 import { AnimeCard } from "@/components/AnimeCard/AnimeCard";
+import { Pagination } from "@/components/Pagination/Pagination";
 import styles from "./page.module.scss";
+
+const PAGE_SIZE = 100;
 
 function BrowseContent() {
     const searchParams = useSearchParams();
@@ -15,23 +18,34 @@ function BrowseContent() {
     const [anime, setAnime] = useState<Anime[]>([]);
     const [loading, setLoading] = useState(true);
     const [query, setQuery] = useState(initialQuery);
+    const [page, setPage] = useState(1);
+    const [totalCount, setTotalCount] = useState(0);
     const searchIdRef = useRef(0);
+    const initialLoadDone = useRef(false);
 
-    const performSearch = useCallback(async (searchQuery: string) => {
+    const isSearching = query.trim().length > 0;
+    const totalPages = Math.ceil(totalCount / PAGE_SIZE);
+
+    const performSearch = useCallback(async (searchQuery: string, pageNum: number = 1) => {
         const searchId = ++searchIdRef.current;
         setLoading(true);
 
         try {
-            let results: Anime[];
             if (searchQuery.trim()) {
-                results = await searchAnime(searchQuery);
+                const results = await searchAnime(searchQuery, 20);
+                if (searchId === searchIdRef.current) {
+                    setAnime(results);
+                    setTotalCount(results.length);
+                    setLoading(false);
+                }
             } else {
-                results = await getPopularAnime();
-            }
-
-            if (searchId === searchIdRef.current) {
-                setAnime(results);
-                setLoading(false);
+                const offset = (pageNum - 1) * PAGE_SIZE;
+                const result = await getPopularAnime(PAGE_SIZE, offset);
+                if (searchId === searchIdRef.current) {
+                    setAnime(result.anime);
+                    setTotalCount(result.total);
+                    setLoading(false);
+                }
             }
         } catch (error) {
             console.error("Search failed:", error);
@@ -42,14 +56,19 @@ function BrowseContent() {
     }, []);
 
     useEffect(() => {
-        performSearch(initialQuery);
+        if (initialLoadDone.current) {
+            return;
+        }
+        initialLoadDone.current = true;
+        performSearch(initialQuery, 1);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const handleLiveSearch = useCallback(
         (newQuery: string) => {
             setQuery(newQuery);
-            performSearch(newQuery);
+            setPage(1);
+            performSearch(newQuery, 1);
 
             const url = new URL(window.location.href);
             if (newQuery) {
@@ -60,6 +79,15 @@ function BrowseContent() {
             window.history.replaceState({}, "", url);
         },
         [performSearch],
+    );
+
+    const handlePageChange = useCallback(
+        (newPage: number) => {
+            setPage(newPage);
+            performSearch(query, newPage);
+            window.scrollTo({ top: 0, behavior: "smooth" });
+        },
+        [performSearch, query],
     );
 
     return (
@@ -87,11 +115,17 @@ function BrowseContent() {
                         <p>Searching...</p>
                     </div>
                 ) : anime.length > 0 ? (
-                    <div className={styles.grid}>
-                        {anime.map(item => (
-                            <AnimeCard key={item.id} anime={item} />
-                        ))}
-                    </div>
+                    <>
+                        <div className={styles.grid}>
+                            {anime.map(item => (
+                                <AnimeCard key={item.id} anime={item} />
+                            ))}
+                        </div>
+
+                        {!isSearching && (
+                            <Pagination currentPage={page} totalPages={totalPages} onPageChange={handlePageChange} />
+                        )}
+                    </>
                 ) : (
                     <div className={styles.empty}>
                         <i className="bi bi-search" />

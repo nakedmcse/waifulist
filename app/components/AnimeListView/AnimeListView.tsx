@@ -4,6 +4,7 @@ import React, { useCallback, useMemo, useState } from "react";
 import { Anime, SortType, WatchStatus, watchStatusLabels } from "@/types/anime";
 import { AnimeCard } from "@/components/AnimeCard/AnimeCard";
 import { Button } from "@/components/Button/Button";
+import { Pagination } from "@/components/Pagination/Pagination";
 import styles from "./AnimeListView.module.scss";
 
 export interface WatchedItem {
@@ -200,29 +201,7 @@ export function AnimeListView({
                             ))}
                         </div>
 
-                        {totalPages > 1 && (
-                            <div className={styles.pagination}>
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => setPage(p => Math.max(1, p - 1))}
-                                    disabled={page === 1}
-                                >
-                                    <i className="bi bi-chevron-left" /> Previous
-                                </Button>
-                                <span className={styles.pageInfo}>
-                                    Page {page} of {totalPages}
-                                </span>
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-                                    disabled={page === totalPages}
-                                >
-                                    Next <i className="bi bi-chevron-right" />
-                                </Button>
-                            </div>
-                        )}
+                        <Pagination currentPage={page} totalPages={totalPages} onPageChange={setPage} />
                     </>
                 ) : (
                     <div className={styles.empty}>

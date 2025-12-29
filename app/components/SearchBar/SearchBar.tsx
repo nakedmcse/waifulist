@@ -22,11 +22,12 @@ export function SearchBar({
     debounceMs = 300,
 }: SearchBarProps) {
     const [query, setQuery] = useState(initialValue);
+    const [hasUserTyped, setHasUserTyped] = useState(false);
     const router = useRouter();
     const debounceTimer = useRef<NodeJS.Timeout | null>(null);
 
     useEffect(() => {
-        if (!onLiveSearch) {
+        if (!onLiveSearch || !hasUserTyped) {
             return;
         }
 
@@ -43,7 +44,12 @@ export function SearchBar({
                 clearTimeout(debounceTimer.current);
             }
         };
-    }, [query, onLiveSearch, debounceMs]);
+    }, [query, onLiveSearch, debounceMs, hasUserTyped]);
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setQuery(e.target.value);
+        setHasUserTyped(true);
+    };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -62,9 +68,7 @@ export function SearchBar({
 
     const handleClear = () => {
         setQuery("");
-        if (onLiveSearch) {
-            onLiveSearch("");
-        }
+        setHasUserTyped(true);
     };
 
     return (
@@ -73,7 +77,7 @@ export function SearchBar({
             <input
                 type="text"
                 value={query}
-                onChange={e => setQuery(e.target.value)}
+                onChange={handleChange}
                 placeholder={placeholder}
                 className={styles.input}
             />

@@ -52,6 +52,7 @@ export function AnimeCard({ anime, showStatus = true }: AnimeCardProps) {
                     fill
                     sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 20vw"
                     className={styles.image}
+                    loading="lazy"
                 />
                 {anime.mean && (
                     <div className={styles.score}>

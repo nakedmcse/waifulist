@@ -3,6 +3,11 @@ import { cookies } from "next/headers";
 import { getUserById, User } from "./db";
 
 const JWT_SECRET = process.env.JWT_SECRET ?? "waifulist-super-secret-key-change-in-production";
+
+if (JWT_SECRET === "waifulist-super-secret-key-change-in-production") {
+    console.warn("JWT_SECRET environment variable not set. This is not safe for production.");
+}
+
 const COOKIE_NAME = "waifulist_session";
 const TOKEN_EXPIRY = "7d";
 
