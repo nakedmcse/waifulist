@@ -53,9 +53,15 @@ npm start
 
 ## Environment Variables
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `JWT_SECRET` | Secret key for JWT signing | Development default (change in production) |
+| Variable                         | Description                     | Required              |
+|----------------------------------|---------------------------------|-----------------------|
+| `JWT_SECRET`                     | Secret key for JWT signing      | Yes (has dev default) |
+| `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | Cloudflare Turnstile site key   | No                    |
+| `TURNSTILE_SECRET_KEY`           | Cloudflare Turnstile secret key | No                    |
+
+### Optional: Cloudflare Turnstile
+
+To enable CAPTCHA protection on login/signup, add both Turnstile keys from your [Cloudflare dashboard](https://dash.cloudflare.com/?to=/:account/turnstile). If not configured, authentication works without CAPTCHA.
 
 ## License
 

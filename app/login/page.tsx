@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/Button/Button";
+import { Turnstile } from "@/components/Turnstile/Turnstile";
 import styles from "./page.module.scss";
 
 export default function LoginPage() {
@@ -13,8 +14,17 @@ export default function LoginPage() {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
+    const [turnstileToken, setTurnstileToken] = useState("");
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
+
+    const handleTurnstileVerify = useCallback((token: string) => {
+        setTurnstileToken(token);
+    }, []);
+
+    const handleTurnstileExpire = useCallback(() => {
+        setTurnstileToken("");
+    }, []);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -32,9 +42,16 @@ export default function LoginPage() {
             }
         }
 
+        if (!turnstileToken) {
+            setError("Please complete the verification");
+            return;
+        }
+
         setLoading(true);
 
-        const result = isRegister ? await register(username, password) : await login(username, password);
+        const result = isRegister
+            ? await register(username, password, turnstileToken)
+            : await login(username, password, turnstileToken);
 
         if (result.error) {
             setError(result.error);
@@ -94,7 +111,9 @@ export default function LoginPage() {
                             </div>
                         )}
 
-                        <Button type="submit" disabled={loading} className={styles.submitButton}>
+                        <Turnstile onVerify={handleTurnstileVerify} onExpire={handleTurnstileExpire} />
+
+                        <Button type="submit" disabled={loading || !turnstileToken} className={styles.submitButton}>
                             {loading ? "Please wait..." : isRegister ? "Create Account" : "Sign In"}
                         </Button>
                     </form>

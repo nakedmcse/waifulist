@@ -1,15 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getUserByUsername, verifyPassword } from "@/lib/db";
-import { setSessionCookie, signToken } from "@/lib/auth";
+import { createAuthResponse, validateAuthRequest } from "@/lib/authHelpers";
 
 export async function POST(request: NextRequest) {
     try {
         const body = await request.json();
-        const { username, password } = body;
+        const validation = await validateAuthRequest(body);
 
-        if (!username || !password) {
-            return NextResponse.json({ error: "Username and password required" }, { status: 400 });
+        if ("error" in validation) {
+            return validation.error;
         }
+
+        const { username, password } = validation;
 
         const user = getUserByUsername(username);
         if (!user) {
@@ -21,16 +23,7 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: "Invalid username or password" }, { status: 401 });
         }
 
-        const token = signToken(user);
-        await setSessionCookie(token);
-
-        return NextResponse.json({
-            user: {
-                id: user.id,
-                username: user.username,
-                publicId: user.public_id,
-            },
-        });
+        return createAuthResponse(user);
     } catch (error) {
         console.error("Login error:", error);
         return NextResponse.json({ error: "Login failed" }, { status: 500 });

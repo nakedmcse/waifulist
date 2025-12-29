@@ -11,8 +11,8 @@ interface User {
 interface AuthContextType {
     user: User | null;
     loading: boolean;
-    login: (username: string, password: string) => Promise<{ error?: string }>;
-    register: (username: string, password: string) => Promise<{ error?: string }>;
+    login: (username: string, password: string, turnstileToken: string) => Promise<{ error?: string }>;
+    register: (username: string, password: string, turnstileToken: string) => Promise<{ error?: string }>;
     logout: () => Promise<void>;
 }
 
@@ -38,47 +38,53 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         checkSession();
     }, []);
 
-    const login = useCallback(async (username: string, password: string): Promise<{ error?: string }> => {
-        try {
-            const response = await fetch("/api/auth/login", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ username, password }),
-            });
+    const login = useCallback(
+        async (username: string, password: string, turnstileToken: string): Promise<{ error?: string }> => {
+            try {
+                const response = await fetch("/api/auth/login", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ username, password, turnstileToken }),
+                });
 
-            const data = await response.json();
+                const data = await response.json();
 
-            if (!response.ok) {
-                return { error: data.error || "Login failed" };
+                if (!response.ok) {
+                    return { error: data.error || "Login failed" };
+                }
+
+                setUser(data.user);
+                return {};
+            } catch {
+                return { error: "Login failed" };
             }
+        },
+        [],
+    );
 
-            setUser(data.user);
-            return {};
-        } catch {
-            return { error: "Login failed" };
-        }
-    }, []);
+    const register = useCallback(
+        async (username: string, password: string, turnstileToken: string): Promise<{ error?: string }> => {
+            try {
+                const response = await fetch("/api/auth/register", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ username, password, turnstileToken }),
+                });
 
-    const register = useCallback(async (username: string, password: string): Promise<{ error?: string }> => {
-        try {
-            const response = await fetch("/api/auth/register", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ username, password }),
-            });
+                const data = await response.json();
 
-            const data = await response.json();
+                if (!response.ok) {
+                    return { error: data.error || "Registration failed" };
+                }
 
-            if (!response.ok) {
-                return { error: data.error || "Registration failed" };
+                setUser(data.user);
+                return {};
+            } catch {
+                return { error: "Registration failed" };
             }
-
-            setUser(data.user);
-            return {};
-        } catch {
-            return { error: "Registration failed" };
-        }
-    }, []);
+        },
+        [],
+    );
 
     const logout = useCallback(async () => {
         await fetch("/api/auth/logout", { method: "POST" });
