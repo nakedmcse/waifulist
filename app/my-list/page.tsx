@@ -2,10 +2,11 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Anime } from "@/types/anime";
+import { Anime, SortType } from "@/types/anime";
 import { useAuth } from "@/contexts/AuthContext";
 import { useWatchList } from "@/contexts/WatchListContext";
 import { useLoading } from "@/contexts/LoadingContext";
+import { useSettings } from "@/contexts/SettingsContext";
 import { useAnime, useExport } from "@/hooks";
 import { AnimeListView, WatchedItem } from "@/components/AnimeListView/AnimeListView";
 import { Button } from "@/components/Button/Button";
@@ -22,8 +23,16 @@ export default function MyListPage() {
     const { user, loading: authLoading } = useAuth();
     const { getAllWatched, bulkAddToWatchList, loading: contextLoading } = useWatchList();
     const { isLoading } = useLoading();
+    const { settings, loading: settingsLoading, updateMyListSettings } = useSettings();
     const { getAnimeBatchSilent } = useAnime();
     const { exportList } = useExport();
+
+    const handleSortChange = useCallback(
+        (sort: SortType) => {
+            updateMyListSettings({ sort });
+        },
+        [updateMyListSettings],
+    );
 
     useEffect(() => {
         if (!authLoading && !user) {
@@ -229,6 +238,8 @@ export default function MyListPage() {
                 loading={(loading || contextLoading) && !isLoading}
                 headerActions={headerActions}
                 showStatusBadge={true}
+                initialSort={settingsLoading ? "added" : (settings.myList.sort as SortType) || "added"}
+                onSortChange={handleSortChange}
             />
 
             {showImportModal && (

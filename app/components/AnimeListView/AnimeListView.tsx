@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { Anime, SortType, WatchStatus, watchStatusLabels } from "@/types/anime";
 import { AnimeCard } from "@/components/AnimeCard/AnimeCard";
 import { Button } from "@/components/Button/Button";
@@ -22,11 +23,13 @@ interface AnimeListViewProps {
     loading: boolean;
     headerActions?: React.ReactNode;
     showStatusBadge?: boolean;
+    initialSort?: SortType;
+    onSortChange?: (sort: SortType) => void;
 }
 
 const statusOrder: WatchStatus[] = ["watching", "plan_to_watch", "completed", "on_hold", "dropped"];
 const sortByOptions: SortType[] = ["added", "name", "rating", "rating (personal)"];
-const PAGE_SIZE = 48;
+const PAGE_SIZE = 24;
 
 export function AnimeListView({
     title,
@@ -36,11 +39,31 @@ export function AnimeListView({
     loading,
     headerActions,
     showStatusBadge = true,
+    initialSort = "added",
+    onSortChange,
 }: AnimeListViewProps) {
+    const searchParams = useSearchParams();
+    const initialPage = parseInt(searchParams.get("page") || "1", 10);
+
     const [activeTab, setActiveTab] = useState<WatchStatus | "all">("all");
-    const [page, setPage] = useState(1);
+    const [page, setPage] = useState(initialPage);
     const [searchQuery, setSearchQuery] = useState("");
-    const [sortBy, setSortBy] = useState<SortType>("added");
+    const [sortBy, setSortBy] = useState<SortType>(initialSort);
+
+    // Sync sortBy when initialSort changes (after settings load)
+    useEffect(() => {
+        setSortBy(initialSort);
+    }, [initialSort]);
+
+    const updatePageUrl = useCallback((newPage: number) => {
+        const url = new URL(window.location.href);
+        if (newPage > 1) {
+            url.searchParams.set("page", String(newPage));
+        } else {
+            url.searchParams.delete("page");
+        }
+        window.history.replaceState({}, "", url);
+    }, []);
 
     const getTabItems = useCallback(() => {
         if (activeTab === "all") {
@@ -102,20 +125,42 @@ export function AnimeListView({
     const totalPages = Math.ceil(filteredItems.length / PAGE_SIZE);
     const pagedAnime = getPagedAnime();
 
-    const handleTabChange = useCallback((tab: WatchStatus | "all") => {
-        setActiveTab(tab);
-        setPage(1);
-    }, []);
+    const handleTabChange = useCallback(
+        (tab: WatchStatus | "all") => {
+            setActiveTab(tab);
+            setPage(1);
+            updatePageUrl(1);
+        },
+        [updatePageUrl],
+    );
 
-    const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-        setSearchQuery(e.target.value);
-        setPage(1);
-    }, []);
+    const handleSearchChange = useCallback(
+        (e: React.ChangeEvent<HTMLInputElement>) => {
+            setSearchQuery(e.target.value);
+            setPage(1);
+            updatePageUrl(1);
+        },
+        [updatePageUrl],
+    );
 
-    const handleSortByChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
-        setSortBy(e.target.value as SortType);
-        setPage(1);
-    }, []);
+    const handleSortByChange = useCallback(
+        (e: React.ChangeEvent<HTMLSelectElement>) => {
+            const newSort = e.target.value as SortType;
+            setSortBy(newSort);
+            setPage(1);
+            updatePageUrl(1);
+            onSortChange?.(newSort);
+        },
+        [onSortChange, updatePageUrl],
+    );
+
+    const handlePageChange = useCallback(
+        (newPage: number) => {
+            setPage(newPage);
+            updatePageUrl(newPage);
+        },
+        [updatePageUrl],
+    );
 
     if (loading) {
         return (
@@ -152,6 +197,7 @@ export function AnimeListView({
                                 onClick={() => {
                                     setSearchQuery("");
                                     setPage(1);
+                                    updatePageUrl(1);
                                 }}
                             >
                                 <i className="bi bi-x" />
@@ -201,7 +247,7 @@ export function AnimeListView({
                             ))}
                         </div>
 
-                        <Pagination currentPage={page} totalPages={totalPages} onPageChange={setPage} />
+                        <Pagination currentPage={page} totalPages={totalPages} onPageChange={handlePageChange} />
                     </>
                 ) : (
                     <div className={styles.empty}>

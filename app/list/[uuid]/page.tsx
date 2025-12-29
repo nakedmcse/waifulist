@@ -1,65 +1,52 @@
-"use client";
+import { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { getAllWatched, getUserByPublicId } from "@/lib/db";
+import { PublicListClient } from "./PublicListClient";
 
-import React, { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
-import { Anime } from "@/types/anime";
-import { PublicListItem, usePublicList } from "@/hooks";
-import { AnimeListView, WatchedItem } from "@/components/AnimeListView/AnimeListView";
-import styles from "@/components/AnimeListView/AnimeListView.module.scss";
+interface PageProps {
+    params: Promise<{ uuid: string }>;
+}
 
-export default function PublicListPage() {
-    const params = useParams();
-    const uuid = params.uuid as string;
-    const { fetchPublicList } = usePublicList();
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+    const { uuid } = await params;
 
-    const [username, setUsername] = useState<string | null>(null);
-    const [watchedItems, setWatchedItems] = useState<WatchedItem[]>([]);
-    const [animeData, setAnimeData] = useState<Map<number, Anime>>(new Map());
-    const [error, setError] = useState<string | null>(null);
+    const user = getUserByPublicId(uuid);
 
-    useEffect(() => {
-        fetchPublicList(uuid).then(result => {
-            if ("error" in result) {
-                setError(result.error);
-            } else {
-                setUsername(result.username);
-                setWatchedItems(
-                    result.items.map((item: PublicListItem) => ({
-                        animeId: item.animeId,
-                        status: item.status,
-                        rating: item.rating,
-                        dateAdded: item.dateAdded,
-                    })),
-                );
-                setAnimeData(result.animeData);
-            }
-        });
-    }, [uuid, fetchPublicList]);
-
-    if (error) {
-        return (
-            <div className={styles.page}>
-                <div className={styles.empty}>
-                    <i className="bi bi-exclamation-circle" />
-                    <h3>{error}</h3>
-                    <p>The list you&apos;re looking for doesn&apos;t exist or has been removed.</p>
-                </div>
-            </div>
-        );
+    if (!user) {
+        return {
+            title: "List Not Found | WaifuList",
+            description: "The list you're looking for doesn't exist or has been removed.",
+        };
     }
 
-    if (!username) {
-        return null;
+    const items = getAllWatched(user.id);
+    const title = `${user.username}'s Anime List | WaifuList`;
+    const description = `Check out ${user.username}'s anime collection with ${items.length} titles on WaifuList.`;
+
+    return {
+        title,
+        description,
+        openGraph: {
+            title,
+            description,
+            siteName: "WaifuList",
+        },
+        twitter: {
+            card: "summary_large_image",
+            title,
+            description,
+        },
+    };
+}
+
+export default async function PublicListPage({ params }: PageProps) {
+    const { uuid } = await params;
+
+    const user = getUserByPublicId(uuid);
+
+    if (!user) {
+        notFound();
     }
 
-    return (
-        <AnimeListView
-            title={`${username}'s Anime List`}
-            subtitle={`${watchedItems.length} anime in this list`}
-            watchedItems={watchedItems}
-            animeData={animeData}
-            loading={false}
-            showStatusBadge={false}
-        />
-    );
+    return <PublicListClient uuid={uuid} initialUsername={user.username} />;
 }

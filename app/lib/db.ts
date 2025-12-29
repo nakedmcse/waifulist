@@ -302,6 +302,25 @@ export function getWatchedCountByStatus(userId: number): Record<string, number> 
     return counts;
 }
 
+export function getTopRatedAnime(userId: number, limit: number = 5): WatchedAnimeRow[] {
+    const stmt = db.prepare(
+        "SELECT * FROM watched_anime WHERE user_id = ? AND rating IS NOT NULL ORDER BY rating DESC, date_added DESC LIMIT ?",
+    );
+    return stmt.all(userId, limit) as WatchedAnimeRow[];
+}
+
+export function getRecentAnime(userId: number, limit: number = 5, excludeIds: number[] = []): WatchedAnimeRow[] {
+    if (excludeIds.length === 0) {
+        const stmt = db.prepare("SELECT * FROM watched_anime WHERE user_id = ? ORDER BY date_added DESC LIMIT ?");
+        return stmt.all(userId, limit) as WatchedAnimeRow[];
+    }
+    const placeholders = excludeIds.map(() => "?").join(",");
+    const stmt = db.prepare(
+        `SELECT * FROM watched_anime WHERE user_id = ? AND anime_id NOT IN (${placeholders}) ORDER BY date_added DESC LIMIT ?`,
+    );
+    return stmt.all(userId, ...excludeIds, limit) as WatchedAnimeRow[];
+}
+
 const DEFAULT_SETTINGS: UserSettings = {};
 
 export function getUserSettings(userId: number): UserSettings {
