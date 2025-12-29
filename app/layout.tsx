@@ -26,6 +26,7 @@ const opts = {
 };
 
 export const metadata: Metadata = {
+    metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL ?? "https://waifulist.moe"),
     ...opts,
     authors: [{ name: "Victoria" }],
     icons: {
