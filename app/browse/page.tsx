@@ -3,8 +3,9 @@
 import React, { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Anime } from "@/types/anime";
-import { useAnime } from "@/hooks";
+import { BrowseSortType, useAnime } from "@/hooks";
 import { useLoading } from "@/contexts/LoadingContext";
+import { useSettings } from "@/contexts/SettingsContext";
 import { SearchBar } from "@/components/SearchBar/SearchBar";
 import { AnimeCard } from "@/components/AnimeCard/AnimeCard";
 import { Pagination } from "@/components/Pagination/Pagination";
@@ -16,8 +17,9 @@ function BrowseContent() {
     const searchParams = useSearchParams();
     const initialQuery = searchParams.get("q") || "";
 
-    const { searchAnimeSilent, getPopularAnimeSilent } = useAnime();
+    const { searchAnimeSilent, browseAnimeSilent } = useAnime();
     const { isLoading } = useLoading();
+    const { settings, loading: settingsLoading, updateBrowseSettings } = useSettings();
 
     const [anime, setAnime] = useState<Anime[]>([]);
     const [loading, setLoading] = useState(true);
@@ -25,19 +27,26 @@ function BrowseContent() {
     const [page, setPage] = useState(1);
     const [totalCount, setTotalCount] = useState(0);
     const searchIdRef = useRef(0);
-    const initialLoadDone = useRef(false);
+    const lastFetchedSettingsRef = useRef<string | null>(null);
+
+    const { sort, hideSpecials } = settings.browse;
 
     const isSearching = query.trim().length > 0;
     const totalPages = Math.ceil(totalCount / PAGE_SIZE);
 
     const performSearch = useCallback(
-        async (searchQuery: string, pageNum: number = 1) => {
+        async (
+            searchQuery: string,
+            pageNum: number = 1,
+            sortBy: BrowseSortType = "rating",
+            filterSpecials: boolean = false,
+        ) => {
             const searchId = ++searchIdRef.current;
             setLoading(true);
 
             try {
                 if (searchQuery.trim()) {
-                    const results = await searchAnimeSilent(searchQuery, 20);
+                    const results = await searchAnimeSilent(searchQuery, 20, filterSpecials);
                     if (searchId === searchIdRef.current) {
                         setAnime(results);
                         setTotalCount(results.length);
@@ -45,7 +54,7 @@ function BrowseContent() {
                     }
                 } else {
                     const offset = (pageNum - 1) * PAGE_SIZE;
-                    const result = await getPopularAnimeSilent(PAGE_SIZE, offset);
+                    const result = await browseAnimeSilent(PAGE_SIZE, offset, sortBy, filterSpecials);
                     if (searchId === searchIdRef.current) {
                         setAnime(result.anime);
                         setTotalCount(result.total);
@@ -59,23 +68,27 @@ function BrowseContent() {
                 }
             }
         },
-        [searchAnimeSilent, getPopularAnimeSilent],
+        [searchAnimeSilent, browseAnimeSilent],
     );
 
     useEffect(() => {
-        if (initialLoadDone.current) {
+        if (settingsLoading) {
             return;
         }
-        initialLoadDone.current = true;
-        performSearch(initialQuery, 1);
+        const settingsKey = `${settings.browse.sort}-${settings.browse.hideSpecials}`;
+        if (lastFetchedSettingsRef.current === settingsKey) {
+            return;
+        }
+        lastFetchedSettingsRef.current = settingsKey;
+        performSearch(initialQuery, 1, settings.browse.sort, settings.browse.hideSpecials);
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [settingsLoading, settings.browse.sort, settings.browse.hideSpecials]);
 
     const handleLiveSearch = useCallback(
         (newQuery: string) => {
             setQuery(newQuery);
             setPage(1);
-            performSearch(newQuery, 1);
+            performSearch(newQuery, 1, sort, hideSpecials);
 
             const url = new URL(window.location.href);
             if (newQuery) {
@@ -85,19 +98,37 @@ function BrowseContent() {
             }
             window.history.replaceState({}, "", url);
         },
-        [performSearch],
+        [performSearch, sort, hideSpecials],
     );
 
     const handlePageChange = useCallback(
         (newPage: number) => {
             setPage(newPage);
-            performSearch(query, newPage);
+            performSearch(query, newPage, sort, hideSpecials);
             window.scrollTo({ top: 0, behavior: "smooth" });
         },
-        [performSearch, query],
+        [performSearch, query, sort, hideSpecials],
     );
 
-    const showLoading = loading && !isLoading;
+    const handleSortChange = useCallback(
+        (newSort: BrowseSortType) => {
+            updateBrowseSettings({ sort: newSort });
+            setPage(1);
+            performSearch(query, 1, newSort, hideSpecials);
+        },
+        [performSearch, query, hideSpecials, updateBrowseSettings],
+    );
+
+    const handleHideSpecialsChange = useCallback(
+        (checked: boolean) => {
+            updateBrowseSettings({ hideSpecials: checked });
+            setPage(1);
+            performSearch(query, 1, sort, checked);
+        },
+        [performSearch, query, sort, updateBrowseSettings],
+    );
+
+    const showLoading = (loading || settingsLoading) && !isLoading;
 
     return (
         <div className={styles.page}>
@@ -109,13 +140,39 @@ function BrowseContent() {
                     </p>
                 </div>
 
-                <div className={styles.searchWrapper}>
-                    <SearchBar
-                        initialValue={query}
-                        onLiveSearch={handleLiveSearch}
-                        placeholder="Search anime by title..."
-                        debounceMs={250}
-                    />
+                <div className={styles.controls}>
+                    <div className={styles.searchWrapper}>
+                        <SearchBar
+                            initialValue={query}
+                            onLiveSearch={handleLiveSearch}
+                            placeholder="Search anime by title..."
+                            debounceMs={250}
+                        />
+                    </div>
+                    <div className={styles.filterWrapper}>
+                        <label className={styles.checkbox}>
+                            <input
+                                type="checkbox"
+                                checked={hideSpecials}
+                                onChange={e => handleHideSpecialsChange(e.target.checked)}
+                            />
+                            <span>Hide Specials</span>
+                        </label>
+                    </div>
+                    {!isSearching && (
+                        <div className={styles.sortWrapper}>
+                            <label htmlFor="sort-select">Sort by:</label>
+                            <select
+                                id="sort-select"
+                                value={sort}
+                                onChange={e => handleSortChange(e.target.value as BrowseSortType)}
+                                className={styles.sortSelect}
+                            >
+                                <option value="rating">Top Rated</option>
+                                <option value="newest">Newest</option>
+                            </select>
+                        </div>
+                    )}
                 </div>
 
                 {showLoading ? (

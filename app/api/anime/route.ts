@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getHomePageAnime, getPopularAnime, searchAnime } from "@/services/animeData";
+import { browseAnime, BrowseSortType, getHomePageAnime, searchAnime } from "@/services/animeData";
 
 export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
@@ -7,9 +7,11 @@ export async function GET(request: NextRequest) {
     const home = searchParams.get("home");
     const limit = parseInt(searchParams.get("limit") || "20", 10);
     const offset = parseInt(searchParams.get("offset") || "0", 10);
+    const sort = (searchParams.get("sort") as BrowseSortType) || "rating";
+    const hideSpecials = searchParams.get("hideSpecials") === "true";
 
     if (query) {
-        const results = await searchAnime(query, limit);
+        const results = await searchAnime(query, limit, hideSpecials);
         return NextResponse.json(results);
     }
 
@@ -18,6 +20,6 @@ export async function GET(request: NextRequest) {
         return NextResponse.json(data);
     }
 
-    const result = await getPopularAnime(limit, offset);
+    const result = await browseAnime(limit, offset, sort, hideSpecials);
     return NextResponse.json(result);
 }

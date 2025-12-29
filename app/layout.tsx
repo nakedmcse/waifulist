@@ -4,6 +4,7 @@ import { ThemeProvider } from "@/contexts/ThemeContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { WatchListProvider } from "@/contexts/WatchListContext";
 import { LoadingProvider } from "@/contexts/LoadingContext";
+import { SettingsProvider } from "@/contexts/SettingsContext";
 import { Header } from "@/components/Header/Header";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import "./globals.scss";
@@ -77,10 +78,12 @@ export default function RootLayout({
                 <LoadingProvider>
                     <ThemeProvider>
                         <AuthProvider>
-                            <WatchListProvider>
-                                <Header />
-                                <main>{children}</main>
-                            </WatchListProvider>
+                            <SettingsProvider>
+                                <WatchListProvider>
+                                    <Header />
+                                    <main>{children}</main>
+                                </WatchListProvider>
+                            </SettingsProvider>
                         </AuthProvider>
                     </ThemeProvider>
                 </LoadingProvider>

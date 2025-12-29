@@ -70,6 +70,7 @@ export function AnimeCard({ anime, showStatus = true }: AnimeCardProps) {
                 <h3 className={styles.title}>{anime.title}</h3>
                 <div className={styles.meta}>
                     {anime.media_type && <span className={styles.type}>{anime.media_type.toUpperCase()}</span>}
+                    {anime.source && <span className={styles.type}>{anime.source.toUpperCase()}</span>}
                     {anime.num_episodes && <span className={styles.episodes}>{anime.num_episodes} eps</span>}
                 </div>
                 {watchData && (

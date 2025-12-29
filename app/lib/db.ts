@@ -3,6 +3,7 @@ import path from "path";
 import fs from "fs";
 import crypto from "crypto";
 import bcrypt from "bcrypt";
+import type { UserSettings } from "@/types/settings";
 
 const SALT_ROUNDS = 12;
 
@@ -46,6 +47,13 @@ db.exec(`
         date_updated TEXT NOT NULL DEFAULT (datetime('now')),
         FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
         UNIQUE(user_id, anime_id)
+    );
+
+    CREATE TABLE IF NOT EXISTS user_settings (
+        user_id INTEGER PRIMARY KEY,
+        settings TEXT NOT NULL DEFAULT '{}',
+        updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
     );
 
     CREATE INDEX IF NOT EXISTS idx_watched_user ON watched_anime(user_id);
@@ -291,6 +299,55 @@ export function getWatchedCountByStatus(userId: number): Record<string, number> 
         counts[row.status] = row.count;
     });
     return counts;
+}
+
+// User Settings
+const DEFAULT_SETTINGS: UserSettings = {};
+
+export function getUserSettings(userId: number): UserSettings {
+    const stmt = db.prepare("SELECT settings FROM user_settings WHERE user_id = ?");
+    const row = stmt.get(userId) as { settings: string } | undefined;
+
+    if (!row) {
+        return DEFAULT_SETTINGS;
+    }
+
+    try {
+        return JSON.parse(row.settings) as UserSettings;
+    } catch {
+        return DEFAULT_SETTINGS;
+    }
+}
+
+export function updateUserSettings(userId: number, updates: Partial<UserSettings>): UserSettings {
+    const updateTransaction = db.transaction(() => {
+        const current = getUserSettings(userId);
+        const merged: UserSettings = {
+            ...current,
+            ...updates,
+            browse: updates.browse ? { ...current.browse, ...updates.browse } : current.browse,
+            myList: updates.myList ? { ...current.myList, ...updates.myList } : current.myList,
+        };
+
+        const settingsJson = JSON.stringify(merged);
+
+        const stmt = db.prepare(`
+            INSERT INTO user_settings (user_id, settings, updated_at)
+            VALUES (?, ?, datetime('now'))
+            ON CONFLICT(user_id) DO UPDATE SET
+                settings = excluded.settings,
+                updated_at = datetime('now')
+        `);
+        stmt.run(userId, settingsJson);
+
+        return merged;
+    });
+
+    try {
+        return updateTransaction();
+    } catch (error) {
+        throw new DatabaseError("Failed to update user settings", "updateUserSettings", error);
+    }
 }
 
 export default db;

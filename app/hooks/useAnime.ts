@@ -3,7 +3,10 @@
 import { useCallback } from "react";
 import { Anime } from "@/types/anime";
 import * as animeService from "@/services/animeService";
+import { BrowseSortType } from "@/services/animeService";
 import { useLoading } from "@/contexts/LoadingContext";
+
+export type { BrowseSortType };
 
 export function useAnime() {
     const { withLoading, setLoading } = useLoading();
@@ -22,9 +25,14 @@ export function useAnime() {
         [withLoading],
     );
 
-    const getPopularAnime = useCallback(
-        async (limit: number = 20, offset: number = 0): Promise<{ anime: Anime[]; total: number }> => {
-            return withLoading(() => animeService.getPopularAnime(limit, offset));
+    const browseAnime = useCallback(
+        async (
+            limit: number = 20,
+            offset: number = 0,
+            sort: BrowseSortType = "rating",
+            hideSpecials: boolean = false,
+        ): Promise<{ anime: Anime[]; total: number }> => {
+            return withLoading(() => animeService.browseAnime(limit, offset, sort, hideSpecials));
         },
         [withLoading],
     );
@@ -34,8 +42,8 @@ export function useAnime() {
     }, [withLoading]);
 
     const searchAnime = useCallback(
-        async (query: string, limit: number = 20): Promise<Anime[]> => {
-            return withLoading(() => animeService.searchAnime(query, limit));
+        async (query: string, limit: number = 20, hideSpecials: boolean = false): Promise<Anime[]> => {
+            return withLoading(() => animeService.searchAnime(query, limit, hideSpecials));
         },
         [withLoading],
     );
@@ -49,9 +57,14 @@ export function useAnime() {
         return animeService.getAnimeBatch(ids);
     }, []);
 
-    const getPopularAnimeSilent = useCallback(
-        async (limit: number = 20, offset: number = 0): Promise<{ anime: Anime[]; total: number }> => {
-            return animeService.getPopularAnime(limit, offset);
+    const browseAnimeSilent = useCallback(
+        async (
+            limit: number = 20,
+            offset: number = 0,
+            sort: BrowseSortType = "rating",
+            hideSpecials: boolean = false,
+        ): Promise<{ anime: Anime[]; total: number }> => {
+            return animeService.browseAnime(limit, offset, sort, hideSpecials);
         },
         [],
     );
@@ -60,21 +73,24 @@ export function useAnime() {
         return animeService.getHomePageAnime();
     }, []);
 
-    const searchAnimeSilent = useCallback(async (query: string, limit: number = 20): Promise<Anime[]> => {
-        return animeService.searchAnime(query, limit);
-    }, []);
+    const searchAnimeSilent = useCallback(
+        async (query: string, limit: number = 20, hideSpecials: boolean = false): Promise<Anime[]> => {
+            return animeService.searchAnime(query, limit, hideSpecials);
+        },
+        [],
+    );
 
     return {
         // With global loading spinner
         getAnimeById,
         getAnimeBatch,
-        getPopularAnime,
+        browseAnime,
         getHomePageAnime,
         searchAnime,
         // Without global loading spinner (for inline loading states)
         getAnimeByIdSilent,
         getAnimeBatchSilent,
-        getPopularAnimeSilent,
+        browseAnimeSilent,
         getHomePageAnimeSilent,
         searchAnimeSilent,
         // Direct access to loading control

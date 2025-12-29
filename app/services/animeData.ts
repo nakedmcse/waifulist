@@ -284,11 +284,15 @@ export async function findAnimeByTitle(title: string): Promise<Anime | null> {
     return null;
 }
 
-export async function searchAnime(query: string, limit: number = 20): Promise<Anime[]> {
+export async function searchAnime(query: string, limit: number = 20, hideSpecials: boolean = false): Promise<Anime[]> {
     const fuse = await getFuseIndex();
 
     const results = fuse.search(query, { limit: limit * 3 });
-    const items = results.map(result => result.item);
+    let items = results.map(result => result.item);
+
+    if (hideSpecials) {
+        items = items.filter(anime => anime.media_type !== "special");
+    }
 
     return items.sort((a, b) => (b.mean || 0) - (a.mean || 0)).slice(0, limit);
 }
@@ -312,17 +316,33 @@ export async function getFeaturedAnime(): Promise<Anime[]> {
     return featured;
 }
 
-export async function getPopularAnime(
+export type BrowseSortType = "rating" | "newest";
+
+export async function browseAnime(
     limit: number = 20,
     offset: number = 0,
+    sort: BrowseSortType = "rating",
+    hideSpecials: boolean = false,
 ): Promise<{ anime: Anime[]; total: number }> {
     const allAnime = await loadAnimeData();
 
     const featuredSet = new Set(FEATURED_ANIME_IDS);
 
-    const sorted = allAnime
-        .filter(anime => anime.mean && !featuredSet.has(anime.id))
-        .sort((a, b) => (b.mean || 0) - (a.mean || 0));
+    const filtered = allAnime.filter(anime => {
+        if (!anime.mean || featuredSet.has(anime.id)) {
+            return false;
+        }
+        return !(hideSpecials && anime.media_type === "special");
+    });
+
+    const sorted =
+        sort === "newest"
+            ? filtered.sort((a, b) => {
+                  const dateA = a.start_date || "";
+                  const dateB = b.start_date || "";
+                  return dateB.localeCompare(dateA);
+              })
+            : filtered.sort((a, b) => (b.mean || 0) - (a.mean || 0));
 
     return {
         anime: sorted.slice(offset, offset + limit),
@@ -331,6 +351,6 @@ export async function getPopularAnime(
 }
 
 export async function getHomePageAnime(): Promise<{ featured: Anime[]; popular: Anime[] }> {
-    const [featured, popularResult] = await Promise.all([getFeaturedAnime(), getPopularAnime(20)]);
+    const [featured, popularResult] = await Promise.all([getFeaturedAnime(), browseAnime(20)]);
     return { featured, popular: popularResult.anime };
 }

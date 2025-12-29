@@ -77,18 +77,28 @@ export async function getAnimeBatch(ids: number[]): Promise<Map<number, Anime>> 
     }
 }
 
-export async function getPopularAnime(
+export type BrowseSortType = "rating" | "newest";
+
+export async function browseAnime(
     limit: number = 20,
     offset: number = 0,
+    sort: BrowseSortType = "rating",
+    hideSpecials: boolean = false,
 ): Promise<{ anime: Anime[]; total: number }> {
     try {
-        const response = await fetch(`/api/anime?limit=${limit}&offset=${offset}`);
+        const params = new URLSearchParams({
+            limit: String(limit),
+            offset: String(offset),
+            sort,
+            hideSpecials: String(hideSpecials),
+        });
+        const response = await fetch(`/api/anime?${params}`);
         if (!response.ok) {
             return { anime: [], total: 0 };
         }
         return await response.json();
     } catch (error) {
-        console.error("Failed to fetch popular anime:", error);
+        console.error("Failed to browse anime:", error);
         return { anime: [], total: 0 };
     }
 }
@@ -106,9 +116,14 @@ export async function getHomePageAnime(): Promise<{ featured: Anime[]; popular: 
     }
 }
 
-export async function searchAnime(query: string, limit: number = 20): Promise<Anime[]> {
+export async function searchAnime(query: string, limit: number = 20, hideSpecials: boolean = false): Promise<Anime[]> {
     try {
-        const response = await fetch(`/api/anime?q=${encodeURIComponent(query)}&limit=${limit}`);
+        const params = new URLSearchParams({
+            q: query,
+            limit: String(limit),
+            hideSpecials: String(hideSpecials),
+        });
+        const response = await fetch(`/api/anime?${params}`);
         if (!response.ok) {
             return [];
         }
