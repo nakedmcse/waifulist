@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import { Anime } from "@/types/anime";
 import { useAuth } from "@/contexts/AuthContext";
 import { useWatchList } from "@/contexts/WatchListContext";
-import { getAnimeBatch } from "@/services/animeService";
+import { useLoading } from "@/contexts/LoadingContext";
+import { useAnime, useExport } from "@/hooks";
 import { AnimeListView, WatchedItem } from "@/components/AnimeListView/AnimeListView";
 import { Button } from "@/components/Button/Button";
 import styles from "./page.module.scss";
@@ -20,6 +21,9 @@ export default function MyListPage() {
     const router = useRouter();
     const { user, loading: authLoading } = useAuth();
     const { getAllWatched, bulkAddToWatchList, loading: contextLoading } = useWatchList();
+    const { isLoading } = useLoading();
+    const { getAnimeBatchSilent } = useAnime();
+    const { exportList } = useExport();
 
     useEffect(() => {
         if (!authLoading && !user) {
@@ -70,7 +74,7 @@ export default function MyListPage() {
         let cancelled = false;
         setLoading(true);
 
-        getAnimeBatch(ids).then(newData => {
+        getAnimeBatchSilent(ids).then(newData => {
             if (!cancelled) {
                 setAnimeData(newData);
                 setLoading(false);
@@ -80,7 +84,7 @@ export default function MyListPage() {
         return () => {
             cancelled = true;
         };
-    }, [contextLoading, watchedIdsKey]);
+    }, [contextLoading, watchedIdsKey, getAnimeBatchSilent]);
 
     const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -91,36 +95,11 @@ export default function MyListPage() {
 
     const handleExport = useCallback(async () => {
         try {
-            setLoading(true);
-            const response = await fetch("/api/export", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-            });
-
-            if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.error || "Export failed");
-            }
-
-            const text = await response.text();
-            const blob = new Blob([text], { type: "text/json" });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement("a");
-
-            link.setAttribute("href", url);
-            link.setAttribute("download", "anime.json");
-            link.style.display = "none";
-
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(url);
+            await exportList();
         } catch (error) {
             console.error(error);
-        } finally {
-            setLoading(false);
         }
-    }, []);
+    }, [exportList]);
 
     const handleImport = useCallback(async () => {
         if (!selectedFile) {
@@ -223,14 +202,7 @@ export default function MyListPage() {
     }, [user?.publicId]);
 
     if (authLoading || !user) {
-        return (
-            <div className={styles.page}>
-                <div className={styles.loading}>
-                    <div className={styles.spinner} />
-                    <p>Loading...</p>
-                </div>
-            </div>
-        );
+        return null; // Global loading spinner will show
     }
 
     const headerActions = (
@@ -254,7 +226,7 @@ export default function MyListPage() {
                 subtitle={`${watchedItems.length} anime in your list`}
                 watchedItems={convertedItems}
                 animeData={animeData}
-                loading={loading || contextLoading}
+                loading={(loading || contextLoading) && !isLoading}
                 headerActions={headerActions}
                 showStatusBadge={true}
             />

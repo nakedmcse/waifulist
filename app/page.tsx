@@ -3,16 +3,16 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Anime } from "@/types/anime";
-import { getHomePageAnime } from "@/services/animeService";
+import { useAnime } from "@/hooks";
 import { SearchBar } from "@/components/SearchBar/SearchBar";
 import { AnimeCard } from "@/components/AnimeCard/AnimeCard";
 import styles from "./page.module.scss";
 
 export default function Home() {
     const router = useRouter();
+    const { getHomePageAnime } = useAnime();
     const [featuredAnime, setFeaturedAnime] = useState<Anime[]>([]);
     const [popularAnime, setPopularAnime] = useState<Anime[]>([]);
-    const [loading, setLoading] = useState(true);
 
     const handleLiveSearch = useCallback(
         (query: string) => {
@@ -24,20 +24,11 @@ export default function Home() {
     );
 
     useEffect(() => {
-        async function loadAnime() {
-            try {
-                const { featured, popular } = await getHomePageAnime();
-                setFeaturedAnime(featured);
-                setPopularAnime(popular);
-            } catch (error) {
-                console.error("Failed to load anime:", error);
-            } finally {
-                setLoading(false);
-            }
-        }
-
-        loadAnime();
-    }, []);
+        getHomePageAnime().then(({ featured, popular }) => {
+            setFeaturedAnime(featured);
+            setPopularAnime(popular);
+        });
+    }, [getHomePageAnime]);
 
     return (
         <div className={styles.page}>
@@ -56,47 +47,34 @@ export default function Home() {
                 </div>
             </section>
 
-            {loading ? (
-                <section className={styles.section}>
-                    <div className={styles.container}>
-                        <div className={styles.loading}>
-                            <div className={styles.spinner} />
-                            <p>Loading anime...</p>
-                        </div>
+            <section className={styles.section}>
+                <div className={styles.container}>
+                    <div className={styles.sectionHeader}>
+                        <h2>Recommendations</h2>
                     </div>
-                </section>
-            ) : (
-                <>
-                    <section className={styles.section}>
-                        <div className={styles.container}>
-                            <div className={styles.sectionHeader}>
-                                <h2>Recommendations</h2>
-                            </div>
-                            <div className={styles.grid}>
-                                {featuredAnime.map(anime => (
-                                    <AnimeCard key={anime.id} anime={anime} />
-                                ))}
-                            </div>
-                        </div>
-                    </section>
+                    <div className={styles.grid}>
+                        {featuredAnime.map(anime => (
+                            <AnimeCard key={anime.id} anime={anime} />
+                        ))}
+                    </div>
+                </div>
+            </section>
 
-                    <section className={styles.section}>
-                        <div className={styles.container}>
-                            <div className={styles.sectionHeader}>
-                                <h2>Top Rated</h2>
-                                <a href="/browse" className={styles.viewAll}>
-                                    View all <i className="bi bi-arrow-right" />
-                                </a>
-                            </div>
-                            <div className={styles.grid}>
-                                {popularAnime.map(anime => (
-                                    <AnimeCard key={anime.id} anime={anime} />
-                                ))}
-                            </div>
-                        </div>
-                    </section>
-                </>
-            )}
+            <section className={styles.section}>
+                <div className={styles.container}>
+                    <div className={styles.sectionHeader}>
+                        <h2>Top Rated</h2>
+                        <a href="/browse" className={styles.viewAll}>
+                            View all <i className="bi bi-arrow-right" />
+                        </a>
+                    </div>
+                    <div className={styles.grid}>
+                        {popularAnime.map(anime => (
+                            <AnimeCard key={anime.id} anime={anime} />
+                        ))}
+                    </div>
+                </div>
+            </section>
         </div>
     );
 }

@@ -4,7 +4,7 @@ import React, { use, useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Anime, WatchStatus } from "@/types/anime";
-import { getAnimeById } from "@/services/animeService";
+import { useAnime } from "@/hooks";
 import { useAuth } from "@/contexts/AuthContext";
 import { useWatchList } from "@/contexts/WatchListContext";
 import { Button } from "@/components/Button/Button";
@@ -19,8 +19,8 @@ const statusOptions: WatchStatus[] = ["watching", "plan_to_watch", "completed", 
 
 export default function AnimePage({ params }: AnimePageProps) {
     const { id } = use(params);
+    const { getAnimeById } = useAnime();
     const [anime, setAnime] = useState<Anime | null>(null);
-    const [loading, setLoading] = useState(true);
     const [showStatusMenu, setShowStatusMenu] = useState(false);
 
     const { user } = useAuth();
@@ -29,19 +29,10 @@ export default function AnimePage({ params }: AnimePageProps) {
     const watchData = user ? getWatchData(parseInt(id)) : undefined;
 
     useEffect(() => {
-        async function loadAnime() {
-            try {
-                const data = await getAnimeById(parseInt(id));
-                setAnime(data);
-            } catch (error) {
-                console.error("Failed to load anime:", error);
-            } finally {
-                setLoading(false);
-            }
-        }
-
-        loadAnime();
-    }, [id]);
+        getAnimeById(parseInt(id)).then(data => {
+            setAnime(data);
+        });
+    }, [id, getAnimeById]);
 
     const handleAddToList = (status: WatchStatus) => {
         if (isInWatchList(parseInt(id))) {
@@ -66,28 +57,8 @@ export default function AnimePage({ params }: AnimePageProps) {
         updateWatchStatus(parseInt(id), { rating });
     };
 
-    if (loading) {
-        return (
-            <div className={styles.page}>
-                <div className={styles.loading}>
-                    <div className={styles.spinner} />
-                    <p>Loading anime...</p>
-                </div>
-            </div>
-        );
-    }
-
     if (!anime) {
-        return (
-            <div className={styles.page}>
-                <div className={styles.error}>
-                    <i className="bi bi-exclamation-triangle" />
-                    <h2>Anime not found</h2>
-                    <p>The anime you&apos;re looking for doesn&apos;t exist.</p>
-                    <Button onClick={() => window.history.back()}>Go Back</Button>
-                </div>
-            </div>
-        );
+        return null; // Global loading spinner will show
     }
 
     const imageUrl = anime.main_picture?.large || anime.main_picture?.medium || "/placeholder.png";

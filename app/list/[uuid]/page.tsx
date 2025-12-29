@@ -2,67 +2,39 @@
 
 import React, { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { Anime, WatchStatus } from "@/types/anime";
-import { getAnimeBatch } from "@/services/animeService";
+import { Anime } from "@/types/anime";
+import { PublicListItem, usePublicList } from "@/hooks";
 import { AnimeListView, WatchedItem } from "@/components/AnimeListView/AnimeListView";
 import styles from "@/components/AnimeListView/AnimeListView.module.scss";
-
-interface ApiWatchedItem {
-    anime_id: number;
-    status: WatchStatus;
-    rating: number | null;
-    date_added: string;
-}
 
 export default function PublicListPage() {
     const params = useParams();
     const uuid = params.uuid as string;
+    const { fetchPublicList } = usePublicList();
 
     const [username, setUsername] = useState<string | null>(null);
     const [watchedItems, setWatchedItems] = useState<WatchedItem[]>([]);
     const [animeData, setAnimeData] = useState<Map<number, Anime>>(new Map());
-    const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        async function fetchList() {
-            try {
-                const response = await fetch(`/api/list/${uuid}`);
-                if (!response.ok) {
-                    if (response.status === 404) {
-                        setError("List not found");
-                    } else {
-                        setError("Failed to load list");
-                    }
-                    setLoading(false);
-                    return;
-                }
-
-                const data = await response.json();
-                setUsername(data.username);
-
-                const items: WatchedItem[] = data.items.map((item: ApiWatchedItem) => ({
-                    animeId: item.anime_id,
-                    status: item.status,
-                    rating: item.rating,
-                    dateAdded: item.date_added,
-                }));
-                setWatchedItems(items);
-
-                if (items.length > 0) {
-                    const ids = items.map(item => item.animeId);
-                    const animeMap = await getAnimeBatch(ids);
-                    setAnimeData(animeMap);
-                }
-            } catch {
-                setError("Failed to load list");
-            } finally {
-                setLoading(false);
+        fetchPublicList(uuid).then(result => {
+            if ("error" in result) {
+                setError(result.error);
+            } else {
+                setUsername(result.username);
+                setWatchedItems(
+                    result.items.map((item: PublicListItem) => ({
+                        animeId: item.animeId,
+                        status: item.status,
+                        rating: item.rating,
+                        dateAdded: item.dateAdded,
+                    })),
+                );
+                setAnimeData(result.animeData);
             }
-        }
-
-        fetchList();
-    }, [uuid]);
+        });
+    }, [uuid, fetchPublicList]);
 
     if (error) {
         return (
@@ -76,13 +48,17 @@ export default function PublicListPage() {
         );
     }
 
+    if (!username) {
+        return null;
+    }
+
     return (
         <AnimeListView
-            title={`${username ?? "..."}'s Anime List`}
+            title={`${username}'s Anime List`}
             subtitle={`${watchedItems.length} anime in this list`}
             watchedItems={watchedItems}
             animeData={animeData}
-            loading={loading}
+            loading={false}
             showStatusBadge={false}
         />
     );

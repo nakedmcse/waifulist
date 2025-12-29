@@ -1,0 +1,69 @@
+"use client";
+
+import { useCallback } from "react";
+import { Anime, WatchStatus } from "@/types/anime";
+import { useLoading } from "@/contexts/LoadingContext";
+import * as animeService from "@/services/animeService";
+
+interface ApiWatchedItem {
+    anime_id: number;
+    status: WatchStatus;
+    rating: number | null;
+    date_added: string;
+}
+
+export interface PublicListItem {
+    animeId: number;
+    status: WatchStatus;
+    rating: number | null;
+    dateAdded: string;
+}
+
+export interface PublicListData {
+    username: string;
+    items: PublicListItem[];
+    animeData: Map<number, Anime>;
+}
+
+export function usePublicList() {
+    const { withLoading } = useLoading();
+
+    const fetchPublicList = useCallback(
+        async (uuid: string): Promise<PublicListData | { error: string }> => {
+            return withLoading(async () => {
+                const response = await fetch(`/api/list/${uuid}`);
+
+                if (!response.ok) {
+                    if (response.status === 404) {
+                        return { error: "List not found" };
+                    }
+                    return { error: "Failed to load list" };
+                }
+
+                const data = await response.json();
+
+                const items: PublicListItem[] = data.items.map((item: ApiWatchedItem) => ({
+                    animeId: item.anime_id,
+                    status: item.status,
+                    rating: item.rating,
+                    dateAdded: item.date_added,
+                }));
+
+                let animeData = new Map<number, Anime>();
+                if (items.length > 0) {
+                    const ids = items.map(item => item.animeId);
+                    animeData = await animeService.getAnimeBatch(ids);
+                }
+
+                return {
+                    username: data.username,
+                    items,
+                    animeData,
+                };
+            });
+        },
+        [withLoading],
+    );
+
+    return { fetchPublicList };
+}

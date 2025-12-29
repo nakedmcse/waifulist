@@ -1,0 +1,38 @@
+"use client";
+
+import { useCallback } from "react";
+import { useLoading } from "@/contexts/LoadingContext";
+
+export function useExport() {
+    const { withLoading } = useLoading();
+
+    const exportList = useCallback(async (): Promise<void> => {
+        await withLoading(async () => {
+            const response = await fetch("/api/export", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error || "Export failed");
+            }
+
+            const text = await response.text();
+            const blob = new Blob([text], { type: "text/json" });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+
+            link.setAttribute("href", url);
+            link.setAttribute("download", "anime.json");
+            link.style.display = "none";
+
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        });
+    }, [withLoading]);
+
+    return { exportList };
+}

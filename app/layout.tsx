@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { WatchListProvider } from "@/contexts/WatchListContext";
+import { LoadingProvider } from "@/contexts/LoadingContext";
 import { Header } from "@/components/Header/Header";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import "./globals.scss";
@@ -73,14 +74,16 @@ export default function RootLayout({
     return (
         <html lang="en" suppressHydrationWarning>
             <body className={`${geistSans.variable} ${geistMono.variable}`}>
-                <ThemeProvider>
-                    <AuthProvider>
-                        <WatchListProvider>
-                            <Header />
-                            <main>{children}</main>
-                        </WatchListProvider>
-                    </AuthProvider>
-                </ThemeProvider>
+                <LoadingProvider>
+                    <ThemeProvider>
+                        <AuthProvider>
+                            <WatchListProvider>
+                                <Header />
+                                <main>{children}</main>
+                            </WatchListProvider>
+                        </AuthProvider>
+                    </ThemeProvider>
+                </LoadingProvider>
             </body>
         </html>
     );

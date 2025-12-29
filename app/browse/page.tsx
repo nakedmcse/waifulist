@@ -3,7 +3,8 @@
 import React, { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Anime } from "@/types/anime";
-import { getPopularAnime, searchAnime } from "@/services/animeService";
+import { useAnime } from "@/hooks";
+import { useLoading } from "@/contexts/LoadingContext";
 import { SearchBar } from "@/components/SearchBar/SearchBar";
 import { AnimeCard } from "@/components/AnimeCard/AnimeCard";
 import { Pagination } from "@/components/Pagination/Pagination";
@@ -14,6 +15,9 @@ const PAGE_SIZE = 100;
 function BrowseContent() {
     const searchParams = useSearchParams();
     const initialQuery = searchParams.get("q") || "";
+
+    const { searchAnimeSilent, getPopularAnimeSilent } = useAnime();
+    const { isLoading } = useLoading();
 
     const [anime, setAnime] = useState<Anime[]>([]);
     const [loading, setLoading] = useState(true);
@@ -26,34 +30,37 @@ function BrowseContent() {
     const isSearching = query.trim().length > 0;
     const totalPages = Math.ceil(totalCount / PAGE_SIZE);
 
-    const performSearch = useCallback(async (searchQuery: string, pageNum: number = 1) => {
-        const searchId = ++searchIdRef.current;
-        setLoading(true);
+    const performSearch = useCallback(
+        async (searchQuery: string, pageNum: number = 1) => {
+            const searchId = ++searchIdRef.current;
+            setLoading(true);
 
-        try {
-            if (searchQuery.trim()) {
-                const results = await searchAnime(searchQuery, 20);
-                if (searchId === searchIdRef.current) {
-                    setAnime(results);
-                    setTotalCount(results.length);
-                    setLoading(false);
+            try {
+                if (searchQuery.trim()) {
+                    const results = await searchAnimeSilent(searchQuery, 20);
+                    if (searchId === searchIdRef.current) {
+                        setAnime(results);
+                        setTotalCount(results.length);
+                        setLoading(false);
+                    }
+                } else {
+                    const offset = (pageNum - 1) * PAGE_SIZE;
+                    const result = await getPopularAnimeSilent(PAGE_SIZE, offset);
+                    if (searchId === searchIdRef.current) {
+                        setAnime(result.anime);
+                        setTotalCount(result.total);
+                        setLoading(false);
+                    }
                 }
-            } else {
-                const offset = (pageNum - 1) * PAGE_SIZE;
-                const result = await getPopularAnime(PAGE_SIZE, offset);
+            } catch (error) {
+                console.error("Search failed:", error);
                 if (searchId === searchIdRef.current) {
-                    setAnime(result.anime);
-                    setTotalCount(result.total);
                     setLoading(false);
                 }
             }
-        } catch (error) {
-            console.error("Search failed:", error);
-            if (searchId === searchIdRef.current) {
-                setLoading(false);
-            }
-        }
-    }, []);
+        },
+        [searchAnimeSilent, getPopularAnimeSilent],
+    );
 
     useEffect(() => {
         if (initialLoadDone.current) {
@@ -90,6 +97,8 @@ function BrowseContent() {
         [performSearch, query],
     );
 
+    const showLoading = loading && !isLoading;
+
     return (
         <div className={styles.page}>
             <div className={styles.container}>
@@ -109,7 +118,7 @@ function BrowseContent() {
                     />
                 </div>
 
-                {loading ? (
+                {showLoading ? (
                     <div className={styles.loading}>
                         <div className={styles.spinner} />
                         <p>Searching...</p>
