@@ -6,6 +6,17 @@ import bcrypt from "bcrypt";
 
 const SALT_ROUNDS = 12;
 
+export class DatabaseError extends Error {
+    constructor(
+        message: string,
+        public readonly operation: string,
+        public readonly cause?: unknown,
+    ) {
+        super(message);
+        this.name = "DatabaseError";
+    }
+}
+
 const dataDir = path.join(process.cwd(), "data");
 if (!fs.existsSync(dataDir)) {
     fs.mkdirSync(dataDir, { recursive: true });
@@ -41,27 +52,29 @@ db.exec(`
     CREATE INDEX IF NOT EXISTS idx_watched_status ON watched_anime(user_id, status);
 `);
 
-try {
-    db.exec("ALTER TABLE watched_anime ADD COLUMN rating INTEGER DEFAULT NULL");
-} catch {}
-
-try {
-    db.exec("ALTER TABLE users ADD COLUMN public_id TEXT");
-} catch {}
-
-const usersWithoutPublicId = db.prepare("SELECT id FROM users WHERE public_id IS NULL").all() as { id: number }[];
-if (usersWithoutPublicId.length > 0) {
-    const updateStmt = db.prepare("UPDATE users SET public_id = ? WHERE id = ?");
-    for (const user of usersWithoutPublicId) {
-        updateStmt.run(crypto.randomUUID(), user.id);
+function addColumnIfNotExists(table: string, column: string, definition: string): void {
+    const tableInfo = db.prepare(`PRAGMA table_info(${table})`).all() as { name: string }[];
+    const columnExists = tableInfo.some(col => col.name === column);
+    if (!columnExists) {
+        db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`);
     }
 }
 
-try {
-    db.exec("CREATE UNIQUE INDEX IF NOT EXISTS idx_users_public_id ON users(public_id)");
-} catch (e) {
-    console.error("Failed to create unique index on users(public_id):", e);
-}
+addColumnIfNotExists("watched_anime", "rating", "INTEGER DEFAULT NULL");
+addColumnIfNotExists("users", "public_id", "TEXT");
+
+const backfillPublicIds = db.transaction(() => {
+    const usersWithoutPublicId = db.prepare("SELECT id FROM users WHERE public_id IS NULL").all() as { id: number }[];
+    if (usersWithoutPublicId.length > 0) {
+        const updateStmt = db.prepare("UPDATE users SET public_id = ? WHERE id = ?");
+        for (const user of usersWithoutPublicId) {
+            updateStmt.run(crypto.randomUUID(), user.id);
+        }
+    }
+});
+backfillPublicIds();
+
+db.exec("CREATE UNIQUE INDEX IF NOT EXISTS idx_users_public_id ON users(public_id)");
 
 export async function hashPassword(password: string): Promise<string> {
     return bcrypt.hash(password, SALT_ROUNDS);
@@ -79,15 +92,30 @@ export interface User {
     created_at: string;
 }
 
-export async function createUser(username: string, password: string): Promise<User | null> {
+export async function createUser(username: string, password: string): Promise<User> {
     const passwordHash = await hashPassword(password);
     const publicId = crypto.randomUUID();
-    try {
+
+    const createUserTransaction = db.transaction(() => {
         const stmt = db.prepare("INSERT INTO users (username, password_hash, public_id) VALUES (?, ?, ?)");
         const result = stmt.run(username, passwordHash, publicId);
-        return getUserById(result.lastInsertRowid as number);
-    } catch {
-        return null;
+        const user = getUserById(result.lastInsertRowid as number);
+        if (!user) {
+            throw new DatabaseError("User created but could not be retrieved", "createUser");
+        }
+        return user;
+    });
+
+    try {
+        return createUserTransaction();
+    } catch (error) {
+        if (error instanceof DatabaseError) {
+            throw error;
+        }
+        if (error instanceof Error && error.message.includes("UNIQUE constraint failed")) {
+            throw new DatabaseError(`Username '${username}' already exists`, "createUser", error);
+        }
+        throw new DatabaseError("Failed to create user", "createUser", error);
     }
 }
 
@@ -117,16 +145,31 @@ export interface WatchedAnimeRow {
     date_updated: string;
 }
 
-export function addToWatchList(userId: number, animeId: number, status: string): WatchedAnimeRow | null {
-    const stmt = db.prepare(`
-        INSERT INTO watched_anime (user_id, anime_id, status)
-        VALUES (?, ?, ?)
-        ON CONFLICT(user_id, anime_id) DO UPDATE SET
-            status = excluded.status,
-            date_updated = datetime('now')
-    `);
-    stmt.run(userId, animeId, status);
-    return getWatchedAnime(userId, animeId);
+export function addToWatchList(userId: number, animeId: number, status: string): WatchedAnimeRow {
+    const addToListTransaction = db.transaction(() => {
+        const stmt = db.prepare(`
+            INSERT INTO watched_anime (user_id, anime_id, status)
+            VALUES (?, ?, ?)
+            ON CONFLICT(user_id, anime_id) DO UPDATE SET
+                status = excluded.status,
+                date_updated = datetime('now')
+        `);
+        stmt.run(userId, animeId, status);
+        const row = getWatchedAnime(userId, animeId);
+        if (!row) {
+            throw new DatabaseError("Failed to add/update watch list entry", "addToWatchList");
+        }
+        return row;
+    });
+
+    try {
+        return addToListTransaction();
+    } catch (error) {
+        if (error instanceof DatabaseError) {
+            throw error;
+        }
+        throw new DatabaseError("Failed to add to watch list", "addToWatchList", error);
+    }
 }
 
 export function bulkAddToWatchList(userId: number, animeIds: number[], status: string): number {
@@ -147,41 +190,76 @@ export function bulkAddToWatchList(userId: number, animeIds: number[], status: s
         return count;
     });
 
-    return insertMany(animeIds);
+    try {
+        return insertMany(animeIds);
+    } catch (error) {
+        throw new DatabaseError(
+            `Failed to bulk add ${animeIds.length} anime to watch list`,
+            "bulkAddToWatchList",
+            error,
+        );
+    }
 }
 
 export function updateWatchStatus(
     userId: number,
     animeId: number,
     updates: { status?: string; episodes_watched?: number; rating?: number | null },
-): WatchedAnimeRow | null {
-    const fields: string[] = ["date_updated = datetime('now')"];
-    const values: (string | number | null)[] = [];
+): WatchedAnimeRow {
+    const updateTransaction = db.transaction(() => {
+        const fields: string[] = ["date_updated = datetime('now')"];
+        const values: (string | number | null)[] = [];
 
-    if (updates.status !== undefined) {
-        fields.push("status = ?");
-        values.push(updates.status);
-    }
-    if (updates.episodes_watched !== undefined) {
-        fields.push("episodes_watched = ?");
-        values.push(updates.episodes_watched);
-    }
-    if (updates.rating !== undefined) {
-        fields.push("rating = ?");
-        values.push(updates.rating);
-    }
+        if (updates.status !== undefined) {
+            fields.push("status = ?");
+            values.push(updates.status);
+        }
+        if (updates.episodes_watched !== undefined) {
+            fields.push("episodes_watched = ?");
+            values.push(updates.episodes_watched);
+        }
+        if (updates.rating !== undefined) {
+            fields.push("rating = ?");
+            values.push(updates.rating);
+        }
 
-    values.push(userId, animeId);
+        values.push(userId, animeId);
 
-    const stmt = db.prepare(`UPDATE watched_anime SET ${fields.join(", ")} WHERE user_id = ? AND anime_id = ?`);
-    stmt.run(...values);
-    return getWatchedAnime(userId, animeId);
+        const stmt = db.prepare(`UPDATE watched_anime SET ${fields.join(", ")} WHERE user_id = ? AND anime_id = ?`);
+        const result = stmt.run(...values);
+
+        if (result.changes === 0) {
+            throw new DatabaseError(
+                `No watch list entry found for user ${userId} and anime ${animeId}`,
+                "updateWatchStatus",
+            );
+        }
+
+        const row = getWatchedAnime(userId, animeId);
+        if (!row) {
+            throw new DatabaseError("Updated entry could not be retrieved", "updateWatchStatus");
+        }
+        return row;
+    });
+
+    try {
+        return updateTransaction();
+    } catch (error) {
+        if (error instanceof DatabaseError) {
+            throw error;
+        }
+        throw new DatabaseError("Failed to update watch status", "updateWatchStatus", error);
+    }
 }
 
 export function removeFromWatchList(userId: number, animeId: number): boolean {
-    const stmt = db.prepare("DELETE FROM watched_anime WHERE user_id = ? AND anime_id = ?");
-    const result = stmt.run(userId, animeId);
-    return result.changes > 0;
+    try {
+        const stmt = db.prepare("DELETE FROM watched_anime WHERE user_id = ? AND anime_id = ?");
+        const result = stmt.run(userId, animeId);
+        return result.changes > 0;
+    } catch (error) {
+        throw new DatabaseError("Failed to remove from watch list", "removeFromWatchList", error);
+    }
 }
 
 export function getWatchedAnime(userId: number, animeId: number): WatchedAnimeRow | null {

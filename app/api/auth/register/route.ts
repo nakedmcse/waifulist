@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createUser, getUserByUsername } from "@/lib/db";
+import { createUser, DatabaseError, getUserByUsername } from "@/lib/db";
 import { createAuthResponse, validateAuthRequest } from "@/lib/authHelpers";
 
 export async function POST(request: NextRequest) {
@@ -19,13 +19,12 @@ export async function POST(request: NextRequest) {
         }
 
         const user = await createUser(username, password);
-        if (!user) {
-            return NextResponse.json({ error: "Failed to create user" }, { status: 500 });
-        }
-
         return createAuthResponse(user);
     } catch (error) {
         console.error("Register error:", error);
+        if (error instanceof DatabaseError && error.message.includes("already exists")) {
+            return NextResponse.json({ error: "Username already taken" }, { status: 409 });
+        }
         return NextResponse.json({ error: "Registration failed" }, { status: 500 });
     }
 }
