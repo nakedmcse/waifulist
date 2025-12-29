@@ -148,16 +148,9 @@ export default function MyListPage() {
             setLoading(false);
             setShowRestoreModal(false);
             setSelectedFile(null);
-            if (fileInputRef.current) {
-                fileInputRef.current.value = "";
-            }
             await refreshList();
-            const newList = getAllWatched().map(item => item.animeId);
-            getAnimeBatchSilent(newList).then(newData => {
-                setAnimeData(newData);
-            });
         }
-    }, [getAnimeBatchSilent, getAllWatched, refreshList, selectedFile]);
+    }, [refreshList, selectedFile]);
 
     const handleImport = useCallback(async () => {
         if (!selectedFile) {
