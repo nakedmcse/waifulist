@@ -1,4 +1,3 @@
-/* eslint-disable @next/next/no-img-element, jsx-a11y/alt-text */
 import { ImageResponse } from "next/og";
 import { getRecentAnime, getTopRatedAnime, getUserByPublicId, getWatchedCount } from "@/lib/db";
 import { getAnimeById } from "@/services/animeData";
@@ -87,6 +86,7 @@ export default async function OGImage({ params }: { params: Promise<{ uuid: stri
                             overflow: "hidden",
                         }}
                     >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                             src={cover}
                             style={{
@@ -94,6 +94,7 @@ export default async function OGImage({ params }: { params: Promise<{ uuid: stri
                                 height: "100%",
                                 objectFit: "cover",
                             }}
+                            alt={"anime list"}
                         />
                     </div>
                 ))}
