@@ -77,7 +77,7 @@ export function AnimeListView({
             }
 
             if (sortBy === "added") {
-                return 0;
+                return new Date(b.dateAdded).getTime() - new Date(a.dateAdded).getTime();
             }
 
             return animeA.title.localeCompare(animeB.title);
