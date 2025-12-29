@@ -48,7 +48,6 @@ export function useAnime() {
         [withLoading],
     );
 
-    // Non-loading variants for cases where you don't want the global spinner
     const getAnimeByIdSilent = useCallback(async (id: number): Promise<Anime | null> => {
         return animeService.getAnimeById(id);
     }, []);

@@ -302,7 +302,6 @@ export function getWatchedCountByStatus(userId: number): Record<string, number> 
     return counts;
 }
 
-// User Settings
 const DEFAULT_SETTINGS: UserSettings = {};
 
 export function getUserSettings(userId: number): UserSettings {

@@ -172,7 +172,6 @@ export async function loadAnimeData(): Promise<Anime[]> {
         return animeCache;
     }
 
-    // Prevent concurrent fetches - if a load is already in progress, wait for it
     if (loadingPromise) {
         return loadingPromise;
     }

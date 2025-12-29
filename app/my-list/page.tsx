@@ -202,7 +202,7 @@ export default function MyListPage() {
     }, [user?.publicId]);
 
     if (authLoading || !user) {
-        return null; // Global loading spinner will show
+        return null;
     }
 
     const headerActions = (
