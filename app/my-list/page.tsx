@@ -20,7 +20,7 @@ interface ImportResult {
 export default function MyListPage() {
     const router = useRouter();
     const { user, loading: authLoading } = useAuth();
-    const { getAllWatched, bulkAddToWatchList, loading: contextLoading } = useWatchList();
+    const { getAllWatched, bulkAddToWatchList, refreshList, loading: contextLoading } = useWatchList();
     const { isLoading } = useLoading();
     const { getAnimeBatchSilent } = useAnime();
     const { exportList } = useExport();
@@ -34,6 +34,7 @@ export default function MyListPage() {
     const [animeData, setAnimeData] = useState<Map<number, Anime>>(new Map());
     const [loading, setLoading] = useState(true);
     const [showImportModal, setShowImportModal] = useState(false);
+    const [showRestoreModal, setShowRestoreModal] = useState(false);
     const [importing, setImporting] = useState(false);
     const [importResult, setImportResult] = useState<ImportResult | null>(null);
     const [importError, setImportError] = useState<string | null>(null);
@@ -100,6 +101,63 @@ export default function MyListPage() {
             console.error(error);
         }
     }, [exportList]);
+
+    const handleRestore = useCallback(async () => {
+        const checkBackupFile = (text: string): boolean => {
+            const fields: string[] = [
+                "id",
+                "user_id",
+                "anime_id",
+                "status",
+                "episodes_watched",
+                "rating",
+                "date_added",
+                "date_updated",
+            ];
+            for (const field of fields) {
+                if (!text.includes(field)) {
+                    return false;
+                }
+            }
+            return true;
+        };
+
+        if (!selectedFile) {
+            return;
+        }
+
+        try {
+            setLoading(true);
+            const content = await selectedFile.text();
+            if (!checkBackupFile(content)) {
+                throw new Error("File does not contain correct fields");
+            }
+            const response = await fetch("/api/restore", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ content }),
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error || "Restore failed");
+            }
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setLoading(false);
+            setShowRestoreModal(false);
+            setSelectedFile(null);
+            if (fileInputRef.current) {
+                fileInputRef.current.value = "";
+            }
+            await refreshList();
+            const newList = getAllWatched().map(item => item.animeId);
+            getAnimeBatchSilent(newList).then(newData => {
+                setAnimeData(newData);
+            });
+        }
+    }, [getAnimeBatchSilent, getAllWatched, refreshList, selectedFile]);
 
     const handleImport = useCallback(async () => {
         if (!selectedFile) {
@@ -191,6 +249,14 @@ export default function MyListPage() {
         }
     }, []);
 
+    const closeRestoreModal = useCallback(() => {
+        setShowRestoreModal(false);
+        setSelectedFile(null);
+        if (fileInputRef.current) {
+            fileInputRef.current.value = "";
+        }
+    }, []);
+
     const handleShareList = useCallback(async () => {
         if (!user?.publicId) {
             return;
@@ -215,6 +281,9 @@ export default function MyListPage() {
             </Button>
             <Button variant="secondary" onClick={handleExport}>
                 <i className="bi bi-download" /> Export List
+            </Button>
+            <Button variant="secondary" onClick={() => setShowRestoreModal(true)}>
+                <i className="bi bi-upload" /> Restore List
             </Button>
         </>
     );
@@ -357,6 +426,54 @@ export default function MyListPage() {
                                     <Button onClick={handleImport}>Retry</Button>
                                 </>
                             )}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {showRestoreModal && (
+                <div className={styles.modal} onClick={closeRestoreModal}>
+                    <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
+                        <div className={styles.modalHeader}>
+                            <h2>Restore Anime List</h2>
+                            <button className={styles.closeButton} onClick={closeModal}>
+                                <i className="bi bi-x" />
+                            </button>
+                        </div>
+
+                        <div className={styles.modalBody}>
+                            <p>Select a text file with one anime title per line:</p>
+                            <div className={styles.fileInput}>
+                                <input
+                                    ref={fileInputRef}
+                                    type="file"
+                                    accept=".json"
+                                    onChange={handleFileSelect}
+                                    id="anime-restore-file"
+                                />
+                                <label htmlFor="anime-restore-file" className={styles.fileLabel}>
+                                    <i className="bi bi-file-earmark-text" />{" "}
+                                    {selectedFile ? selectedFile.name : "Choose file..."}
+                                </label>
+                            </div>
+                            <p
+                                style={{
+                                    marginTop: "1rem",
+                                    color: "var(--text-secondary)",
+                                    fontSize: "0.875rem",
+                                }}
+                            >
+                                All restored anime will be added to / update your watchlist.
+                            </p>
+
+                            <div className={styles.modalFooter}>
+                                <Button variant="ghost" onClick={closeRestoreModal}>
+                                    Cancel
+                                </Button>
+                                <Button onClick={handleRestore} disabled={!selectedFile}>
+                                    Start Restore
+                                </Button>
+                            </div>
                         </div>
                     </div>
                 </div>
