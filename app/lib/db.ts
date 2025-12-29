@@ -33,6 +33,7 @@ db.exec(`
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         username TEXT NOT NULL UNIQUE,
         password_hash TEXT NOT NULL,
+        public_id TEXT,
         created_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
 
