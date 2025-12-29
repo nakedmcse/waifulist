@@ -317,7 +317,7 @@ export default function MyListPage() {
                         <div className={styles.modalBody}>
                             {!importing && !importResult && !importError && (
                                 <>
-                                    <p>Select a JSON backup file to restore your watchlist:</p>
+                                    <p>Select a text file with one anime title per line:</p>
                                     <div className={styles.fileInput}>
                                         <input
                                             ref={fileInputRef}
@@ -446,7 +446,7 @@ export default function MyListPage() {
                         </div>
 
                         <div className={styles.modalBody}>
-                            <p>Select a text file with one anime title per line:</p>
+                            <p>Select a JSON backup file to restore your watchlist:</p>
                             <div className={styles.fileInput}>
                                 <input
                                     ref={fileInputRef}
