@@ -23,6 +23,10 @@ const FUSE_OPTIONS: IFuseOptions<Anime> = {
     minMatchCharLength: 2,
 };
 
+const FEATURED_ANIME_IDS = [8425, 41457, 4789, 27775, 22297, 1195, 355];
+const FEATURED_IDS_SET = new Set(FEATURED_ANIME_IDS);
+export type BrowseSortType = "rating" | "newest";
+
 function parseCSVLine(line: string): string[] {
     const result: string[] = [];
     let current = "";
@@ -156,15 +160,60 @@ async function saveToRedis(animeList: Anime[]): Promise<void> {
         await redis.setex(REDIS_KEYS.ANIME_LIST, REDIS_TTL.ANIME_LIST, JSON.stringify(animeList));
         await redis.set(REDIS_KEYS.LAST_FETCH_TIME, new Date().toISOString());
 
+        // Save individual anime for fast lookups
         const pipeline = redis.pipeline();
         for (const anime of animeList) {
             pipeline.setex(REDIS_KEYS.ANIME_BY_ID(anime.id), REDIS_TTL.ANIME_LIST, JSON.stringify(anime));
         }
         await pipeline.exec();
 
-        console.log(`[Redis] Saved ${animeList.length} anime entries (list + individual keys)`);
+        // Build and save pre-sorted lists for browsing
+        await saveSortedLists(animeList);
+
+        console.log(`[Redis] Saved ${animeList.length} anime entries (list + individual + sorted)`);
     } catch (error) {
         console.error("[Redis] Failed to save anime list:", error);
+    }
+}
+
+async function saveSortedLists(animeList: Anime[]): Promise<void> {
+    const redis = getRedis();
+
+    const browsable = animeList.filter(anime => !FEATURED_IDS_SET.has(anime.id));
+
+    const byRating = [...browsable].sort((a, b) => (b.mean || 0) - (a.mean || 0));
+
+    const byNewest = [...browsable].sort((a, b) => (b.start_date || "").localeCompare(a.start_date || ""));
+
+    const pipeline = redis.pipeline();
+    pipeline.del(REDIS_KEYS.ANIME_SORTED_RATING);
+    pipeline.del(REDIS_KEYS.ANIME_SORTED_NEWEST);
+
+    for (const anime of byRating) {
+        pipeline.rpush(REDIS_KEYS.ANIME_SORTED_RATING, JSON.stringify(anime));
+    }
+    for (const anime of byNewest) {
+        pipeline.rpush(REDIS_KEYS.ANIME_SORTED_NEWEST, JSON.stringify(anime));
+    }
+
+    pipeline.set(REDIS_KEYS.ANIME_BROWSE_COUNT, browsable.length.toString());
+    pipeline.expire(REDIS_KEYS.ANIME_SORTED_RATING, REDIS_TTL.ANIME_LIST);
+    pipeline.expire(REDIS_KEYS.ANIME_SORTED_NEWEST, REDIS_TTL.ANIME_LIST);
+
+    await pipeline.exec();
+    console.log(`[Redis] Saved sorted lists (${browsable.length} browsable entries)`);
+}
+
+async function ensureSortedLists(animeList: Anime[]): Promise<void> {
+    const redis = getRedis();
+    try {
+        const exists = await redis.exists(REDIS_KEYS.ANIME_SORTED_RATING);
+        if (!exists) {
+            console.log("[Redis] Sorted lists missing, building...");
+            await saveSortedLists(animeList);
+        }
+    } catch (error) {
+        console.error("[Redis] Failed to check sorted lists:", error);
     }
 }
 
@@ -233,6 +282,8 @@ export async function ensureFuseIndex(): Promise<void> {
         const cachedList = await loadFromRedis();
         if (cachedList && cachedList.length > 0) {
             buildFuseIndex(cachedList);
+            // Ensure sorted lists exist (migration for existing Redis data)
+            await ensureSortedLists(cachedList);
             return;
         }
 
@@ -388,14 +439,10 @@ export async function searchAnime(query: string, limit: number = 20, hideSpecial
     return items.sort((a, b) => (b.mean || 0) - (a.mean || 0)).slice(0, limit);
 }
 
-const FEATURED_ANIME_IDS = [8425, 41457, 4789, 27775, 22297, 1195, 355];
-
 export async function getFeaturedAnime(): Promise<Anime[]> {
     const results = await Promise.all(FEATURED_ANIME_IDS.map(id => getAnimeFromStore(id, true)));
     return results.filter((anime): anime is Anime => anime !== null);
 }
-
-export type BrowseSortType = "rating" | "newest";
 
 export async function browseAnime(
     limit: number = 20,
@@ -403,33 +450,32 @@ export async function browseAnime(
     sort: BrowseSortType = "rating",
     hideSpecials: boolean = false,
 ): Promise<{ anime: Anime[]; total: number }> {
-    const allAnime = await loadFromRedis();
-    if (!allAnime) {
+    const redis = getRedis();
+
+    const listKey = sort === "newest" ? REDIS_KEYS.ANIME_SORTED_NEWEST : REDIS_KEYS.ANIME_SORTED_RATING;
+
+    try {
+        const countStr = await redis.get(REDIS_KEYS.ANIME_BROWSE_COUNT);
+        const total = countStr ? parseInt(countStr, 10) : 0;
+
+        if (total === 0) {
+            return { anime: [], total: 0 };
+        }
+
+        if (!hideSpecials) {
+            const items = await redis.lrange(listKey, offset, offset + limit - 1);
+            const anime = items.map(item => JSON.parse(item) as Anime);
+            return { anime, total };
+        }
+
+        const items = await redis.lrange(listKey, offset, offset + limit * 3 - 1);
+        const parsed = items.map(item => JSON.parse(item) as Anime);
+        const filtered = parsed.filter(anime => anime.media_type !== "special");
+        return { anime: filtered.slice(0, limit), total };
+    } catch (error) {
+        console.error("[Redis] Failed to browse anime:", error);
         return { anime: [], total: 0 };
     }
-
-    const featuredSet = new Set(FEATURED_ANIME_IDS);
-
-    const filtered = allAnime.filter(anime => {
-        if (!anime.mean || featuredSet.has(anime.id)) {
-            return false;
-        }
-        return !(hideSpecials && anime.media_type === "special");
-    });
-
-    const sorted =
-        sort === "newest"
-            ? filtered.sort((a, b) => {
-                  const dateA = a.start_date || "";
-                  const dateB = b.start_date || "";
-                  return dateB.localeCompare(dateA);
-              })
-            : filtered.sort((a, b) => (b.mean || 0) - (a.mean || 0));
-
-    return {
-        anime: sorted.slice(offset, offset + limit),
-        total: sorted.length,
-    };
 }
 
 export async function getHomePageAnime(): Promise<{ featured: Anime[]; popular: Anime[] }> {

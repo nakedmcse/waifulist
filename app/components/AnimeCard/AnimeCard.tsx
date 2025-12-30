@@ -79,7 +79,7 @@ export function AnimeCard({ anime, showStatus = true, watchData: watchDataProp }
                 <div className={styles.meta}>
                     {anime.media_type && <span className={styles.type}>{anime.media_type.toUpperCase()}</span>}
                     {anime.source && <span className={styles.type}>{anime.source.toUpperCase()}</span>}
-                    {anime.num_episodes && <span className={styles.episodes}>{anime.num_episodes} eps</span>}
+                    <span className={styles.episodes}>{anime.num_episodes ? `${anime.num_episodes} eps` : "N/A"}</span>
                 </div>
                 {watchData && (
                     <div className={styles.dateAdded} title={new Date(watchData.dateAdded).toLocaleString()}>

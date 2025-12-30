@@ -94,12 +94,16 @@ Redis is used as the primary cache and data store for anime data, enabling horiz
 
 ### Data Storage
 
-| Redis Key             | Data                    | TTL                       | Purpose                                |
-|-----------------------|-------------------------|---------------------------|----------------------------------------|
-| `anime:list`          | Full anime array (JSON) | 7 days                    | Fuse index building, browse operations |
-| `anime:id:{id}`       | Individual anime (JSON) | 7 days (list) / 24h (CDN) | Single anime lookups                   |
-| `anime:lastFetchTime` | ISO timestamp           | -                         | Track last refresh                     |
-| `anime:refresh`       | Pub/sub channel         | -                         | Notify instances to rebuild Fuse       |
+| Redis Key              | Data                          | TTL    | Purpose                            |
+|------------------------|-------------------------------|--------|------------------------------------|
+| `anime:list`           | Full anime array (JSON)       | 7 days | Fuse index building                |
+| `anime:id:{id}`        | Individual anime (JSON)       | 7d/24h | Single anime lookups               |
+| `anime:sorted:rating`  | Redis List (pre-sorted JSON)  | 7 days | Browse by rating (LRANGE)          |
+| `anime:sorted:newest`  | Redis List (pre-sorted JSON)  | 7 days | Browse by newest (LRANGE)          |
+| `anime:browse:count`   | Integer string                | -      | Total count for pagination         |
+| `anime:lastFetchTime`  | ISO timestamp                 | -      | Track last refresh                 |
+| `anime:refresh`        | Pub/sub channel               | -      | Notify instances to rebuild Fuse   |
+| `og:{uuid}:{hash}`     | PNG binary                    | 1 hour | Cached OpenGraph images            |
 
 ### Data Flow
 
@@ -109,29 +113,34 @@ STARTUP
 1. ensureFuseIndex() called
 2. Load anime:list from Redis → build Fuse index
 3. If not in Redis → fetch CSV → save to Redis
-4. Subscribe to anime:refresh channel
+4. Ensure sorted lists exist (migration for existing data)
+5. Subscribe to anime:refresh channel
 
-getAnimeById(123)
+getAnimeById(123, includeDetails=true)
 ────────────────────────────────────────────────────
 Redis anime:id:123 → found → return
        │
        └─ not found → CDN fetch → cache to Redis → return
+       │
+       └─ if includeDetails && no synopsis → CDN fetch → enrich → cache
 
 searchAnime("gosick")
 ────────────────────────────────────────────────────
 In-memory Fuse index (built from Redis data)
 
-browseAnime()
+browseAnime(limit=20, offset=0, sort="rating")
 ────────────────────────────────────────────────────
-Load anime:list from Redis → filter/sort → return
+redis.lrange("anime:sorted:rating", 0, 19) → parse 20 items → return
+(Only fetches the page needed, not all 24k entries)
 
 DAILY REFRESH (midnight)
 ────────────────────────────────────────────────────
 1. Fetch fresh CSV from GitHub
 2. Save to Redis (anime:list + individual keys)
-3. Rebuild local Fuse index
-4. PUBLISH to anime:refresh channel
-5. Other instances receive → rebuild Fuse from Redis
+3. Build and save pre-sorted lists (rating + newest)
+4. Rebuild local Fuse index
+5. PUBLISH to anime:refresh channel
+6. Other instances receive → rebuild Fuse from Redis
 ```
 
 ### In-Memory State
@@ -149,6 +158,10 @@ When one instance refreshes data:
 2. Publishes "refresh" to `anime:refresh` channel
 3. All subscribed instances receive the message
 4. Each instance clears and rebuilds its Fuse index from Redis
+
+### Graceful Shutdown
+
+On `SIGTERM`, Redis connections are closed gracefully via `closeRedis()` in `instrumentation.ts`.
 
 ## License
 

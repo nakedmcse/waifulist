@@ -90,7 +90,9 @@ export function AnimePageClient({ anime }: AnimePageClientProps) {
                             )}
                             {anime.media_type && <span className={styles.badge}>{anime.media_type.toUpperCase()}</span>}
                             {anime.status && <span className={styles.badge}>{anime.status.replace(/_/g, " ")}</span>}
-                            {anime.num_episodes && <span className={styles.badge}>{anime.num_episodes} episodes</span>}
+                            <span className={styles.badge}>
+                                {anime.num_episodes ? `${anime.num_episodes} episodes` : "N/A"}
+                            </span>
                             {anime.rating && <span className={styles.badge}>{anime.rating}</span>}
                         </div>
 
