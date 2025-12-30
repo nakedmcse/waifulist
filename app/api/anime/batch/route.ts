@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAnimeById } from "@/services/animeData";
+import { getAnimeByIds } from "@/services/animeData";
 import { Anime } from "@/types/anime";
 import { ANIME_BATCH_SIZE } from "@/lib/constants";
 
@@ -14,9 +14,10 @@ export async function POST(request: NextRequest): Promise<NextResponse<Anime[]>>
 
         const limitedIds = ids.slice(0, ANIME_BATCH_SIZE);
 
-        const results = await Promise.all(limitedIds.map(async id => await getAnimeById(id, false, true)));
+        // Single MGET call instead of N individual calls
+        const animeMap = await getAnimeByIds(limitedIds);
 
-        return NextResponse.json(results.filter((a): a is Anime => a !== null));
+        return NextResponse.json(Array.from(animeMap.values()));
     } catch (error) {
         console.error("Batch fetch error:", error);
         return NextResponse.json([]);

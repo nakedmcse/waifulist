@@ -410,6 +410,32 @@ export async function getAnimeById(
     return anime;
 }
 
+/**
+ * Batch fetch anime by IDs using Redis MGET (single round-trip)
+ */
+export async function getAnimeByIds(ids: number[]): Promise<Map<number, Anime>> {
+    const result = new Map<number, Anime>();
+    if (ids.length === 0) {
+        return result;
+    }
+
+    const redis = getRedis();
+    const keys = ids.map(id => REDIS_KEYS.ANIME_BY_ID(id));
+
+    try {
+        const values = await redis.mget(...keys);
+        values.forEach((value, index) => {
+            if (value) {
+                result.set(ids[index], JSON.parse(value) as Anime);
+            }
+        });
+    } catch (error) {
+        console.error("[Redis] MGET failed:", error);
+    }
+
+    return result;
+}
+
 export async function getFuseIndex(): Promise<Fuse<Anime>> {
     await ensureFuseIndex();
     return fuseIndex!;

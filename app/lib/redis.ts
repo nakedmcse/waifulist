@@ -12,7 +12,6 @@ export function getRedis(): Redis {
             retryStrategy(times) {
                 return Math.min(times * 50, 2000);
             },
-            lazyConnect: true,
         });
 
         redis.on("error", err => {
@@ -33,7 +32,6 @@ export function getSubscriber(): Redis {
             retryStrategy(times) {
                 return Math.min(times * 50, 2000);
             },
-            lazyConnect: true,
         });
 
         subscriber.on("error", err => {

@@ -1,26 +1,37 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
 import { getAllWatched } from "@/lib/db";
-import { getAnimeById } from "@/services/animeData";
-import { Anime } from "@/types/anime";
+import { getAnimeByIds } from "@/services/animeData";
 
 export async function GET() {
+    const start = Date.now();
+
     const user = await getCurrentUser();
+    const authTime = Date.now() - start;
+
     if (!user) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const dbStart = Date.now();
     const items = getAllWatched(user.id);
+    const dbTime = Date.now() - dbStart;
+
     const animeIds = items.map(item => item.anime_id);
 
-    const animeResults = await Promise.all(animeIds.map(id => getAnimeById(id, false, true)));
+    const redisStart = Date.now();
+    const animeMap = await getAnimeByIds(animeIds);
+    const redisTime = Date.now() - redisStart;
 
-    const animeData: Record<number, Anime> = {};
-    animeResults.forEach((anime, index) => {
-        if (anime) {
-            animeData[animeIds[index]] = anime;
-        }
+    const animeData: Record<number, unknown> = {};
+    animeMap.forEach((anime, id) => {
+        animeData[id] = anime;
     });
+
+    const totalTime = Date.now() - start;
+    console.log(
+        `[/api/watchlist/anime] auth=${authTime}ms db=${dbTime}ms redis=${redisTime}ms total=${totalTime}ms (${animeIds.length} items)`,
+    );
 
     return NextResponse.json(animeData);
 }
