@@ -1,15 +1,22 @@
 "use client";
 
 import React, { useCallback, useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { Anime, SortType } from "@/types/anime";
 import { PublicListItem, usePublicList } from "@/hooks";
 import { AnimeListView, WatchedItem } from "@/components/AnimeListView/AnimeListView";
 import { LocalStorage, STORAGE_KEYS } from "@/constants/localStorage";
 
+const VALID_SORTS: SortType[] = ["added", "name", "rating", "rating (personal)"];
+
+function isValidSort(value: string | null): value is SortType {
+    return value !== null && VALID_SORTS.includes(value as SortType);
+}
+
 function getStoredSort(): SortType {
     const stored = LocalStorage.getString(STORAGE_KEYS.PUBLIC_LIST_SORT);
-    if (stored && ["added", "name", "rating", "rating (personal)"].includes(stored)) {
-        return stored as SortType;
+    if (isValidSort(stored)) {
+        return stored;
     }
     return "added";
 }
@@ -20,17 +27,26 @@ interface PublicListClientProps {
 }
 
 export function PublicListClient({ uuid, initialUsername }: PublicListClientProps) {
+    const searchParams = useSearchParams();
     const { fetchPublicList } = usePublicList();
+
+    const urlSort = searchParams.get("sort");
+    const initialSort = isValidSort(urlSort) ? urlSort : getStoredSort();
 
     const [username] = useState<string>(initialUsername);
     const [watchedItems, setWatchedItems] = useState<WatchedItem[]>([]);
     const [animeData, setAnimeData] = useState<Map<number, Anime>>(new Map());
     const [loading, setLoading] = useState(true);
-    const [sort, setSort] = useState<SortType>(getStoredSort);
+    const [sort, setSort] = useState<SortType>(initialSort);
 
     const handleSortChange = useCallback((newSort: SortType) => {
         setSort(newSort);
         LocalStorage.setString(STORAGE_KEYS.PUBLIC_LIST_SORT, newSort);
+
+        // Update URL with new sort parameter
+        const url = new URL(window.location.href);
+        url.searchParams.set("sort", newSort);
+        window.history.replaceState({}, "", url.toString());
     }, []);
 
     useEffect(() => {

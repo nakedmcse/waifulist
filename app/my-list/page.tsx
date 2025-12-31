@@ -259,11 +259,12 @@ export default function MyListPage() {
         if (!user?.publicId) {
             return;
         }
-        const shareUrl = `${window.location.origin}/list/${user.publicId}`;
+        const sort = settings.myList.sort || "added";
+        const shareUrl = `${window.location.origin}/list/${user.publicId}?sort=${encodeURIComponent(sort)}`;
         await navigator.clipboard.writeText(shareUrl);
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
-    }, [user?.publicId]);
+    }, [user?.publicId, settings.myList.sort]);
 
     if (authLoading || !user) {
         return null;
