@@ -150,7 +150,8 @@
 }
 
 .importProgressContainer {
-    text-align: center;
+    @include flex-center;
+    flex-direction: column;
     padding: $spacing-xl;
 }
 

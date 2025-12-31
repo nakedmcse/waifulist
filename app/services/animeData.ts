@@ -24,6 +24,13 @@ const FUSE_OPTIONS: IFuseOptions<Anime> = {
 };
 
 const FEATURED_ANIME_IDS = [8425, 41457, 4789, 27775, 22297, 1195, 355];
+
+function normalizeTitle(title: string): string {
+    return title
+        .toLowerCase()
+        .trim()
+        .replace(/[^\w\s]/g, "");
+}
 const FEATURED_IDS_SET = new Set(FEATURED_ANIME_IDS);
 export type BrowseSortType = "rating" | "newest";
 
@@ -170,7 +177,10 @@ async function saveToRedis(animeList: Anime[]): Promise<void> {
         // Build and save pre-sorted lists for browsing
         await saveSortedLists(animeList);
 
-        console.log(`[Redis] Saved ${animeList.length} anime entries (list + individual + sorted)`);
+        // Build and save title index for fast lookups
+        await saveTitleIndex(animeList);
+
+        console.log(`[Redis] Saved ${animeList.length} anime entries (list + individual + sorted + titles)`);
     } catch (error) {
         console.error("[Redis] Failed to save anime list:", error);
     }
@@ -204,6 +214,35 @@ async function saveSortedLists(animeList: Anime[]): Promise<void> {
     console.log(`[Redis] Saved sorted lists (${browsable.length} browsable entries)`);
 }
 
+async function saveTitleIndex(animeList: Anime[]): Promise<void> {
+    const redis = getRedis();
+    const pipeline = redis.pipeline();
+
+    // Clear existing title index
+    pipeline.del(REDIS_KEYS.ANIME_TITLE_INDEX);
+
+    // Build title -> anime ID mapping (romanji main title + English alternative)
+    for (const anime of animeList) {
+        // Main title is typically romanji (e.g., "Kore wa Zombie Desu ka?")
+        const mainTitle = normalizeTitle(anime.title);
+        if (mainTitle) {
+            pipeline.hset(REDIS_KEYS.ANIME_TITLE_INDEX, mainTitle, anime.id.toString());
+        }
+        // English title (e.g., "Is This a Zombie?")
+        if (anime.alternative_titles?.en) {
+            const enTitle = normalizeTitle(anime.alternative_titles.en);
+            if (enTitle) {
+                pipeline.hset(REDIS_KEYS.ANIME_TITLE_INDEX, enTitle, anime.id.toString());
+            }
+        }
+        // Skip ja - it's Japanese script which normalizeTitle strips to empty string
+    }
+
+    pipeline.expire(REDIS_KEYS.ANIME_TITLE_INDEX, REDIS_TTL.ANIME_LIST);
+    await pipeline.exec();
+    console.log(`[Redis] Saved title index`);
+}
+
 async function ensureSortedLists(animeList: Anime[]): Promise<void> {
     const redis = getRedis();
     try {
@@ -214,6 +253,19 @@ async function ensureSortedLists(animeList: Anime[]): Promise<void> {
         }
     } catch (error) {
         console.error("[Redis] Failed to check sorted lists:", error);
+    }
+}
+
+async function ensureTitleIndex(animeList: Anime[]): Promise<void> {
+    const redis = getRedis();
+    try {
+        const exists = await redis.exists(REDIS_KEYS.ANIME_TITLE_INDEX);
+        if (!exists) {
+            console.log("[Redis] Title index missing, building...");
+            await saveTitleIndex(animeList);
+        }
+    } catch (error) {
+        console.error("[Redis] Failed to check title index:", error);
     }
 }
 
@@ -282,8 +334,9 @@ export async function ensureFuseIndex(): Promise<void> {
         const cachedList = await loadFromRedis();
         if (cachedList && cachedList.length > 0) {
             buildFuseIndex(cachedList);
-            // Ensure sorted lists exist (migration for existing Redis data)
+            // Ensure indexes exist (migration for existing Redis data)
             await ensureSortedLists(cachedList);
+            await ensureTitleIndex(cachedList);
             return;
         }
 
@@ -440,6 +493,22 @@ export async function getAnimeFromRedisByIds(ids: number[]): Promise<Map<number,
 export async function getFuseIndex(): Promise<Fuse<Anime>> {
     await ensureFuseIndex();
     return fuseIndex!;
+}
+
+export async function lookupByTitle(title: string): Promise<Anime | null> {
+    const redis = getRedis();
+    const normalized = normalizeTitle(title);
+
+    try {
+        const animeId = await redis.hget(REDIS_KEYS.ANIME_TITLE_INDEX, normalized);
+        if (animeId) {
+            return await getAnimeById(parseInt(animeId, 10), false, true);
+        }
+    } catch (error) {
+        console.error("[Redis] Title lookup failed:", error);
+    }
+
+    return null;
 }
 
 export async function findAnimeByTitle(title: string): Promise<Anime | null> {

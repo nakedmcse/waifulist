@@ -55,6 +55,7 @@ export async function closeRedis(): Promise<void> {
 export const REDIS_KEYS = {
     ANIME_LIST: "anime:list",
     ANIME_BY_ID: (id: number) => `anime:id:${id}`,
+    ANIME_TITLE_INDEX: "anime:titles",
     ANIME_SORTED_RATING: "anime:sorted:rating",
     ANIME_SORTED_NEWEST: "anime:sorted:newest",
     ANIME_BROWSE_COUNT: "anime:browse:count",

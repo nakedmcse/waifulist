@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
-import { getFuseIndex } from "@/services/animeData";
+import { getFuseIndex, lookupByTitle } from "@/services/animeData";
 import { Anime } from "@/types/anime";
 
 export async function POST(request: NextRequest): Promise<Response> {
@@ -35,9 +35,11 @@ export async function POST(request: NextRequest): Promise<Response> {
 
         const stream = new ReadableStream({
             async start(controller) {
+                debugger;
                 const matched: { title: string; anime: Anime }[] = [];
                 const unmatched: string[] = [];
                 const total = lines.length;
+                let fuzzySearchCount = 0;
 
                 try {
                     for (let i = 0; i < lines.length; i++) {
@@ -47,14 +49,26 @@ export async function POST(request: NextRequest): Promise<Response> {
                         }
 
                         const title = lines[i];
-                        const results = fuse.search(title, { limit: 1 });
 
-                        if (results.length > 0 && results[0].score !== undefined && results[0].score < 0.35) {
-                            matched.push({ title, anime: results[0].item });
+                        // Fast path: exact title match via Redis hash (O(1))
+                        let anime = await lookupByTitle(title);
+
+                        // Slow path: fuzzy search if exact match fails
+                        if (!anime) {
+                            fuzzySearchCount++;
+                            const results = fuse.search(title, { limit: 1 });
+                            if (results.length > 0 && results[0].score !== undefined && results[0].score < 0.35) {
+                                anime = results[0].item;
+                            }
+                        }
+
+                        if (anime) {
+                            matched.push({ title, anime });
                         } else {
                             unmatched.push(title);
                         }
 
+                        // Send progress updates every 100 items
                         if ((i + 1) % 100 === 0 || i === lines.length - 1) {
                             if (cancelled) {
                                 return;
@@ -71,7 +85,9 @@ export async function POST(request: NextRequest): Promise<Response> {
                         }
                     }
 
-                    console.log(`Import complete: ${matched.length} matched, ${unmatched.length} unmatched`);
+                    console.log(
+                        `Import complete: ${matched.length} matched, ${unmatched.length} unmatched, ${fuzzySearchCount} fuzzy searches`,
+                    );
 
                     if (cancelled) {
                         return;
