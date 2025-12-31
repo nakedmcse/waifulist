@@ -1,8 +1,4 @@
 import { Anime } from "@/types/anime";
-import { ANIME_BATCH_SIZE } from "@/lib/constants";
-
-let batchPromise: Promise<Map<number, Anime>> | null = null;
-let batchIds: number[] | null = null;
 
 export async function getAnimeById(id: number): Promise<Anime | null> {
     try {
@@ -14,66 +10,6 @@ export async function getAnimeById(id: number): Promise<Anime | null> {
     } catch (error) {
         console.error(`Failed to fetch anime ${id}:`, error);
         return null;
-    }
-}
-
-async function fetchBatch(ids: number[]): Promise<Map<number, Anime>> {
-    const result = new Map<number, Anime>();
-
-    if (ids.length === 0) {
-        return result;
-    }
-
-    const chunkSize = ANIME_BATCH_SIZE;
-    for (let i = 0; i < ids.length; i += chunkSize) {
-        const chunk = ids.slice(i, i + chunkSize);
-        try {
-            const response = await fetch("/api/anime/batch", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ ids: chunk }),
-            });
-
-            if (response.ok) {
-                const animeList: Anime[] = await response.json();
-                for (const anime of animeList) {
-                    result.set(anime.id, anime);
-                }
-            }
-        } catch (error) {
-            console.error("Batch fetch failed:", error);
-        }
-    }
-
-    return result;
-}
-
-export async function getAnimeBatch(ids: number[]): Promise<Map<number, Anime>> {
-    if (ids.length === 0) {
-        return new Map();
-    }
-
-    const idsKey = ids
-        .slice()
-        .sort((a, b) => a - b)
-        .join(",");
-    const cachedKey = batchIds
-        ?.slice()
-        .sort((a, b) => a - b)
-        .join(",");
-
-    if (batchPromise && idsKey === cachedKey) {
-        return batchPromise;
-    }
-
-    batchIds = ids;
-    batchPromise = fetchBatch(ids);
-
-    try {
-        return await batchPromise;
-    } finally {
-        batchPromise = null;
-        batchIds = null;
     }
 }
 

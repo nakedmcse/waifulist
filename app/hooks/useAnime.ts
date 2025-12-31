@@ -18,13 +18,6 @@ export function useAnime() {
         [withLoading],
     );
 
-    const getAnimeBatch = useCallback(
-        async (ids: number[]): Promise<Map<number, Anime>> => {
-            return withLoading(() => animeService.getAnimeBatch(ids));
-        },
-        [withLoading],
-    );
-
     const browseAnime = useCallback(
         async (
             limit: number = 20,
@@ -50,10 +43,6 @@ export function useAnime() {
 
     const getAnimeByIdSilent = useCallback(async (id: number): Promise<Anime | null> => {
         return animeService.getAnimeById(id);
-    }, []);
-
-    const getAnimeBatchSilent = useCallback(async (ids: number[]): Promise<Map<number, Anime>> => {
-        return animeService.getAnimeBatch(ids);
     }, []);
 
     const browseAnimeSilent = useCallback(
@@ -82,13 +71,11 @@ export function useAnime() {
     return {
         // With global loading spinner
         getAnimeById,
-        getAnimeBatch,
         browseAnime,
         getHomePageAnime,
         searchAnime,
         // Without global loading spinner (for inline loading states)
         getAnimeByIdSilent,
-        getAnimeBatchSilent,
         browseAnimeSilent,
         getHomePageAnimeSilent,
         searchAnimeSilent,
