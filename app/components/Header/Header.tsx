@@ -85,7 +85,9 @@ export function Header() {
                         >
                             <i className="bi bi-github" />
                         </a>
-                        <ThemeSelector />
+                        <div className={styles.themeWrapper}>
+                            <ThemeSelector />
+                        </div>
 
                         {/* Desktop user menu */}
                         {!loading && (
@@ -157,6 +159,21 @@ export function Header() {
                         </Link>
                     </nav>
                 )}
+                <div className={styles.mobileFooter}>
+                    <a
+                        href="https://github.com/VictoriqueMoe/waifulist"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={styles.mobileGithub}
+                    >
+                        <i className="bi bi-github" />
+                        <span>GitHub</span>
+                    </a>
+                    <div className={styles.mobileTheme}>
+                        <span>Theme</span>
+                        <ThemeSelector align="left" />
+                    </div>
+                </div>
             </div>
         </>
     );

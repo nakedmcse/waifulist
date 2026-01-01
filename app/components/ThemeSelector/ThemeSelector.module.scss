@@ -53,6 +53,14 @@
     box-shadow: var(--shadow-primary);
     z-index: $z-dropdown;
     overflow: hidden;
+
+    &.alignLeft {
+        top: auto;
+        bottom: calc(100% + $spacing-xs);
+        right: 0;
+        left: auto;
+        min-width: 220px;
+    }
 }
 
 .option {

@@ -70,11 +70,15 @@
     display: flex;
     align-items: center;
     gap: $spacing-sm;
-    padding: $spacing-sm $spacing-md;
+    padding: $spacing-xs $spacing-sm;
     color: var(--text-secondary);
     border-radius: $radius-md;
     transition: all $transition-fast;
     text-decoration: none;
+
+    @include sm {
+        padding: $spacing-sm $spacing-md;
+    }
 
     &:hover {
         color: var(--text-primary);
@@ -126,6 +130,14 @@
 
     i {
         font-size: 1.25rem;
+    }
+}
+
+.themeWrapper {
+    display: none;
+
+    @include sm {
+        display: block;
     }
 }
 
@@ -271,7 +283,10 @@
     transform: translateX(100%);
     transition: transform $transition-normal;
     z-index: $z-dropdown + 1;
+    overflow-x: hidden;
     overflow-y: auto;
+    display: flex;
+    flex-direction: column;
 
     &.open {
         transform: translateX(0);
@@ -333,5 +348,48 @@
     i {
         font-size: 1.25rem;
         width: 24px;
+    }
+}
+
+.mobileFooter {
+    margin-top: auto;
+    border-top: 1px solid var(--border-primary);
+    padding: $spacing-sm;
+
+    @include sm {
+        display: none;
+    }
+}
+
+.mobileGithub {
+    display: flex;
+    align-items: center;
+    gap: $spacing-md;
+    padding: $spacing-md $spacing-lg;
+    color: var(--text-secondary);
+    text-decoration: none;
+    border-radius: $radius-md;
+    transition: all $transition-fast;
+
+    &:hover {
+        color: var(--text-primary);
+        background: var(--bg-tertiary);
+    }
+
+    i {
+        font-size: 1.25rem;
+    }
+}
+
+.mobileTheme {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: $spacing-md $spacing-lg;
+    position: relative;
+
+    > span:first-child {
+        color: var(--text-secondary);
+        font-size: 0.875rem;
     }
 }

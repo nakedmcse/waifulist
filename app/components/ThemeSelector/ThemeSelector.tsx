@@ -5,7 +5,12 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { themes } from "@/types/theme";
 import styles from "./ThemeSelector.module.scss";
 
-export function ThemeSelector() {
+interface ThemeSelectorProps {
+    className?: string;
+    align?: "left" | "right";
+}
+
+export function ThemeSelector({ className, align = "right" }: ThemeSelectorProps) {
     const { theme, setTheme } = useTheme();
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
@@ -24,7 +29,7 @@ export function ThemeSelector() {
     }, []);
 
     return (
-        <div className={styles.themeSelector} ref={dropdownRef}>
+        <div className={`${styles.themeSelector} ${className || ""}`} ref={dropdownRef}>
             <button
                 className={styles.trigger}
                 onClick={() => setIsOpen(!isOpen)}
@@ -37,7 +42,7 @@ export function ThemeSelector() {
             </button>
 
             {isOpen && (
-                <div className={styles.dropdown} role="listbox">
+                <div className={`${styles.dropdown} ${align === "left" ? styles.alignLeft : ""}`} role="listbox">
                     {themes.map(t => (
                         <button
                             key={t.id}
