@@ -13,13 +13,19 @@
     @include flex-between;
     max-width: 1400px;
     margin: 0 auto;
-    padding: $spacing-md $spacing-lg;
-    gap: $spacing-lg;
+    padding: $spacing-md $spacing-sm;
+    gap: $spacing-sm;
+
+    @include sm {
+        padding: $spacing-md $spacing-lg;
+        gap: $spacing-lg;
+    }
 }
 
 .logo {
     display: flex;
     align-items: center;
+    flex-shrink: 0;
     gap: $spacing-sm;
     font-size: 1.5rem;
     font-weight: 700;
@@ -102,11 +108,16 @@
 }
 
 .githubLink {
+    display: none;
     @include flex-center;
     padding: $spacing-sm;
     color: var(--text-secondary);
     border-radius: $radius-md;
     transition: all $transition-fast;
+
+    @include sm {
+        display: flex;
+    }
 
     &:hover {
         color: var(--text-primary);
@@ -211,6 +222,7 @@
 // Hamburger menu button - visible only on mobile
 .hamburger {
     @include flex-center;
+    flex-shrink: 0;
     padding: $spacing-sm;
     background: none;
     border: none;
