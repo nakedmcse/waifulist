@@ -25,6 +25,7 @@ interface AnimeListViewProps {
     showStatusBadge?: boolean;
     initialSort?: SortType;
     onSortChange?: (sort: SortType) => void;
+    ratingLabel?: string;
 }
 
 const statusOrder: WatchStatus[] = ["watching", "plan_to_watch", "completed", "on_hold", "dropped"];
@@ -41,6 +42,7 @@ export function AnimeListView({
     showStatusBadge = true,
     initialSort = "added",
     onSortChange,
+    ratingLabel,
 }: AnimeListViewProps) {
     const searchParams = useSearchParams();
     const initialPage = parseInt(searchParams.get("page") || "1", 10);
@@ -265,6 +267,7 @@ export function AnimeListView({
                                     anime={anime}
                                     showStatus={showStatusBadge}
                                     watchData={watchData}
+                                    ratingLabel={ratingLabel}
                                 />
                             ))}
                         </div>

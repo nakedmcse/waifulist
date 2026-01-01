@@ -18,6 +18,7 @@ interface AnimeCardProps {
     anime: Anime;
     showStatus?: boolean;
     watchData?: AnimeCardWatchData | null;
+    ratingLabel?: string;
 }
 
 function parseUtcDate(dateString: string): Date {
@@ -48,7 +49,7 @@ function formatDateAdded(dateString: string): string {
     return date.toLocaleDateString();
 }
 
-export function AnimeCard({ anime, showStatus = true, watchData: watchDataProp }: AnimeCardProps) {
+export function AnimeCard({ anime, showStatus = true, watchData: watchDataProp, ratingLabel }: AnimeCardProps) {
     const { getWatchData } = useWatchList();
     const contextWatchData = getWatchData(anime.id);
     const watchData = watchDataProp !== undefined ? watchDataProp : contextWatchData;
@@ -83,8 +84,8 @@ export function AnimeCard({ anime, showStatus = true, watchData: watchDataProp }
                 <div className={styles.meta}>
                     {anime.media_type && <span className={styles.type}>{anime.media_type.toUpperCase()}</span>}
                     {anime.source && <span className={styles.type}>{anime.source.toUpperCase()}</span>}
-                    <span className={styles.episodes}>{anime.num_episodes ? `${anime.num_episodes} eps` : "N/A"}</span>
                 </div>
+                <div className={styles.episodes}>{anime.num_episodes ? `${anime.num_episodes} eps` : "N/A"}</div>
                 {watchData && (
                     <div className={styles.dateAdded} title={parseUtcDate(watchData.dateAdded).toLocaleString()}>
                         <i className="bi bi-calendar-plus" />
@@ -92,28 +93,31 @@ export function AnimeCard({ anime, showStatus = true, watchData: watchDataProp }
                     </div>
                 )}
                 {watchData?.rating != null && watchData.rating !== 0 && (
-                    <div
-                        className={`${styles.userRating} ${watchData.rating === 6 ? styles.masterpiece : ""} ${watchData.rating === -1 ? styles.dogshit : ""}`}
-                        title={
-                            watchData.rating === 6
-                                ? "Masterpiece"
-                                : watchData.rating === -1
-                                  ? "Dogshit"
-                                  : `${watchData.rating}/5`
-                        }
-                    >
-                        {watchData.rating === 6 ? (
-                            <>
-                                <i className="bi bi-star-fill" />
-                                <span>Masterpiece</span>
-                            </>
-                        ) : watchData.rating === -1 ? (
-                            <span>💩</span>
-                        ) : (
-                            [...Array(5)].map((_, i) => (
-                                <i key={i} className={`bi bi-star${i < watchData.rating! ? "-fill" : ""}`} />
-                            ))
-                        )}
+                    <div className={styles.userRatingContainer}>
+                        {ratingLabel && <span className={styles.ratingLabel}>{ratingLabel}</span>}
+                        <div
+                            className={`${styles.userRating} ${watchData.rating === 6 ? styles.masterpiece : ""} ${watchData.rating === -1 ? styles.dogshit : ""}`}
+                            title={
+                                watchData.rating === 6
+                                    ? "Masterpiece"
+                                    : watchData.rating === -1
+                                      ? "Dogshit"
+                                      : `${watchData.rating}/5`
+                            }
+                        >
+                            {watchData.rating === 6 ? (
+                                <>
+                                    <i className="bi bi-star-fill" />
+                                    <span>Masterpiece</span>
+                                </>
+                            ) : watchData.rating === -1 ? (
+                                <span>💩</span>
+                            ) : (
+                                [...Array(5)].map((_, i) => (
+                                    <i key={i} className={`bi bi-star${i < watchData.rating! ? "-fill" : ""}`} />
+                                ))
+                            )}
+                        </div>
                     </div>
                 )}
             </div>

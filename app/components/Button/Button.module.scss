@@ -77,3 +77,11 @@
         transform: translateY(-1px);
     }
 }
+
+.responsiveText {
+    display: none;
+
+    @include sm {
+        display: inline;
+    }
+}

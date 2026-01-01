@@ -26,9 +26,14 @@
 
 .headerActions {
     display: flex;
+    flex-wrap: wrap;
     justify-content: center;
-    gap: $spacing-md;
+    gap: $spacing-sm;
     margin-top: $spacing-md;
+
+    @include md {
+        gap: $spacing-md;
+    }
 }
 
 .searchContainer {

@@ -94,7 +94,11 @@
 .actions {
     display: flex;
     align-items: center;
-    gap: $spacing-md;
+    gap: $spacing-sm;
+
+    @include md {
+        gap: $spacing-md;
+    }
 }
 
 .githubLink {
@@ -114,6 +118,15 @@
     }
 }
 
+// Desktop only elements - hidden on mobile
+.desktopOnly {
+    display: none;
+
+    @include md {
+        display: flex;
+    }
+}
+
 .userMenu {
     display: flex;
     align-items: center;
@@ -129,12 +142,6 @@
 
     i {
         font-size: 1.125rem;
-    }
-
-    @media (max-width: $breakpoint-sm) {
-        span:not(i) {
-            display: none;
-        }
     }
 }
 
@@ -177,8 +184,7 @@
 }
 
 .loginLink {
-    display: flex;
-    align-items: center;
+    @include flex-center;
     gap: $spacing-xs;
     padding: $spacing-sm $spacing-md;
     background: var(--accent-primary);
@@ -195,5 +201,125 @@
 
     i {
         font-size: 1rem;
+    }
+}
+
+.loginText {
+    display: inline;
+}
+
+// Hamburger menu button - visible only on mobile
+.hamburger {
+    @include flex-center;
+    padding: $spacing-sm;
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    border-radius: $radius-md;
+    cursor: pointer;
+    transition: all $transition-fast;
+
+    &:hover {
+        color: var(--text-primary);
+        background: var(--bg-tertiary);
+    }
+
+    i {
+        font-size: 1.5rem;
+    }
+
+    @include md {
+        display: none;
+    }
+}
+
+// Mobile menu overlay
+.overlay {
+    position: fixed;
+    inset: 0;
+    top: 73px; // Header height
+    background: rgba(0, 0, 0, 0.5);
+    z-index: $z-dropdown;
+
+    @include md {
+        display: none;
+    }
+}
+
+// Mobile slide-out menu
+.mobileMenu {
+    position: fixed;
+    top: 73px; // Header height
+    right: 0;
+    bottom: 0;
+    width: 280px;
+    max-width: 80vw;
+    background: var(--bg-secondary);
+    border-left: 1px solid var(--border-primary);
+    transform: translateX(100%);
+    transition: transform $transition-normal;
+    z-index: $z-dropdown + 1;
+    overflow-y: auto;
+
+    &.open {
+        transform: translateX(0);
+    }
+
+    @include md {
+        display: none;
+    }
+}
+
+.mobileLoading {
+    padding: $spacing-lg;
+    color: var(--text-secondary);
+    text-align: center;
+}
+
+.mobileUserInfo {
+    display: flex;
+    align-items: center;
+    gap: $spacing-md;
+    padding: $spacing-lg;
+    border-bottom: 1px solid var(--border-primary);
+    color: var(--text-primary);
+    font-weight: 600;
+
+    i {
+        font-size: 1.5rem;
+        color: var(--accent-primary);
+    }
+}
+
+.mobileNav {
+    display: flex;
+    flex-direction: column;
+    padding: $spacing-sm;
+}
+
+.mobileNavLink {
+    display: flex;
+    align-items: center;
+    gap: $spacing-md;
+    padding: $spacing-md $spacing-lg;
+    color: var(--text-secondary);
+    text-decoration: none;
+    border-radius: $radius-md;
+    transition: all $transition-fast;
+    background: none;
+    border: none;
+    width: 100%;
+    font-size: 1rem;
+    cursor: pointer;
+    text-align: left;
+
+    &:hover {
+        color: var(--text-primary);
+        background: var(--bg-tertiary);
+    }
+
+    i {
+        font-size: 1.25rem;
+        width: 24px;
     }
 }

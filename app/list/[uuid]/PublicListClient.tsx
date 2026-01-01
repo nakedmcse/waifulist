@@ -76,6 +76,7 @@ export function PublicListClient({ uuid, initialUsername }: PublicListClientProp
             showStatusBadge={false}
             initialSort={sort}
             onSortChange={handleSortChange}
+            ratingLabel={`${username}'s rating`}
         />
     );
 }

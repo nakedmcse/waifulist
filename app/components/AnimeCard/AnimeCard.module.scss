@@ -81,6 +81,8 @@
 }
 
 .episodes {
+    margin-top: $spacing-xs;
+    font-size: 0.875rem;
     color: var(--text-secondary);
 }
 
@@ -97,11 +99,21 @@
     }
 }
 
+.userRatingContainer {
+    margin-top: $spacing-xs;
+}
+
+.ratingLabel {
+    display: block;
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    margin-bottom: 2px;
+}
+
 .userRating {
     display: flex;
     align-items: center;
     gap: 2px;
-    margin-top: $spacing-xs;
     font-size: 0.75rem;
     color: #fbbf24;
 

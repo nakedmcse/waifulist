@@ -5,6 +5,14 @@
     padding: $spacing-xl $spacing-lg;
 }
 
+.buttonText {
+    display: none;
+
+    @include sm {
+        display: inline;
+    }
+}
+
 .loading {
     @include flex-center;
     flex-direction: column;

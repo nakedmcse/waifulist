@@ -273,16 +273,20 @@ export default function MyListPage() {
     const headerActions = (
         <>
             <Button variant="secondary" onClick={handleShareList}>
-                <i className={copied ? "bi bi-check" : "bi bi-share"} /> {copied ? "Link Copied!" : "Share List"}
+                <i className={copied ? "bi bi-check" : "bi bi-share"} />
+                <span className={styles.buttonText}>{copied ? "Link Copied!" : "Share List"}</span>
             </Button>
             <Button variant="secondary" onClick={() => setShowImportModal(true)}>
-                <i className="bi bi-upload" /> Import List
+                <i className="bi bi-upload" />
+                <span className={styles.buttonText}>Import</span>
             </Button>
             <Button variant="secondary" onClick={handleBackup}>
-                <i className="bi bi-download" /> Backup List
+                <i className="bi bi-download" />
+                <span className={styles.buttonText}>Backup</span>
             </Button>
             <Button variant="secondary" onClick={() => setShowRestoreModal(true)}>
-                <i className="bi bi-upload" /> Restore List
+                <i className="bi bi-arrow-counterclockwise" />
+                <span className={styles.buttonText}>Restore</span>
             </Button>
         </>
     );
@@ -299,6 +303,7 @@ export default function MyListPage() {
                 showStatusBadge={true}
                 initialSort={settingsLoading ? "added" : (settings.myList.sort as SortType) || "added"}
                 onSortChange={handleSortChange}
+                ratingLabel="Your rating"
             />
 
             {showImportModal && (
