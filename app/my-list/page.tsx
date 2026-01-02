@@ -7,7 +7,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useWatchList } from "@/contexts/WatchListContext";
 import { useSettings } from "@/contexts/SettingsContext";
 import { useBackup, useRestore } from "@/hooks";
-import { AnimeListView } from "@/components/AnimeListView/AnimeListView";
+import { AnimeListView, AnimeListViewHandle } from "@/components/AnimeListView/AnimeListView";
 import { Button } from "@/components/Button/Button";
 import styles from "./page.module.scss";
 
@@ -52,6 +52,7 @@ export default function MyListPage() {
     const [copied, setCopied] = useState(false);
     const [restoreLoading, setRestoreLoading] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const listRef = useRef<AnimeListViewHandle>(null);
 
     const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -75,13 +76,14 @@ export default function MyListPage() {
         try {
             setRestoreLoading(true);
             await restoreList(selectedFile);
+            await refreshList();
+            listRef.current?.reload();
         } catch (error) {
             console.error(error);
         } finally {
             setRestoreLoading(false);
             setShowRestoreModal(false);
             setSelectedFile(null);
-            await refreshList();
         }
     }, [refreshList, restoreList, selectedFile]);
 
@@ -147,6 +149,7 @@ export default function MyListPage() {
 
                             const animeIds = result.matched.map(m => m.anime.id);
                             await bulkAddToWatchList(animeIds, "completed");
+                            listRef.current?.reload();
                         }
                     }
                 }
@@ -216,6 +219,7 @@ export default function MyListPage() {
     return (
         <>
             <AnimeListView
+                ref={listRef}
                 title="My Anime List"
                 subtitle="Your anime collection"
                 apiEndpoint="/api/watchlist/anime"

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useImperativeHandle, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Anime, SortType, WatchStatus, watchStatusLabels } from "@/types/anime";
 import { AnimeCard, AnimeCardWatchData } from "@/components/AnimeCard/AnimeCard";
@@ -27,6 +27,10 @@ interface FilterResponse {
     username?: string;
 }
 
+export interface AnimeListViewHandle {
+    reload: () => void;
+}
+
 interface AnimeListViewProps {
     title: string;
     subtitle: string;
@@ -37,6 +41,7 @@ interface AnimeListViewProps {
     initialSort?: SortType;
     onSortChange?: (sort: SortType) => void;
     ratingLabel?: string;
+    ref?: React.Ref<AnimeListViewHandle>;
 }
 
 function mapSortToApi(sort: SortType): string {
@@ -59,6 +64,7 @@ export function AnimeListView({
     initialSort = "added",
     onSortChange,
     ratingLabel,
+    ref,
 }: AnimeListViewProps) {
     const searchParams = useSearchParams();
     const initialPage = parseInt(searchParams.get("page") || "1", 10);
@@ -123,6 +129,14 @@ export function AnimeListView({
     useEffect(() => {
         fetchData();
     }, [fetchData]);
+
+    useImperativeHandle(
+        ref,
+        () => ({
+            reload: fetchData,
+        }),
+        [fetchData],
+    );
 
     const updatePageUrl = useCallback((newPage: number) => {
         const url = new URL(window.location.href);
