@@ -1,4 +1,7 @@
 import { Anime } from "@/types/anime";
+import { BrowseSortType } from "@/types/filter";
+
+export type { BrowseSortType };
 
 export async function getAnimeById(id: number): Promise<Anime | null> {
     try {
@@ -12,8 +15,6 @@ export async function getAnimeById(id: number): Promise<Anime | null> {
         return null;
     }
 }
-
-export type BrowseSortType = "rating" | "newest";
 
 export async function browseAnime(
     limit: number = 20,
