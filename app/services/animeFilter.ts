@@ -67,7 +67,7 @@ export function fuzzySearchOne(query: string): Anime | null {
         return null;
     }
     const results = cachedFuseIndex.search(query, { limit: 1 });
-    if (results.length > 0 && results[0].score !== undefined && results[0].score < 0.35) {
+    if (results.length > 0 && results[0].score !== undefined) {
         return results[0].item.anime;
     }
     return null;
