@@ -167,11 +167,13 @@ export function AnimePageClient({ anime }: AnimePageClientProps) {
 
                         {anime.genres && anime.genres.length > 0 && (
                             <div className={styles.genres}>
-                                {anime.genres.map(genre => (
-                                    <Pill key={genre.id} variant="accent">
-                                        {genre.name}
-                                    </Pill>
-                                ))}
+                                {anime.genres.map(genres =>
+                                    genres.name.split(",").map(genre => (
+                                        <Pill key={`${genre}-${genres.id}`} variant="accent">
+                                            {genre.trim()}
+                                        </Pill>
+                                    )),
+                                )}
                             </div>
                         )}
 

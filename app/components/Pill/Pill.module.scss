@@ -3,9 +3,10 @@
 .pill {
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     border-radius: $radius-full;
     font-weight: 500;
-    white-space: nowrap;
+    text-align: center;
 }
 
 .sm {

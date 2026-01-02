@@ -132,13 +132,13 @@
 }
 
 .genres {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
     gap: $spacing-xs;
 
     @include md {
-        justify-content: flex-start;
+        display: flex;
+        flex-wrap: wrap;
     }
 }
 
