@@ -1,12 +1,14 @@
 import {
     TraceApiError,
     TraceMoeResponse,
+    TraceQuotaInfo,
     TraceRateLimitInfo,
     TraceSearchOptions,
     TraceSearchResult,
 } from "@/types/traceMoe";
 
 const TRACE_MOE_API = "https://api.trace.moe/search";
+const TRACE_MOE_ME_API = "https://api.trace.moe/me";
 
 function parseRateLimitHeaders(headers: Headers): TraceRateLimitInfo | null {
     const limit = headers.get("x-ratelimit-limit");
@@ -89,13 +91,11 @@ export async function searchByImage(
                     : 60
                 : undefined;
 
-        const apiError: TraceApiError = {
+        throw {
             error: getUserFriendlyError(code, retryAfter),
             code,
             retryAfter,
         };
-
-        throw apiError;
     }
 
     const data: TraceMoeResponse = await response.json();
@@ -110,4 +110,21 @@ export function formatTimestamp(seconds: number): string {
 
 export function formatSimilarity(similarity: number): string {
     return `${(similarity * 100).toFixed(1)}%`;
+}
+
+export async function getQuotaInfo(): Promise<TraceQuotaInfo> {
+    type TraceMeResponse = {
+        id: string;
+        priority: number;
+        concurrency: number;
+        quota: number;
+        quotaUsed: number;
+    };
+    const response = await fetch(TRACE_MOE_ME_API);
+    const data: TraceMeResponse = await response.json();
+
+    return {
+        quota: data.quota,
+        quotaUsed: data.quotaUsed,
+    };
 }

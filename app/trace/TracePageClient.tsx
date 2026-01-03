@@ -4,28 +4,32 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { formatSimilarity, formatTimestamp } from "@/services/traceMoe";
+import { useTrace } from "@/hooks";
 import styles from "./page.module.scss";
-import { TraceMoeResult, TraceRateLimitInfo } from "@/types/traceMoe";
-
-type ApiResponse = {
-    frameCount?: number;
-    error?: string;
-    result?: TraceMoeResult[];
-    rateLimit?: TraceRateLimitInfo;
-    code?: string;
-    retryAfter?: number;
-};
+import { TraceMoeResult, TraceQuotaInfo } from "@/types/traceMoe";
 
 export function TracePageClient() {
+    const { getQuota, searchImage } = useTrace();
     const [isDragging, setIsDragging] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [results, setResults] = useState<TraceMoeResult[]>([]);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const [cutBorders, setCutBorders] = useState(false);
-    const [rateLimit, setRateLimit] = useState<TraceRateLimitInfo | null>(null);
+    const [quota, setQuota] = useState<TraceQuotaInfo | null>(null);
     const [cooldown, setCooldown] = useState(0);
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const fetchQuota = useCallback(async () => {
+        const data = await getQuota();
+        if (data) {
+            setQuota(data);
+        }
+    }, [getQuota]);
+
+    useEffect(() => {
+        fetchQuota();
+    }, [fetchQuota]);
 
     useEffect(() => {
         if (cooldown <= 0) {
@@ -51,20 +55,7 @@ export function TracePageClient() {
             setPreviewUrl(objectUrl);
 
             try {
-                const formData = new FormData();
-                formData.append("image", file);
-                formData.append("cutBorders", cutBorders.toString());
-
-                const response = await fetch("/api/anime/trace", {
-                    method: "POST",
-                    body: formData,
-                });
-
-                const data: ApiResponse = await response.json();
-
-                if (data.rateLimit) {
-                    setRateLimit(data.rateLimit);
-                }
+                const data = await searchImage(file, cutBorders);
 
                 if (data.error) {
                     setError(data.error);
@@ -79,6 +70,7 @@ export function TracePageClient() {
                     if (data.result.length === 0) {
                         setError("No matches found. Try a different screenshot.");
                     }
+                    fetchQuota();
                 }
             } catch (err) {
                 setError(err instanceof Error ? err.message : "Failed to search");
@@ -86,7 +78,7 @@ export function TracePageClient() {
                 setIsLoading(false);
             }
         },
-        [cutBorders, isLoading, cooldown],
+        [cutBorders, isLoading, cooldown, fetchQuota, searchImage],
     );
 
     const handleDragOver = useCallback((e: React.DragEvent) => {
@@ -240,14 +232,14 @@ export function TracePageClient() {
                     </div>
                 )}
 
-                {rateLimit && (
-                    <div className={styles.rateLimitInfo}>
-                        <i className="bi bi-speedometer2" />
-                        <span>
-                            API Quota: {rateLimit.remaining}/{rateLimit.limit} remaining
-                        </span>
-                    </div>
-                )}
+                <div className={styles.rateLimitInfo}>
+                    <i className="bi bi-speedometer2" />
+                    <span>
+                        {quota
+                            ? `Monthly Quota: ${quota.quota - quota.quotaUsed}/${quota.quota} remaining`
+                            : "Monthly Quota: Loading..."}
+                    </span>
+                </div>
 
                 {cooldown > 0 && (
                     <div className={styles.cooldown}>

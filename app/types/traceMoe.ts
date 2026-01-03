@@ -39,6 +39,11 @@ export type TraceRateLimitInfo = {
     reset: number;
 };
 
+export type TraceQuotaInfo = {
+    quota: number;
+    quotaUsed: number;
+};
+
 export type TraceSearchResult = {
     response: TraceMoeResponse;
     rateLimit: TraceRateLimitInfo | null;
