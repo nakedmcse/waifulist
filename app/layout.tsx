@@ -6,6 +6,7 @@ import { WatchListProvider } from "@/contexts/WatchListContext";
 import { LoadingProvider } from "@/contexts/LoadingContext";
 import { SettingsProvider } from "@/contexts/SettingsContext";
 import { Header } from "@/components/Header/Header";
+import { baseMetadata, createMetadata } from "@/lib/metadata";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import "./globals.scss";
 import React from "react";
@@ -20,52 +21,9 @@ const geistMono = Geist_Mono({
     subsets: ["latin"],
 });
 
-const opts = {
-    title: "WaifuList - Anime Tracker",
-    description: "Track your anime watching progress with WaifuList",
-};
-
 export const metadata: Metadata = {
-    metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL ?? "https://waifulist.moe"),
-    ...opts,
-    authors: [{ name: "Victoria" }],
-    icons: {
-        apple: "/favicon.ico",
-        icon: "/favicon.ico",
-        shortcut: "/favicon.ico",
-    },
-    keywords: [
-        "anime",
-        "anime tracker",
-        "anime list",
-        "watchlist",
-        "myanimelist",
-        "anime database",
-        "anime rating",
-        "anime progress",
-        "watch history",
-        "anime catalog",
-    ],
-    manifest: "/site.webmanifest",
-    openGraph: {
-        ...opts,
-        images: [
-            {
-                alt: "WaifuList",
-                height: 335,
-                type: "image/webp",
-                url: "https://waifuvault.moe/assets/custom/images/vic_vault.webp",
-                width: 300,
-            },
-        ],
-        siteName: "WaifuList",
-        type: "website",
-    },
-    twitter: {
-        ...opts,
-        card: "summary_large_image",
-        images: ["https://waifuvault.moe/assets/custom/images/vic_vault.webp"],
-    },
+    ...baseMetadata,
+    ...createMetadata("WaifuList - Anime Tracker", "Track your anime watching progress with WaifuList"),
 };
 
 export default function RootLayout({ children }: React.PropsWithChildren) {
