@@ -15,7 +15,7 @@ export function TracePageClient() {
     const [error, setError] = useState<string | null>(null);
     const [results, setResults] = useState<TraceMoeResult[]>([]);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-    const [cutBorders, setCutBorders] = useState(false);
+    const [cutBorders, setCutBorders] = useState(true);
     const [quota, setQuota] = useState<TraceQuotaInfo | null>(null);
     const [cooldown, setCooldown] = useState(0);
     const fileInputRef = useRef<HTMLInputElement>(null);
