@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useCallback, useContext, useEffect, useState } from "react";
+import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 import { WatchedAnime, WatchStatus } from "@/types/anime";
 import { useAuth } from "./AuthContext";
 
@@ -10,7 +10,7 @@ interface WatchListContextType {
     loaded: boolean;
     addToWatchList: (animeId: number, status: WatchStatus) => Promise<void>;
     bulkAddToWatchList: (animeIds: number[], status: WatchStatus) => Promise<number>;
-    updateWatchStatus: (animeId: number, updates: Partial<WatchedAnime>) => Promise<void>;
+    updateWatchStatus: (animeId: number, updates: Partial<WatchedAnime>) => void;
     removeFromWatchList: (animeId: number) => Promise<void>;
     getWatchData: (animeId: number) => WatchedAnime | undefined;
     isInWatchList: (animeId: number) => boolean;
@@ -22,12 +22,18 @@ interface WatchListContextType {
 
 const WatchListContext = createContext<WatchListContextType | undefined>(undefined);
 
+const DEBOUNCE_DELAY = 300;
+
 export function WatchListProvider({ children }: React.PropsWithChildren) {
     const { user } = useAuth();
     const [watchedList, setWatchedList] = useState<Map<number, WatchedAnime>>(new Map());
     const [loading, setLoading] = useState(false);
     const [loaded, setLoaded] = useState(false);
     const loadingRef = React.useRef(false);
+
+    const pendingUpdatesRef = useRef<Map<number, { updates: Partial<WatchedAnime>; timeout: NodeJS.Timeout }>>(
+        new Map(),
+    );
 
     const refreshList = useCallback(async () => {
         if (!user) {
@@ -69,13 +75,22 @@ export function WatchListProvider({ children }: React.PropsWithChildren) {
         }
     }, [user]);
 
-    // Clear list when user logs out
     useEffect(() => {
         if (!user) {
             setWatchedList(new Map());
             setLoaded(false);
         }
     }, [user]);
+
+    useEffect(() => {
+        const pendingUpdates = pendingUpdatesRef.current;
+        return () => {
+            for (const [, { timeout }] of pendingUpdates) {
+                clearTimeout(timeout);
+            }
+            pendingUpdates.clear();
+        };
+    }, []);
 
     const addToWatchList = useCallback(
         async (animeId: number, status: WatchStatus) => {
@@ -139,12 +154,8 @@ export function WatchListProvider({ children }: React.PropsWithChildren) {
         [user, refreshList],
     );
 
-    const updateWatchStatus = useCallback(
-        async (animeId: number, updates: Partial<WatchedAnime>) => {
-            if (!user) {
-                return;
-            }
-
+    const sendUpdate = useCallback(
+        async (animeId: number, updates: Partial<WatchedAnime>, previousData: WatchedAnime | undefined) => {
             try {
                 const response = await fetch(`/api/watchlist/${animeId}`, {
                     method: "PATCH",
@@ -174,12 +185,67 @@ export function WatchListProvider({ children }: React.PropsWithChildren) {
                             return updated;
                         });
                     }
+                } else {
+                    if (previousData) {
+                        setWatchedList(prev => {
+                            const updated = new Map(prev);
+                            updated.set(animeId, previousData);
+                            return updated;
+                        });
+                    }
                 }
             } catch (error) {
                 console.error("Failed to update watch status:", error);
+                if (previousData) {
+                    setWatchedList(prev => {
+                        const updated = new Map(prev);
+                        updated.set(animeId, previousData);
+                        return updated;
+                    });
+                }
             }
         },
-        [user],
+        [],
+    );
+
+    const updateWatchStatus = useCallback(
+        (animeId: number, updates: Partial<WatchedAnime>) => {
+            if (!user) {
+                return;
+            }
+
+            const currentData = watchedList.get(animeId);
+            if (!currentData) {
+                return;
+            }
+
+            setWatchedList(prev => {
+                const updated = new Map(prev);
+                const existing = prev.get(animeId);
+                if (existing) {
+                    updated.set(animeId, {
+                        ...existing,
+                        ...updates,
+                    });
+                }
+                return updated;
+            });
+
+            const pending = pendingUpdatesRef.current.get(animeId);
+            if (pending) {
+                clearTimeout(pending.timeout);
+            }
+
+            const mergedUpdates = pending ? { ...pending.updates, ...updates } : updates;
+
+            const timeout = setTimeout(() => {
+                pendingUpdatesRef.current.delete(animeId);
+                sendUpdate(animeId, mergedUpdates, currentData);
+            }, DEBOUNCE_DELAY);
+
+            pendingUpdatesRef.current.set(animeId, { updates: mergedUpdates, timeout });
+        },
+        [user, watchedList, sendUpdate],
     );
 
     const removeFromWatchList = useCallback(
