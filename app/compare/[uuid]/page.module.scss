@@ -206,6 +206,7 @@
     grid-template-columns: 1fr;
     gap: $spacing-md;
     max-height: 500px;
+    overflow-x: hidden;
     overflow-y: auto;
     padding-right: $spacing-sm;
 
@@ -264,6 +265,7 @@
     border-radius: $radius-md;
     text-decoration: none;
     color: inherit;
+    overflow: hidden;
     transition:
         background $transition-fast,
         transform $transition-fast;
@@ -356,6 +358,11 @@
 .ratingLabel {
     color: var(--text-muted);
     min-width: 60px;
+    max-width: 80px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
 .noRating {

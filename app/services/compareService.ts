@@ -1,4 +1,4 @@
-import { getAllWatched, getUserByPublicId, WatchedAnimeRow } from "@/lib/db";
+import { getUserByPublicId, getWatchedByStatus, WatchedAnimeRow } from "@/lib/db";
 import { getAnimeFromRedisByIds } from "@/services/animeData";
 import { CompareAnimeItem, ComparisonData, ComparisonStats, UserWatchData } from "@/types/compare";
 import { WatchStatus } from "@/types/anime";
@@ -21,8 +21,8 @@ export async function getComparison(
         return null;
     }
 
-    const yourWatchList = getAllWatched(yourUserId);
-    const theirWatchList = getAllWatched(theirUser.id);
+    const yourWatchList = getWatchedByStatus(yourUserId, "completed");
+    const theirWatchList = getWatchedByStatus(theirUser.id, "completed");
 
     const yourAnimeMap = new Map<number, WatchedAnimeRow>();
     for (const row of yourWatchList) {

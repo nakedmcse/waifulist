@@ -49,7 +49,7 @@ export function PublicListClient({ uuid, initialUsername }: PublicListClientProp
             title={`${username}'s Anime List`}
             subtitle={`${username}'s anime collection`}
             apiEndpoint={`/api/list/${uuid}`}
-            showStatusBadge={false}
+            showStatusBadge={true}
             initialSort={sort}
             onSortChange={handleSortChange}
             ratingLabel={`${username}'s rating`}
