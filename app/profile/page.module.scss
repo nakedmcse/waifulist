@@ -3,11 +3,17 @@
 .page {
     min-height: calc(100vh - 80px);
     padding: $spacing-xl $spacing-lg;
+    overflow-x: hidden;
+
+    @media (max-width: $breakpoint-sm) {
+        padding: $spacing-lg $spacing-md;
+    }
 }
 
 .container {
     max-width: 1000px;
     margin: 0 auto;
+    overflow: hidden;
 }
 
 .header {
@@ -120,32 +126,52 @@
 .chartCard {
     @include card-base;
     padding: $spacing-lg;
+    overflow: hidden;
 
     h3 {
         font-size: 1.125rem;
         margin-bottom: $spacing-lg;
         color: var(--text-primary);
+    }
+
+    @media (max-width: $breakpoint-sm) {
+        padding: $spacing-md;
     }
 }
 
 .chartContainer {
     height: 280px;
     position: relative;
+    max-width: 100%;
+
+    canvas {
+        max-width: 100% !important;
+    }
 }
 
 .chartCardWide {
     @include card-base;
     padding: $spacing-lg;
     margin-bottom: $spacing-lg;
+    overflow: hidden;
 
     h3 {
         font-size: 1.125rem;
         margin-bottom: $spacing-lg;
         color: var(--text-primary);
     }
+
+    @media (max-width: $breakpoint-sm) {
+        padding: $spacing-md;
+    }
 }
 
 .chartContainerWide {
     height: 300px;
     position: relative;
+    max-width: 100%;
+
+    canvas {
+        max-width: 100% !important;
+    }
 }
