@@ -16,6 +16,8 @@ import {
 import { Bar, Doughnut, Line } from "react-chartjs-2";
 import { StatsApiResponse, UserStats } from "@/types/stats";
 import { watchStatusLabels } from "@/types/anime";
+import { BookmarkedUsersSection } from "@/components/BookmarkedUsersSection/BookmarkedUsersSection";
+import { useBookmarks } from "@/hooks/useBookmarks";
 import styles from "./page.module.scss";
 
 ChartJS.register(ArcElement, CategoryScale, LinearScale, BarElement, LineElement, PointElement, Title, Tooltip, Legend);
@@ -53,6 +55,7 @@ export function ProfilePageClient() {
     const [stats, setStats] = useState<UserStats | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const { bookmarks, removeBookmark } = useBookmarks();
 
     const fetchStats = useCallback(async () => {
         setLoading(true);
@@ -213,6 +216,8 @@ export function ProfilePageClient() {
     return (
         <div className={styles.page}>
             <div className={styles.container}>
+                <BookmarkedUsersSection bookmarks={bookmarks} onRemove={removeBookmark} />
+
                 <div className={styles.header}>
                     <h1>
                         <i className="bi bi-person-circle" />

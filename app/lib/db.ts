@@ -62,6 +62,18 @@ db.exec(`
 
     CREATE INDEX IF NOT EXISTS idx_watched_user ON watched_anime(user_id);
     CREATE INDEX IF NOT EXISTS idx_watched_status ON watched_anime(user_id, status);
+
+    CREATE TABLE IF NOT EXISTS bookmarks (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        bookmarked_user_id INTEGER NOT NULL,
+        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+        FOREIGN KEY (bookmarked_user_id) REFERENCES users(id) ON DELETE CASCADE,
+        UNIQUE(user_id, bookmarked_user_id)
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_bookmarks_user ON bookmarks(user_id);
 `);
 
 function addColumnIfNotExists(table: string, column: string, definition: string): void {
@@ -447,6 +459,68 @@ export function updateUserSettings(userId: number, updates: Partial<UserSettings
     } catch (error) {
         throw new DatabaseError("Failed to update user settings", "updateUserSettings", error);
     }
+}
+
+export interface BookmarkedUser {
+    id: number;
+    username: string;
+    public_id: string;
+    created_at: string;
+    bookmarked_at: string;
+    watching_count: number;
+    completed_count: number;
+    last_activity: string | null;
+}
+
+export function addBookmark(userId: number, bookmarkedUserId: number): boolean {
+    if (userId === bookmarkedUserId) {
+        return false;
+    }
+
+    try {
+        const stmt = db.prepare("INSERT INTO bookmarks (user_id, bookmarked_user_id) VALUES (?, ?)");
+        const result = stmt.run(userId, bookmarkedUserId);
+        return result.changes > 0;
+    } catch (error) {
+        if (error instanceof Error && error.message.includes("UNIQUE constraint failed")) {
+            return false;
+        }
+        throw new DatabaseError("Failed to add bookmark", "addBookmark", error);
+    }
+}
+
+export function removeBookmark(userId: number, bookmarkedUserId: number): boolean {
+    try {
+        const stmt = db.prepare("DELETE FROM bookmarks WHERE user_id = ? AND bookmarked_user_id = ?");
+        const result = stmt.run(userId, bookmarkedUserId);
+        return result.changes > 0;
+    } catch (error) {
+        throw new DatabaseError("Failed to remove bookmark", "removeBookmark", error);
+    }
+}
+
+export function hasBookmark(userId: number, bookmarkedUserId: number): boolean {
+    const stmt = db.prepare("SELECT 1 FROM bookmarks WHERE user_id = ? AND bookmarked_user_id = ?");
+    return stmt.get(userId, bookmarkedUserId) !== undefined;
+}
+
+export function getBookmarkedUsers(userId: number): BookmarkedUser[] {
+    const stmt = db.prepare(`
+        SELECT
+            u.id,
+            u.username,
+            u.public_id,
+            u.created_at,
+            b.created_at as bookmarked_at,
+            (SELECT COUNT(*) FROM watched_anime WHERE user_id = u.id AND status = 'watching') as watching_count,
+            (SELECT COUNT(*) FROM watched_anime WHERE user_id = u.id AND status = 'completed') as completed_count,
+            (SELECT MAX(date_updated) FROM watched_anime WHERE user_id = u.id) as last_activity
+        FROM bookmarks b
+        JOIN users u ON b.bookmarked_user_id = u.id
+        WHERE b.user_id = ?
+        ORDER BY b.created_at DESC
+    `);
+    return stmt.all(userId) as BookmarkedUser[];
 }
 
 export default db;

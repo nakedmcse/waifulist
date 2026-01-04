@@ -1,5 +1,6 @@
 export { useAnime } from "./useAnime";
 export { useBackup } from "./useBackup";
+export { useBookmarks, useBookmarkStatus } from "./useBookmarks";
 export { useRestore } from "./useRestore";
 export { usePublicList } from "./usePublicList";
 export { useTrace } from "./useTrace";

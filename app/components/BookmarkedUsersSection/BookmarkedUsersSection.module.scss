@@ -1,0 +1,147 @@
+@use "../../styles/variables" as *;
+
+.section {
+    margin-bottom: $spacing-xl;
+}
+
+.title {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+    font-size: 1.25rem;
+    margin-bottom: $spacing-lg;
+    color: var(--text-primary);
+
+    i {
+        color: var(--accent-primary);
+    }
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: $spacing-md;
+}
+
+.card {
+    @include card-base;
+    position: relative;
+    padding: $spacing-md;
+    transition:
+        transform 0.15s ease,
+        box-shadow 0.15s ease;
+
+    &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+}
+
+.cardLink {
+    display: flex;
+    align-items: center;
+    gap: $spacing-md;
+    text-decoration: none;
+    color: inherit;
+}
+
+.avatar {
+    flex-shrink: 0;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--bg-tertiary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    i {
+        font-size: 1.75rem;
+        color: var(--text-secondary);
+    }
+}
+
+.info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.username {
+    font-weight: 600;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.stats {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.75rem;
+}
+
+.watching {
+    color: #3b82f6;
+}
+
+.completed {
+    color: #22c55e;
+}
+
+.separator {
+    color: var(--text-secondary);
+}
+
+.meta {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+.cardActions {
+    position: absolute;
+    top: $spacing-xs;
+    right: $spacing-xs;
+    display: flex;
+    gap: 2px;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+
+    .card:hover & {
+        opacity: 1;
+    }
+}
+
+.compareButton,
+.removeButton {
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+    border-radius: $radius-sm;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition:
+        color 0.15s ease,
+        background 0.15s ease;
+
+    i {
+        font-size: 1rem;
+    }
+}
+
+.compareButton:hover {
+    color: #3b82f6;
+    background: rgba(59, 130, 246, 0.1);
+}
+
+.removeButton:hover {
+    color: #ef4444;
+    background: rgba(239, 68, 68, 0.1);
+}
