@@ -4,6 +4,7 @@ import React, { useCallback, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { SortType } from "@/types/anime";
 import { AnimeListView } from "@/components/AnimeListView/AnimeListView";
+import { CompareButton } from "@/components/CompareButton/CompareButton";
 import { LocalStorage, STORAGE_KEYS } from "@/constants/localStorage";
 
 const VALID_SORTS: SortType[] = ["added", "name", "rating", "rating (personal)"];
@@ -52,6 +53,7 @@ export function PublicListClient({ uuid, initialUsername }: PublicListClientProp
             initialSort={sort}
             onSortChange={handleSortChange}
             ratingLabel={`${username}'s rating`}
+            headerActions={<CompareButton targetUuid={uuid} />}
         />
     );
 }
