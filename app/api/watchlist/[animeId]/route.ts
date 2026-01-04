@@ -23,10 +23,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 }
 
 export async function PATCH(request: NextRequest, { params }: RouteParams) {
-    const startTime = performance.now();
-
     const user = await getCurrentUser();
-    const authTime = performance.now();
 
     if (!user) {
         return NextResponse.json({ error: "Unauthorised" }, { status: 401 });
@@ -35,7 +32,6 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     try {
         const { animeId } = await params;
         const body = await request.json();
-        const parseTime = performance.now();
 
         const { status, episodesWatched, rating, notes } = body;
 
@@ -55,11 +51,6 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
         }
 
         const item = updateWatchStatus(user.id, parseInt(animeId, 10), updates);
-        const dbTime = performance.now();
-
-        console.log(
-            `[PATCH /watchlist/${animeId}] auth: ${(authTime - startTime).toFixed(1)}ms, parse: ${(parseTime - authTime).toFixed(1)}ms, db: ${(dbTime - parseTime).toFixed(1)}ms, total: ${(dbTime - startTime).toFixed(1)}ms`,
-        );
 
         return NextResponse.json({ item });
     } catch (error) {
