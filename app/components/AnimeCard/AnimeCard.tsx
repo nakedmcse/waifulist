@@ -20,6 +20,7 @@ interface AnimeCardProps {
     watchData?: AnimeCardWatchData | null;
     ratingLabel?: string;
     showStartDate?: boolean;
+    onContextMenu?: (e: React.MouseEvent, animeId: number) => void;
 }
 
 function parseUtcDate(dateString: string): Date {
@@ -91,14 +92,15 @@ export function AnimeCard({
     watchData: watchDataProp,
     ratingLabel,
     showStartDate = false,
+    onContextMenu,
 }: AnimeCardProps) {
     const { getWatchData } = useWatchList();
-    const contextWatchData = getWatchData(anime.id);
+    const contextWatchData = getWatchData(anime.mal_id);
     const watchData = watchDataProp !== undefined ? watchDataProp : contextWatchData;
     const [showNotePopover, setShowNotePopover] = useState(false);
     const popoverRef = useRef<HTMLDivElement>(null);
 
-    const imageUrl = anime.main_picture?.large || anime.main_picture?.medium || "/placeholder.png";
+    const imageUrl = anime.images?.jpg?.large_image_url || anime.images?.jpg?.image_url || "/placeholder.png";
     const hasNote = watchData?.notes && watchData.notes.trim().length > 0;
 
     useEffect(() => {
@@ -123,88 +125,90 @@ export function AnimeCard({
     };
 
     return (
-        <Link href={`/anime/${anime.id}`} className={styles.card}>
-            <div className={styles.imageContainer}>
-                <Image
-                    src={imageUrl}
-                    alt={anime.title}
-                    fill
-                    sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 20vw"
-                    className={styles.image}
-                    loading="lazy"
-                />
-                {anime.mean && (
-                    <div className={styles.score}>
-                        <i className="bi bi-star-fill" />
-                        {anime.mean.toFixed(1)}
-                    </div>
-                )}
-                {hasNote && (
-                    <button className={styles.noteBanner} onClick={handleNoteClick} aria-label="View note">
-                        <i className="bi bi-journal-text" />
-                        <span>Note</span>
-                    </button>
-                )}
-                {showNotePopover && hasNote && (
-                    <div ref={popoverRef} className={styles.notePopover} onClick={e => e.preventDefault()}>
-                        <div className={styles.notePopoverContent}>{watchData?.notes}</div>
-                    </div>
-                )}
-            </div>
-            <div className={styles.info}>
-                <h3 className={styles.title}>{anime.title}</h3>
-                <div className={styles.meta}>
-                    {anime.media_type && <span className={styles.type}>{anime.media_type.toUpperCase()}</span>}
-                    {anime.source && <span className={styles.type}>{anime.source.toUpperCase()}</span>}
-                </div>
-                {showStatus && watchData && (
-                    <span className={`${styles.statusTag} ${styles[watchData.status]}`}>
-                        {watchData.status === "completed" ? "Watched" : watchStatusLabels[watchData.status]}
-                    </span>
-                )}
-                <div className={styles.episodes}>{anime.num_episodes ? `${anime.num_episodes} eps` : "N/A"}</div>
-                {showStartDate && anime.start_date && (
-                    <div className={styles.dateAdded} title={anime.start_date}>
-                        <i className="bi bi-calendar-event" />
-                        <span className={styles.dateLabel}>Aires:</span>
-                        {formatStartDate(anime.start_date)}
-                    </div>
-                )}
-                {!showStartDate && watchData && (
-                    <div className={styles.dateAdded} title={parseUtcDate(watchData.dateAdded).toLocaleString()}>
-                        <i className="bi bi-calendar-plus" />
-                        <span className={styles.dateLabel}>Added:</span>
-                        {formatDateAdded(watchData.dateAdded)}
-                    </div>
-                )}
-                {watchData?.rating != null && watchData.rating !== 0 && (
-                    <div className={styles.userRatingContainer}>
-                        {ratingLabel && <span className={styles.ratingLabel}>{ratingLabel}</span>}
-                        <div
-                            className={`${styles.userRating} ${watchData.rating === 6 ? styles.masterpiece : ""} ${watchData.rating === -1 ? styles.dogshit : ""}`}
-                            title={
-                                watchData.rating === 6
-                                    ? "Masterpiece"
-                                    : watchData.rating === -1
-                                      ? "Dogshit"
-                                      : `${watchData.rating}/5`
-                            }
-                        >
-                            {watchData.rating === 6 ? (
-                                <>
-                                    <i className="bi bi-star-fill" />
-                                    <span>Masterpiece</span>
-                                </>
-                            ) : watchData.rating === -1 ? (
-                                <span>💩</span>
-                            ) : (
-                                [...Array(5)].map((_, i) => (
-                                    <i key={i} className={`bi bi-star${i < watchData.rating! ? "-fill" : ""}`} />
-                                ))
-                            )}
+        <Link href={`/anime/${anime.mal_id}`} className={styles.card}>
+            <div onContextMenu={onContextMenu ? (e: React.MouseEvent) => onContextMenu(e, anime.mal_id) : undefined}>
+                <div className={styles.imageContainer}>
+                    <Image
+                        src={imageUrl}
+                        alt={anime.title}
+                        fill
+                        sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 20vw"
+                        className={styles.image}
+                        loading="lazy"
+                    />
+                    {anime.score && (
+                        <div className={styles.score}>
+                            <i className="bi bi-star-fill" />
+                            {anime.score.toFixed(1)}
                         </div>
+                    )}
+                    {hasNote && (
+                        <button className={styles.noteBanner} onClick={handleNoteClick} aria-label="View note">
+                            <i className="bi bi-journal-text" />
+                            <span>Note</span>
+                        </button>
+                    )}
+                    {showNotePopover && hasNote && (
+                        <div ref={popoverRef} className={styles.notePopover} onClick={e => e.preventDefault()}>
+                            <div className={styles.notePopoverContent}>{watchData?.notes}</div>
+                        </div>
+                    )}
+                </div>
+                <div className={styles.info}>
+                    <h3 className={styles.title}>{anime.title}</h3>
+                    <div className={styles.meta}>
+                        {anime.type && <span className={styles.type}>{anime.type.toUpperCase()}</span>}
+                        {anime.source && <span className={styles.type}>{anime.source.toUpperCase()}</span>}
                     </div>
-                )}
+                    {showStatus && watchData && (
+                        <span className={`${styles.statusTag} ${styles[watchData.status]}`}>
+                            {watchData.status === "completed" ? "Watched" : watchStatusLabels[watchData.status]}
+                        </span>
+                    )}
+                    <div className={styles.episodes}>{anime.episodes ? `${anime.episodes} eps` : "N/A"}</div>
+                    {showStartDate && anime.aired?.from && (
+                        <div className={styles.dateAdded} title={anime.aired.from}>
+                            <i className="bi bi-calendar-event" />
+                            <span className={styles.dateLabel}>Aires:</span>
+                            {formatStartDate(anime.aired.from)}
+                        </div>
+                    )}
+                    {!showStartDate && watchData && (
+                        <div className={styles.dateAdded} title={parseUtcDate(watchData.dateAdded).toLocaleString()}>
+                            <i className="bi bi-calendar-plus" />
+                            <span className={styles.dateLabel}>Added:</span>
+                            {formatDateAdded(watchData.dateAdded)}
+                        </div>
+                    )}
+                    {watchData?.rating != null && watchData.rating !== 0 && (
+                        <div className={styles.userRatingContainer}>
+                            {ratingLabel && <span className={styles.ratingLabel}>{ratingLabel}</span>}
+                            <div
+                                className={`${styles.userRating} ${watchData.rating === 6 ? styles.masterpiece : ""} ${watchData.rating === -1 ? styles.dogshit : ""}`}
+                                title={
+                                    watchData.rating === 6
+                                        ? "Masterpiece"
+                                        : watchData.rating === -1
+                                          ? "Dogshit"
+                                          : `${watchData.rating}/5`
+                                }
+                            >
+                                {watchData.rating === 6 ? (
+                                    <>
+                                        <i className="bi bi-star-fill" />
+                                        <span>Masterpiece</span>
+                                    </>
+                                ) : watchData.rating === -1 ? (
+                                    <span>💩</span>
+                                ) : (
+                                    [...Array(5)].map((_, i) => (
+                                        <i key={i} className={`bi bi-star${i < watchData.rating! ? "-fill" : ""}`} />
+                                    ))
+                                )}
+                            </div>
+                        </div>
+                    )}
+                </div>
             </div>
         </Link>
     );
