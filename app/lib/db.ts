@@ -19,87 +19,93 @@ export class DatabaseError extends Error {
     }
 }
 
+const isBuildPhase = process.env.NEXT_PHASE === "phase-production-build";
+
 const dataDir = path.join(process.cwd(), "data");
-if (!fs.existsSync(dataDir)) {
+if (!isBuildPhase && !fs.existsSync(dataDir)) {
     fs.mkdirSync(dataDir, { recursive: true });
 }
 
 const dbPath = path.join(dataDir, "waifulist.db");
-const db = new Database(dbPath);
+const db = isBuildPhase ? ({} as Database.Database) : new Database(dbPath);
 
-db.pragma("journal_mode = WAL");
-db.pragma("foreign_keys = ON");
+if (!isBuildPhase) {
+    db.pragma("journal_mode = WAL");
+    db.pragma("foreign_keys = ON");
 
-db.exec(`
-    CREATE TABLE IF NOT EXISTS users (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        username TEXT NOT NULL UNIQUE,
-        password_hash TEXT NOT NULL,
-        public_id TEXT,
-        created_at TEXT NOT NULL DEFAULT (datetime('now'))
-    );
+    db.exec(`
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT NOT NULL UNIQUE,
+            password_hash TEXT NOT NULL,
+            public_id TEXT,
+            created_at TEXT NOT NULL DEFAULT (datetime('now'))
+        );
 
-    CREATE TABLE IF NOT EXISTS watched_anime (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id INTEGER NOT NULL,
-        anime_id INTEGER NOT NULL,
-        status TEXT NOT NULL,
-        episodes_watched INTEGER DEFAULT 0,
-        rating INTEGER DEFAULT NULL,
-        notes TEXT DEFAULT NULL,
-        date_added TEXT NOT NULL DEFAULT (datetime('now')),
-        date_updated TEXT NOT NULL DEFAULT (datetime('now')),
-        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-        UNIQUE(user_id, anime_id)
-    );
+        CREATE TABLE IF NOT EXISTS watched_anime (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            anime_id INTEGER NOT NULL,
+            status TEXT NOT NULL,
+            episodes_watched INTEGER DEFAULT 0,
+            rating INTEGER DEFAULT NULL,
+            notes TEXT DEFAULT NULL,
+            date_added TEXT NOT NULL DEFAULT (datetime('now')),
+            date_updated TEXT NOT NULL DEFAULT (datetime('now')),
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+            UNIQUE(user_id, anime_id)
+        );
 
-    CREATE TABLE IF NOT EXISTS user_settings (
-        user_id INTEGER PRIMARY KEY,
-        settings TEXT NOT NULL DEFAULT '{}',
-        updated_at TEXT NOT NULL DEFAULT (datetime('now')),
-        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-    );
+        CREATE TABLE IF NOT EXISTS user_settings (
+            user_id INTEGER PRIMARY KEY,
+            settings TEXT NOT NULL DEFAULT '{}',
+            updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+        );
 
-    CREATE INDEX IF NOT EXISTS idx_watched_user ON watched_anime(user_id);
-    CREATE INDEX IF NOT EXISTS idx_watched_status ON watched_anime(user_id, status);
+        CREATE INDEX IF NOT EXISTS idx_watched_user ON watched_anime(user_id);
+        CREATE INDEX IF NOT EXISTS idx_watched_status ON watched_anime(user_id, status);
 
-    CREATE TABLE IF NOT EXISTS bookmarks (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id INTEGER NOT NULL,
-        bookmarked_user_id INTEGER NOT NULL,
-        created_at TEXT NOT NULL DEFAULT (datetime('now')),
-        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-        FOREIGN KEY (bookmarked_user_id) REFERENCES users(id) ON DELETE CASCADE,
-        UNIQUE(user_id, bookmarked_user_id)
-    );
+        CREATE TABLE IF NOT EXISTS bookmarks (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            bookmarked_user_id INTEGER NOT NULL,
+            created_at TEXT NOT NULL DEFAULT (datetime('now')),
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+            FOREIGN KEY (bookmarked_user_id) REFERENCES users(id) ON DELETE CASCADE,
+            UNIQUE(user_id, bookmarked_user_id)
+        );
 
-    CREATE INDEX IF NOT EXISTS idx_bookmarks_user ON bookmarks(user_id);
-`);
+        CREATE INDEX IF NOT EXISTS idx_bookmarks_user ON bookmarks(user_id);
+    `);
 
-function addColumnIfNotExists(table: string, column: string, definition: string): void {
-    const tableInfo = db.prepare(`PRAGMA table_info(${table})`).all() as { name: string }[];
-    const columnExists = tableInfo.some(col => col.name === column);
-    if (!columnExists) {
-        db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`);
-    }
-}
-
-addColumnIfNotExists("watched_anime", "rating", "INTEGER DEFAULT NULL");
-addColumnIfNotExists("watched_anime", "notes", "TEXT DEFAULT NULL");
-addColumnIfNotExists("users", "public_id", "TEXT");
-
-const backfillPublicIds = db.transaction(() => {
-    const usersWithoutPublicId = db.prepare("SELECT id FROM users WHERE public_id IS NULL").all() as { id: number }[];
-    if (usersWithoutPublicId.length > 0) {
-        const updateStmt = db.prepare("UPDATE users SET public_id = ? WHERE id = ?");
-        for (const user of usersWithoutPublicId) {
-            updateStmt.run(crypto.randomUUID(), user.id);
+    function addColumnIfNotExists(table: string, column: string, definition: string): void {
+        const tableInfo = db.prepare(`PRAGMA table_info(${table})`).all() as { name: string }[];
+        const columnExists = tableInfo.some(col => col.name === column);
+        if (!columnExists) {
+            db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`);
         }
     }
-});
-backfillPublicIds();
 
-db.exec("CREATE UNIQUE INDEX IF NOT EXISTS idx_users_public_id ON users(public_id)");
+    addColumnIfNotExists("watched_anime", "rating", "INTEGER DEFAULT NULL");
+    addColumnIfNotExists("watched_anime", "notes", "TEXT DEFAULT NULL");
+    addColumnIfNotExists("users", "public_id", "TEXT");
+
+    const backfillPublicIds = db.transaction(() => {
+        const usersWithoutPublicId = db.prepare("SELECT id FROM users WHERE public_id IS NULL").all() as {
+            id: number;
+        }[];
+        if (usersWithoutPublicId.length > 0) {
+            const updateStmt = db.prepare("UPDATE users SET public_id = ? WHERE id = ?");
+            for (const user of usersWithoutPublicId) {
+                updateStmt.run(crypto.randomUUID(), user.id);
+            }
+        }
+    });
+    backfillPublicIds();
+
+    db.exec("CREATE UNIQUE INDEX IF NOT EXISTS idx_users_public_id ON users(public_id)");
+}
 
 export async function hashPassword(password: string): Promise<string> {
     return bcrypt.hash(password, SALT_ROUNDS);
