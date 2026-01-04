@@ -8,6 +8,9 @@ import {
     getWatchedByStatus,
     getWatchedCountByStatus,
 } from "@/lib/db";
+import { WatchStatus } from "@/types/anime";
+
+const validStatuses: WatchStatus[] = ["watching", "completed", "plan_to_watch", "on_hold", "dropped"];
 
 export async function GET(request: NextRequest) {
     const user = await getCurrentUser();
@@ -16,7 +19,7 @@ export async function GET(request: NextRequest) {
     }
 
     const { searchParams } = new URL(request.url);
-    const status = searchParams.get("status");
+    const statusParam = searchParams.get("status");
     const countsOnly = searchParams.get("counts") === "true";
 
     if (countsOnly) {
@@ -25,6 +28,8 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ counts: { ...counts, all: total } });
     }
 
+    const status =
+        statusParam && validStatuses.includes(statusParam as WatchStatus) ? (statusParam as WatchStatus) : null;
     const items = status ? getWatchedByStatus(user.id, status) : getAllWatched(user.id);
 
     return NextResponse.json({ items });

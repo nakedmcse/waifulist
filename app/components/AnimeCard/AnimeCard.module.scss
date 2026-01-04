@@ -153,6 +153,36 @@
     color: var(--text-secondary);
 }
 
+.statusTag {
+    display: inline-block;
+    margin-top: $spacing-xs;
+    padding: 2px $spacing-xs;
+    border-radius: $radius-sm;
+    font-size: 0.7rem;
+    font-weight: 600;
+    background: var(--bg-tertiary);
+
+    &.watching {
+        color: var(--status-watching);
+    }
+
+    &.completed {
+        color: var(--status-completed);
+    }
+
+    &.plan_to_watch {
+        color: var(--status-plan-to-watch);
+    }
+
+    &.on_hold {
+        color: var(--status-on-hold);
+    }
+
+    &.dropped {
+        color: var(--status-dropped);
+    }
+}
+
 .dateAdded {
     display: flex;
     align-items: center;

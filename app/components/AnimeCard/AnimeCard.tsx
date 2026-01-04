@@ -3,9 +3,8 @@
 import React, { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Anime, WatchStatus } from "@/types/anime";
+import { Anime, WatchStatus, watchStatusLabels } from "@/types/anime";
 import { useWatchList } from "@/contexts/WatchListContext";
-import { StatusBadge } from "@/components/StatusBadge/StatusBadge";
 import styles from "./AnimeCard.module.scss";
 
 export interface AnimeCardWatchData {
@@ -140,11 +139,6 @@ export function AnimeCard({
                         {anime.mean.toFixed(1)}
                     </div>
                 )}
-                {showStatus && watchData && (
-                    <div className={styles.statusBadge}>
-                        <StatusBadge status={watchData.status} compact />
-                    </div>
-                )}
                 {hasNote && (
                     <button className={styles.noteBanner} onClick={handleNoteClick} aria-label="View note">
                         <i className="bi bi-journal-text" />
@@ -163,6 +157,11 @@ export function AnimeCard({
                     {anime.media_type && <span className={styles.type}>{anime.media_type.toUpperCase()}</span>}
                     {anime.source && <span className={styles.type}>{anime.source.toUpperCase()}</span>}
                 </div>
+                {showStatus && watchData && (
+                    <span className={`${styles.statusTag} ${styles[watchData.status]}`}>
+                        {watchData.status === "completed" ? "Watched" : watchStatusLabels[watchData.status]}
+                    </span>
+                )}
                 <div className={styles.episodes}>{anime.num_episodes ? `${anime.num_episodes} eps` : "N/A"}</div>
                 {showStartDate && anime.start_date && (
                     <div className={styles.dateAdded} title={anime.start_date}>

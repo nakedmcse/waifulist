@@ -4,6 +4,7 @@ import fs from "fs";
 import crypto from "crypto";
 import bcrypt from "bcrypt";
 import type { UserSettings } from "@/types/settings";
+import type { WatchStatus } from "@/types/anime";
 
 const SALT_ROUNDS = 12;
 
@@ -178,7 +179,7 @@ export interface WatchedAnimeRow {
     id: number;
     user_id: number;
     anime_id: number;
-    status: string;
+    status: WatchStatus;
     episodes_watched: number;
     rating: number | null;
     notes: string | null;
@@ -357,7 +358,7 @@ export function getAllWatched(userId: number): WatchedAnimeRow[] {
     return stmt.all(userId) as WatchedAnimeRow[];
 }
 
-export function getWatchedByStatus(userId: number, status: string): WatchedAnimeRow[] {
+export function getWatchedByStatus(userId: number, status: WatchStatus): WatchedAnimeRow[] {
     const stmt = db.prepare("SELECT * FROM watched_anime WHERE user_id = ? AND status = ? ORDER BY date_updated DESC");
     return stmt.all(userId, status) as WatchedAnimeRow[];
 }
