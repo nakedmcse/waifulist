@@ -324,7 +324,7 @@ async function ensureLists(cachedList: Anime[]): Promise<void> {
     await ensureSeasonalLists(cachedList);
 }
 
-async function loadFromRedis(): Promise<Anime[] | null> {
+export async function getAllAnimeFromRedis(): Promise<Anime[] | null> {
     const redis = getRedis();
     try {
         const data = await redis.get(REDIS_KEYS.ANIME_LIST);
@@ -382,7 +382,7 @@ export async function ensureSearchIndex(): Promise<void> {
     }
 
     dataLoadingPromise = (async () => {
-        const cachedList = await loadFromRedis();
+        const cachedList = await getAllAnimeFromRedis();
         if (cachedList && cachedList.length > 0) {
             buildSearchIndex(cachedList);
             await ensureLists(cachedList);
