@@ -1180,3 +1180,232 @@
         font-size: 0.7rem;
     }
 }
+
+.charactersSection {
+    width: 100%;
+}
+
+.characterTabs {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: $spacing-sm;
+    margin-bottom: $spacing-lg;
+}
+
+.characterTab {
+    display: flex;
+    align-items: center;
+    gap: $spacing-xs;
+    padding: $spacing-xs $spacing-sm;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: $radius-sm;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all $transition-fast;
+
+    &:hover {
+        border-color: var(--accent-primary);
+        color: var(--text-primary);
+    }
+
+    &.active {
+        background: var(--accent-primary);
+        border-color: var(--accent-primary);
+        color: white;
+
+        .tabCount {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+    }
+}
+
+.charactersGrid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: $spacing-md;
+    max-height: 500px;
+    overflow-y: auto;
+    transition:
+        opacity 0.15s ease-in-out,
+        transform 0.15s ease-in-out;
+
+    &.fadeOut {
+        opacity: 0;
+        transform: translateY(4px);
+    }
+
+    &.fadeIn {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.characterCard {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100px;
+    text-decoration: none;
+
+    @include md {
+        width: 120px;
+    }
+}
+
+.characterImageWrapper {
+    position: relative;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    overflow: hidden;
+    background: var(--bg-tertiary);
+    margin-bottom: $spacing-sm;
+    transition: transform $transition-fast;
+
+    @include md {
+        width: 100px;
+        height: 100px;
+    }
+
+    &:hover {
+        transform: scale(1.05);
+    }
+}
+
+.characterImage {
+    object-fit: cover;
+}
+
+.characterInfo {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    text-align: center;
+}
+
+.characterName {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+
+    @include md {
+        font-size: 0.875rem;
+    }
+}
+
+.voiceActor {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    text-decoration: none;
+    transition: color $transition-fast;
+
+    @include md {
+        font-size: 0.75rem;
+    }
+
+    &:hover {
+        color: var(--accent-primary);
+    }
+
+    i {
+        font-size: 0.6rem;
+    }
+}
+
+.characterFavorites {
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 2px;
+
+    @include md {
+        font-size: 0.7rem;
+    }
+
+    i {
+        font-size: 0.55rem;
+        color: #ec4899;
+    }
+}
+
+.statisticsSection {
+    grid-column: 1 / -1;
+    background: var(--bg-tertiary);
+    border-radius: $radius-md;
+    padding: $spacing-md;
+}
+
+.statisticsTitle {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: $spacing-md;
+}
+
+.chartsRow {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-lg;
+
+    @include md {
+        flex-direction: row;
+    }
+}
+
+.statusChart {
+    flex: 1;
+    min-width: 0;
+}
+
+.scoreChart {
+    flex: 1.5;
+    min-width: 0;
+}
+
+.chartTitle {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    margin-bottom: $spacing-sm;
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+}
+
+.totalCount {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-weight: 400;
+}
+
+.doughnutContainer {
+    height: 180px;
+
+    @include md {
+        height: 200px;
+    }
+}
+
+.chartContainer {
+    height: 180px;
+
+    @include md {
+        height: 200px;
+    }
+}

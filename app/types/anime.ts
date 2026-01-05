@@ -146,6 +146,64 @@ export interface EpisodeDetailResponse {
     data: AnimeEpisodeDetail;
 }
 
+export interface AnimeCharacter {
+    character: {
+        mal_id: number;
+        url: string;
+        images: {
+            jpg: {
+                image_url: string;
+            };
+            webp?: {
+                image_url: string;
+                small_image_url: string;
+            };
+        };
+        name: string;
+    };
+    role: "Main" | "Supporting";
+    favorites: number;
+    voice_actors: VoiceActor[];
+}
+
+export interface VoiceActor {
+    person: {
+        mal_id: number;
+        url: string;
+        images: {
+            jpg: {
+                image_url: string;
+            };
+        };
+        name: string;
+    };
+    language: string;
+}
+
+export interface CharactersResponse {
+    data: AnimeCharacter[];
+}
+
+export interface AnimeStatistics {
+    watching: number;
+    completed: number;
+    on_hold: number;
+    dropped: number;
+    plan_to_watch: number;
+    total: number;
+    scores: ScoreEntry[];
+}
+
+export interface ScoreEntry {
+    score: number;
+    votes: number;
+    percentage: number;
+}
+
+export interface StatisticsResponse {
+    data: AnimeStatistics;
+}
+
 export interface WatchedAnime {
     animeId: number;
     status: WatchStatus;

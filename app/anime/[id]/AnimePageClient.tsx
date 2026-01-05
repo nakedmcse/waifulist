@@ -3,13 +3,17 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { Bar, Doughnut } from "react-chartjs-2";
+import { ArcElement, BarElement, CategoryScale, Chart as ChartJS, Legend, LinearScale, Tooltip } from "chart.js";
 import {
     Anime,
+    AnimeCharacter,
     AnimeEpisode,
     AnimeEpisodeDetail,
     AnimePicture,
     AnimeRecommendation,
     AnimeRelation,
+    AnimeStatistics,
     WatchStatus,
 } from "@/types/anime";
 import { getEpisodeDetail } from "@/services/animeService";
@@ -22,12 +26,16 @@ import { StatusBadge } from "@/components/StatusBadge/StatusBadge";
 import { Tab, Tabs } from "@/components/Tabs/Tabs";
 import styles from "./page.module.scss";
 
+ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, ArcElement, Legend);
+
 interface AnimePageClientProps {
     anime: Anime;
     relatedAnime?: Record<number, Anime>;
     pictures?: AnimePicture[];
     recommendations?: AnimeRecommendation[];
     episodes?: AnimeEpisode[];
+    characters?: AnimeCharacter[];
+    statistics?: AnimeStatistics | null;
 }
 
 interface RelatedAnimeSectionProps {
@@ -41,6 +49,8 @@ interface ContentTabsProps {
     relatedAnime?: Record<number, Anime>;
     recommendations?: AnimeRecommendation[];
     episodes?: AnimeEpisode[];
+    characters?: AnimeCharacter[];
+    statistics?: AnimeStatistics | null;
 }
 
 interface SynopsisParagraph {
@@ -140,6 +150,98 @@ function RecommendationsSection({ recommendations }: { recommendations: AnimeRec
                             <span className={styles.recommendationTitle}>{rec.entry.title}</span>
                             <span className={styles.recommendationVotes}>{rec.votes} votes</span>
                         </Link>
+                    );
+                })}
+            </div>
+        </div>
+    );
+}
+
+function CharactersSection({ characters }: { characters: AnimeCharacter[] }) {
+    const [activeTab, setActiveTab] = useState<"Main" | "Supporting">("Main");
+    const [isTransitioning, setIsTransitioning] = useState(false);
+
+    if (characters.length === 0) {
+        return null;
+    }
+
+    const mainCharacters = characters.filter(c => c.role === "Main");
+    const supportingCharacters = characters.filter(c => c.role === "Supporting");
+    const activeCharacters = activeTab === "Main" ? mainCharacters : supportingCharacters;
+
+    const handleTabChange = (tab: "Main" | "Supporting") => {
+        if (tab === activeTab) {
+            return;
+        }
+        setIsTransitioning(true);
+        setTimeout(() => {
+            setActiveTab(tab);
+            setIsTransitioning(false);
+        }, 150);
+    };
+
+    const formatName = (name: string) => {
+        const parts = name.split(", ");
+        if (parts.length === 2) {
+            return `${parts[1]} ${parts[0]}`;
+        }
+        return name;
+    };
+
+    return (
+        <div className={styles.charactersSection}>
+            <div className={styles.characterTabs}>
+                <button
+                    className={`${styles.characterTab} ${activeTab === "Main" ? styles.active : ""}`}
+                    onClick={() => handleTabChange("Main")}
+                >
+                    Main
+                    <span className={styles.tabCount}>{mainCharacters.length}</span>
+                </button>
+                <button
+                    className={`${styles.characterTab} ${activeTab === "Supporting" ? styles.active : ""}`}
+                    onClick={() => handleTabChange("Supporting")}
+                >
+                    Supporting
+                    <span className={styles.tabCount}>{supportingCharacters.length}</span>
+                </button>
+            </div>
+            <div className={`${styles.charactersGrid} ${isTransitioning ? styles.fadeOut : styles.fadeIn}`}>
+                {activeCharacters.map(char => {
+                    const imageUrl = char.character.images?.webp?.image_url || char.character.images?.jpg?.image_url;
+                    const japaneseVA = char.voice_actors.find(va => va.language === "Japanese");
+                    return (
+                        <div key={char.character.mal_id} className={styles.characterCard}>
+                            <div className={styles.characterImageWrapper}>
+                                {imageUrl ? (
+                                    <Image
+                                        src={imageUrl}
+                                        alt={char.character.name}
+                                        fill
+                                        sizes="120px"
+                                        className={styles.characterImage}
+                                    />
+                                ) : (
+                                    <div className={styles.noImage} />
+                                )}
+                            </div>
+                            <div className={styles.characterInfo}>
+                                <span className={styles.characterName}>{formatName(char.character.name)}</span>
+                                {japaneseVA && (
+                                    <a
+                                        href={japaneseVA.person.url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className={styles.voiceActor}
+                                    >
+                                        <i className="bi bi-mic-fill" /> {formatName(japaneseVA.person.name)}
+                                    </a>
+                                )}
+                                <span className={styles.characterFavorites}>
+                                    <i className="bi bi-heart-fill" /> {char.favorites.toLocaleString()}
+                                </span>
+                            </div>
+                        </div>
                     );
                 })}
             </div>
@@ -339,7 +441,164 @@ function formatSynopsis(text: string): SynopsisParagraph[] {
     }));
 }
 
-function OverviewContent({ anime }: { anime: Anime }) {
+function getChartColors() {
+    if (typeof window === "undefined") {
+        return { textColor: "#a1a1aa", gridColor: "rgba(161, 161, 170, 0.2)" };
+    }
+    const computedStyle = getComputedStyle(document.documentElement);
+    return {
+        textColor: computedStyle.getPropertyValue("--text-muted").trim() || "#a1a1aa",
+        gridColor: computedStyle.getPropertyValue("--border-primary").trim() || "rgba(161, 161, 170, 0.2)",
+    };
+}
+
+function StatisticsSection({ statistics }: { statistics: AnimeStatistics }) {
+    const { textColor, gridColor } = getChartColors();
+
+    const statusChartData = {
+        labels: ["Watching", "Completed", "On Hold", "Dropped", "Plan to Watch"],
+        datasets: [
+            {
+                data: [
+                    statistics.watching,
+                    statistics.completed,
+                    statistics.on_hold,
+                    statistics.dropped,
+                    statistics.plan_to_watch,
+                ],
+                backgroundColor: [
+                    "rgba(59, 130, 246, 0.8)",
+                    "rgba(34, 197, 94, 0.8)",
+                    "rgba(234, 179, 8, 0.8)",
+                    "rgba(239, 68, 68, 0.8)",
+                    "rgba(168, 85, 247, 0.8)",
+                ],
+                borderWidth: 0,
+            },
+        ],
+    };
+
+    const statusChartOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: {
+            animateRotate: true,
+            animateScale: true,
+            duration: 800,
+            easing: "easeOutQuart" as const,
+        },
+        plugins: {
+            legend: {
+                position: "right" as const,
+                labels: {
+                    color: textColor,
+                    padding: 12,
+                    usePointStyle: true,
+                    pointStyle: "circle",
+                    font: { size: 11 },
+                },
+            },
+            tooltip: {
+                callbacks: {
+                    label: (context: { dataIndex: number; parsed: number }) => {
+                        const value = context.parsed;
+                        const percentage = ((value / statistics.total) * 100).toFixed(1);
+                        return ` ${value.toLocaleString()} (${percentage}%)`;
+                    },
+                },
+            },
+        },
+    };
+
+    const scoreChartData = {
+        labels: statistics.scores.map(s => s.score.toString()),
+        datasets: [
+            {
+                data: statistics.scores.map(s => s.percentage),
+                backgroundColor: statistics.scores.map(s => {
+                    if (s.score <= 3) {
+                        return "rgba(239, 68, 68, 0.8)";
+                    }
+                    if (s.score <= 5) {
+                        return "rgba(249, 115, 22, 0.8)";
+                    }
+                    if (s.score <= 7) {
+                        return "rgba(234, 179, 8, 0.8)";
+                    }
+                    if (s.score <= 9) {
+                        return "rgba(34, 197, 94, 0.8)";
+                    }
+                    return "rgba(59, 130, 246, 0.8)";
+                }),
+                borderRadius: 4,
+            },
+        ],
+    };
+
+    const scoreChartOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: {
+            duration: 800,
+            easing: "easeOutQuart" as const,
+            delay: (context: { dataIndex: number }) => context.dataIndex * 50,
+        },
+        plugins: {
+            legend: { display: false },
+            tooltip: {
+                callbacks: {
+                    label: (context: { dataIndex: number }) => {
+                        const score = statistics.scores[context.dataIndex];
+                        return `${score.percentage}% (${score.votes.toLocaleString()} votes)`;
+                    },
+                },
+            },
+        },
+        scales: {
+            x: {
+                grid: { display: false },
+                ticks: { color: textColor },
+            },
+            y: {
+                grid: { color: gridColor },
+                ticks: {
+                    color: textColor,
+                    callback: (value: number | string) => `${value}%`,
+                },
+            },
+        },
+    };
+
+    return (
+        <div className={styles.statisticsSection}>
+            <h3 className={styles.statisticsTitle}>Statistics</h3>
+            <div className={styles.chartsRow}>
+                <div className={styles.statusChart}>
+                    <h4 className={styles.chartTitle}>
+                        Watch Status{" "}
+                        <span className={styles.totalCount}>{statistics.total.toLocaleString()} users</span>
+                    </h4>
+                    <div className={styles.doughnutContainer}>
+                        <Doughnut data={statusChartData} options={statusChartOptions} />
+                    </div>
+                </div>
+                <div className={styles.scoreChart}>
+                    <h4 className={styles.chartTitle}>Score Distribution</h4>
+                    <div className={styles.chartContainer}>
+                        <Bar data={scoreChartData} options={scoreChartOptions} />
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+interface OverviewContentProps {
+    anime: Anime;
+    statistics?: AnimeStatistics | null;
+}
+
+function OverviewContent({ anime, statistics }: OverviewContentProps) {
     const synopsisParagraphs = anime.synopsis ? formatSynopsis(anime.synopsis) : [];
 
     return (
@@ -391,6 +650,7 @@ function OverviewContent({ anime }: { anime: Anime }) {
                     </div>
                 )}
             </div>
+            {statistics && <StatisticsSection statistics={statistics} />}
         </div>
     );
 }
@@ -440,7 +700,15 @@ function MediaContent({ anime, pictures }: { anime: Anime; pictures?: AnimePictu
     return <Tabs tabs={mediaTabs} />;
 }
 
-function ContentTabs({ anime, pictures, relatedAnime, recommendations, episodes }: ContentTabsProps) {
+function ContentTabs({
+    anime,
+    pictures,
+    relatedAnime,
+    recommendations,
+    episodes,
+    characters,
+    statistics,
+}: ContentTabsProps) {
     const [episodeDetailsCache, setEpisodeDetailsCache] = useState<Record<number, AnimeEpisodeDetail>>({});
 
     const handleEpisodeDetailFetched = useCallback((episodeId: number, detail: AnimeEpisodeDetail) => {
@@ -451,14 +719,23 @@ function ContentTabs({ anime, pictures, relatedAnime, recommendations, episodes 
     const hasRelated = anime.relations && anime.relations.some(r => r.entry.some(e => e.type === "anime"));
     const hasRecommendations = recommendations && recommendations.length > 0;
     const hasEpisodes = episodes && episodes.length > 0;
+    const hasCharacters = characters && characters.length > 0;
 
     const tabs: Tab[] = [
         {
             id: "overview",
             label: "Overview",
-            content: <OverviewContent anime={anime} />,
+            content: <OverviewContent anime={anime} statistics={statistics} />,
         },
     ];
+
+    if (hasCharacters) {
+        tabs.push({
+            id: "characters",
+            label: `Characters (${characters.length})`,
+            content: <CharactersSection characters={characters} />,
+        });
+    }
 
     if (hasEpisodes) {
         tabs.push({
@@ -502,7 +779,15 @@ function ContentTabs({ anime, pictures, relatedAnime, recommendations, episodes 
     return <Tabs tabs={tabs} />;
 }
 
-export function AnimePageClient({ anime, relatedAnime, pictures, recommendations, episodes }: AnimePageClientProps) {
+export function AnimePageClient({
+    anime,
+    relatedAnime,
+    pictures,
+    recommendations,
+    episodes,
+    characters,
+    statistics,
+}: AnimePageClientProps) {
     const [showStatusMenu, setShowStatusMenu] = useState(false);
     const [localNoteText, setLocalNoteText] = useState<string | null>(null);
     const [noteSaved, setNoteSaved] = useState(false);
@@ -815,6 +1100,8 @@ export function AnimePageClient({ anime, relatedAnime, pictures, recommendations
                             relatedAnime={relatedAnime}
                             recommendations={recommendations}
                             episodes={episodes}
+                            characters={characters}
+                            statistics={statistics}
                         />
                     </div>
                 </div>

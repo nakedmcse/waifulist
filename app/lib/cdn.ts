@@ -1,14 +1,18 @@
 import {
     Anime,
+    AnimeCharacter,
     AnimeEpisode,
     AnimeEpisodeDetail,
     AnimePicture,
     AnimeRecommendation,
     AnimeRelation,
+    AnimeStatistics,
+    CharactersResponse,
     EpisodeDetailResponse,
     EpisodesResponse,
     PicturesResponse,
     RecommendationsResponse,
+    StatisticsResponse,
 } from "@/types/anime";
 
 const JIKAN_API_URL = process.env.JIKAN_API_URL || "http://jikan:8080/v4";
@@ -76,7 +80,7 @@ interface JikanResponse {
     data: Anime;
 }
 
-export async function fetchAnimeFromJikan(id: number): Promise<Anime | null> {
+async function fetchAnimeFromJikan(id: number): Promise<Anime | null> {
     function sortRelations(relations: AnimeRelation[]): AnimeRelation[] {
         return [...relations].sort((a, b) => {
             const priorityA = RELATION_PRIORITY[a.relation] ?? 99;
@@ -121,6 +125,27 @@ export async function fetchAnimeEpisodeDetail(animeId: number, episodeId: number
         `/anime/${animeId}/episodes/${episodeId}`,
         null,
     );
+    return response?.data || null;
+}
+
+export async function fetchAnimeCharacters(id: number): Promise<AnimeCharacter[]> {
+    const response = await fetchFromJikan<CharactersResponse | null>(`/anime/${id}/characters`, null);
+    if (!response?.data) {
+        return [];
+    }
+    return response.data.sort((a, b) => {
+        if (a.role === "Main" && b.role !== "Main") {
+            return -1;
+        }
+        if (a.role !== "Main" && b.role === "Main") {
+            return 1;
+        }
+        return b.favorites - a.favorites;
+    });
+}
+
+export async function fetchAnimeStatistics(id: number): Promise<AnimeStatistics | null> {
+    const response = await fetchFromJikan<StatisticsResponse | null>(`/anime/${id}/statistics`, null);
     return response?.data || null;
 }
 
