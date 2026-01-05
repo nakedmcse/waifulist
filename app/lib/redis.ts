@@ -69,7 +69,7 @@ export const REDIS_KEYS = {
 
 export const REDIS_TTL = {
     ANIME_LIST: 60 * 60 * 24 * 7, // 7 days
-    ANIME_BY_ID: 60 * 60 * 24, // 24 hours (CDN-fetched)
+    JIKAN_ENRICHED_ANIME: 60 * 60 * 24, // 24 hours (CDN-fetched)
     OG_IMAGE: 60 * 60, // 1 hour
     ANIME_SITEMAP: 60 * 60 * 24, // 24 hours
 } as const;

@@ -473,7 +473,7 @@ async function getAnimeFromStore(id: number, skipCdnFallback: boolean = false): 
 
     // Cache to Redis
     try {
-        await redis.setex(REDIS_KEYS.ANIME_BY_ID(id), REDIS_TTL.ANIME_BY_ID, JSON.stringify(anime));
+        await redis.setex(REDIS_KEYS.ANIME_BY_ID(id), REDIS_TTL.JIKAN_ENRICHED_ANIME, JSON.stringify(anime));
     } catch (cacheError) {
         console.error(`[Redis] Failed to cache anime ${id}:`, cacheError);
     }
@@ -499,7 +499,11 @@ export async function getAnimeById(
         if (detailedAnime) {
             const redis = getRedis();
             try {
-                await redis.setex(REDIS_KEYS.ANIME_BY_ID(id), REDIS_TTL.ANIME_BY_ID, JSON.stringify(detailedAnime));
+                await redis.setex(
+                    REDIS_KEYS.ANIME_BY_ID(id),
+                    REDIS_TTL.JIKAN_ENRICHED_ANIME,
+                    JSON.stringify(detailedAnime),
+                );
             } catch {}
             return detailedAnime;
         }

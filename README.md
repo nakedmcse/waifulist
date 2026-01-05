@@ -189,6 +189,47 @@ DAILY REFRESH (midnight)
 6. Other instances receive → rebuild Fuse from Redis
 ```
 
+### Two-Layer Caching (Redis + Jikan)
+
+The app uses a hybrid approach for anime data:
+
+| Layer         | Source | Data                                    | TTL      | Purpose                  |
+|---------------|--------|-----------------------------------------|----------|--------------------------|
+| Redis         | CSV    | Basic (title, score, genres)            | 7 days   | Browse, search, listings |
+| Redis         | Jikan  | Enriched (synopsis, relations, trailer) | 24 hours | Detail pages             |
+| Jikan MongoDB | MAL    | Full MAL data                           | 24 hours | Upstream cache           |
+
+**How enrichment works:**
+
+1. User visits anime detail page
+2. Redis has basic CSV data (no synopsis)
+3. App fetches from Jikan → Jikan scrapes MAL → caches to MongoDB
+4. Enriched data returned and cached to Redis (24hr TTL)
+5. Subsequent visits serve from Redis until TTL expires
+
+**Daily refresh cycle:**
+
+```
+12:00 AM - Scheduler runs refreshAnimeData()
+         ↓
+CSV downloaded from GitHub
+         ↓
+All anime:id:* keys overwritten with basic CSV data
+         ↓
+Enriched Jikan data is replaced (synopsis removed)
+         ↓
+Next visit to any anime page triggers Jikan fetch
+         ↓
+Jikan re-scrapes MAL (if its 24hr cache expired) or serves from MongoDB
+         ↓
+Enriched data cached back to Redis
+```
+
+This ensures:
+- Browse/search always works (CSV fallback)
+- Detail pages get fresh MAL data within 24 hours
+- Jikan's MongoDB builds up over time as users visit pages
+
 ### In-Memory State
 
 Only the **Fuse.js search index** stays in memory per instance (cannot be serialized to Redis).
