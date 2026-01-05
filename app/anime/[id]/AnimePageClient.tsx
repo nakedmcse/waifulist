@@ -792,11 +792,10 @@ function ContentTabs({
     }
 
     if (hasEpisodes) {
-        const totalEpisodes =
-            (totalEpisodePages || 1) > 1 ? `${(totalEpisodePages || 1) * 100}+` : initialEpisodes.length;
+        const episodeCount = anime.episodes || initialEpisodes.length;
         tabs.push({
             id: "episodes",
-            label: `Episodes (${totalEpisodes})`,
+            label: `Episodes (${episodeCount})`,
             content: (
                 <EpisodesContent
                     initialEpisodes={initialEpisodes}
