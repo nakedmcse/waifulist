@@ -11,6 +11,7 @@ type WatchData = {
     rating?: number | null;
     dateAdded?: string;
     notes?: string | null;
+    episodesWatched?: number;
 };
 
 export type FilterableItem<T extends Anime = Anime> = {
@@ -41,6 +42,7 @@ export type WatchedItemInput = {
     rating?: number | null;
     dateAdded?: string;
     notes?: string | null;
+    episodesWatched?: number;
 };
 
 export type WatchListQueryParams = {
@@ -58,6 +60,8 @@ export type WatchListResponse = {
             status?: WatchStatus;
             rating: number | null;
             dateAdded?: string;
+            notes?: string | null;
+            episodesWatched?: number;
         };
     }[];
     total: number;

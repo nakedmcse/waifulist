@@ -30,6 +30,7 @@ export async function getFilteredWatchList(userId: number, url: URL): Promise<Wa
         rating: item.rating ?? undefined,
         dateAdded: item.date_added,
         notes: item.notes,
+        episodesWatched: item.episodes_watched,
     }));
 
     return filterWatchList(watchedItems, animeMap, { query, sort, status, page, limit });
@@ -60,6 +61,7 @@ function filterWatchList(
             rating: item.watchData?.rating ?? null,
             dateAdded: item.watchData?.dateAdded,
             notes: item.watchData?.notes,
+            episodesWatched: item.watchData?.episodesWatched,
         },
     }));
 
@@ -96,6 +98,7 @@ function toFilterableItemsFromWatchList(
                     rating: watched.rating ?? undefined,
                     dateAdded: watched.dateAdded,
                     notes: watched.notes,
+                    episodesWatched: watched.episodesWatched,
                 },
             });
         }

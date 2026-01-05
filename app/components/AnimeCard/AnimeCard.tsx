@@ -13,6 +13,7 @@ export interface AnimeCardWatchData {
     rating: number | null;
     notes?: string | null;
     dateAdded: string;
+    episodesWatched?: number;
 }
 
 interface AnimeCardProps {
@@ -134,7 +135,14 @@ export function AnimeCard({
                         {anime.source && <span className={styles.type}>{anime.source.toUpperCase()}</span>}
                     </div>
                     {showStatus && watchData && (
-                        <span className={`${styles.statusTag} ${styles[watchData.status]}`}>
+                        <span
+                            className={`${styles.statusTag} ${styles[watchData.status]}`}
+                            title={
+                                watchData.status !== "completed" && watchData.episodesWatched
+                                    ? `${watchData.episodesWatched} episode${watchData.episodesWatched === 1 ? "" : "s"} watched`
+                                    : undefined
+                            }
+                        >
                             {watchData.status === "completed" ? "Watched" : watchStatusLabels[watchData.status]}
                         </span>
                     )}

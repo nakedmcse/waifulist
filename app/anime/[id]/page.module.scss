@@ -3,6 +3,7 @@
 .page {
     min-height: calc(100vh - 80px);
     position: relative;
+    overflow-x: hidden;
 }
 
 .backdrop {
@@ -33,7 +34,12 @@
     z-index: 1;
     max-width: 1200px;
     margin: 0 auto;
-    padding: $spacing-xl $spacing-lg;
+    padding: $spacing-lg $spacing-sm;
+    overflow-x: hidden;
+
+    @include md {
+        padding: $spacing-xl $spacing-lg;
+    }
 }
 
 .content {
@@ -72,6 +78,7 @@
     display: flex;
     flex-direction: column;
     gap: $spacing-lg;
+    min-width: 0;
 }
 
 .titleSection {
@@ -83,10 +90,12 @@
 }
 
 .title {
-    font-size: 1.75rem;
+    font-size: 1.5rem;
     font-weight: 700;
     line-height: 1.3;
     margin-bottom: $spacing-xs;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
 
     @include md {
         font-size: 2.25rem;
@@ -102,10 +111,11 @@
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    gap: $spacing-sm;
+    gap: $spacing-xs;
 
     @include md {
         justify-content: flex-start;
+        gap: $spacing-sm;
     }
 }
 
@@ -127,18 +137,22 @@
     padding: $spacing-xs $spacing-sm;
     background: var(--bg-tertiary);
     border-radius: $radius-sm;
-    font-size: 0.875rem;
+    font-size: 0.75rem;
     text-transform: capitalize;
+
+    @include md {
+        font-size: 0.875rem;
+    }
 }
 
 .genres {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
     gap: $spacing-xs;
 
     @include md {
-        display: flex;
-        flex-wrap: wrap;
+        justify-content: flex-start;
     }
 }
 
@@ -193,12 +207,16 @@
 }
 
 .tracking {
-    padding: $spacing-lg;
+    padding: $spacing-md;
     background: var(--bg-secondary);
     border-radius: $radius-lg;
     display: flex;
     flex-direction: column;
     gap: $spacing-lg;
+
+    @include md {
+        padding: $spacing-lg;
+    }
 }
 
 .trackingItem {

@@ -18,6 +18,7 @@ interface FilteredItem {
         rating: number | null;
         dateAdded?: string;
         notes?: string | null;
+        episodesWatched?: number;
     };
 }
 
@@ -231,6 +232,7 @@ export function AnimeListView({
                 rating: item.watchData.rating,
                 notes: item.watchData.notes,
                 dateAdded: item.watchData.dateAdded!,
+                episodesWatched: item.watchData.episodesWatched,
             },
         }));
 
