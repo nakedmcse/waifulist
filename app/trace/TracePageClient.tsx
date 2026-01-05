@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { formatSimilarity, formatTimestamp } from "@/services/traceMoe";
 import { useTrace } from "@/hooks";
+import { Spinner } from "@/components/Spinner/Spinner";
 import styles from "./page.module.scss";
 import { TraceMoeResult, TraceQuotaInfo } from "@/types/traceMoe";
 
@@ -203,8 +204,7 @@ export function TracePageClient() {
 
                 {isLoading && (
                     <div className={styles.loading}>
-                        <div className={styles.spinner} />
-                        <p>Searching...</p>
+                        <Spinner text="Searching..." />
                     </div>
                 )}
 

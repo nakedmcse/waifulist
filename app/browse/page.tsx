@@ -13,6 +13,7 @@ import { Pagination } from "@/components/Pagination/Pagination";
 import { ContextMenu, type ContextMenuItem } from "@/components/ContextMenu";
 import { useContextMenu } from "@/hooks/useContextMenu";
 import { useAuth } from "@/contexts/AuthContext";
+import { Spinner } from "@/components/Spinner/Spinner";
 import styles from "./page.module.scss";
 
 const PAGE_SIZE = 24;
@@ -292,8 +293,7 @@ function BrowseContent() {
 
                 {showLoading ? (
                     <div className={styles.loading}>
-                        <div className={styles.spinner} />
-                        <p>Searching...</p>
+                        <Spinner text="Searching..." />
                     </div>
                 ) : anime.length > 0 ? (
                     <>
@@ -333,8 +333,7 @@ export default function BrowsePage() {
                 <div className={styles.page}>
                     <div className={styles.container}>
                         <div className={styles.loading}>
-                            <div className={styles.spinner} />
-                            <p>Loading...</p>
+                            <Spinner text="Loading..." />
                         </div>
                     </div>
                 </div>

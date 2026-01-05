@@ -117,22 +117,16 @@ export async function fetchAnimeRecommendations(id: number, limit = 12): Promise
     return response.data.sort((a, b) => b.votes - a.votes).slice(0, limit);
 }
 
-export async function fetchAnimeEpisodes(id: number): Promise<AnimeEpisode[]> {
-    const allEpisodes: AnimeEpisode[] = [];
-    let page = 1;
-    let hasNextPage = true;
-
-    while (hasNextPage) {
-        const response = await fetchFromJikan<EpisodesResponse | null>(`/anime/${id}/episodes?page=${page}`, null);
-        if (!response?.data) {
-            break;
-        }
-        allEpisodes.push(...response.data);
-        hasNextPage = response.pagination?.has_next_page ?? false;
-        page++;
-    }
-
-    return allEpisodes;
+export async function fetchAnimeEpisodes(
+    id: number,
+    page: number = 1,
+): Promise<{ episodes: AnimeEpisode[]; hasNextPage: boolean; lastPage: number }> {
+    const response = await fetchFromJikan<EpisodesResponse | null>(`/anime/${id}/episodes?page=${page}`, null);
+    return {
+        episodes: response?.data || [],
+        hasNextPage: response?.pagination?.has_next_page ?? false,
+        lastPage: response?.pagination?.last_visible_page ?? 1,
+    };
 }
 
 export async function fetchAnimeEpisodeDetail(animeId: number, episodeId: number): Promise<AnimeEpisodeDetail | null> {

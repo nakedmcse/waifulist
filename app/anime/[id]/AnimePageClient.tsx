@@ -16,13 +16,14 @@ import {
     AnimeStatistics,
     WatchStatus,
 } from "@/types/anime";
-import { getEpisodeDetail } from "@/services/animeService";
+import { getEpisodeDetail, getEpisodes } from "@/services/animeService";
 import { useAuth } from "@/contexts/AuthContext";
 import { useWatchList } from "@/contexts/WatchListContext";
 import { Button } from "@/components/Button/Button";
 import { Pill } from "@/components/Pill/Pill";
 import { PictureGallery } from "@/components/PictureGallery/PictureGallery";
 import { StatusBadge } from "@/components/StatusBadge/StatusBadge";
+import { Spinner } from "@/components/Spinner/Spinner";
 import { Tab, Tabs } from "@/components/Tabs/Tabs";
 import { formatLongText } from "@/lib/textUtils";
 import styles from "./page.module.scss";
@@ -34,7 +35,8 @@ interface AnimePageClientProps {
     relatedAnime?: Record<number, Anime>;
     pictures?: AnimePicture[];
     recommendations?: AnimeRecommendation[];
-    episodes?: AnimeEpisode[];
+    initialEpisodes?: AnimeEpisode[];
+    totalEpisodePages?: number;
     characters?: AnimeCharacter[];
     statistics?: AnimeStatistics | null;
 }
@@ -49,7 +51,8 @@ interface ContentTabsProps {
     pictures?: AnimePicture[];
     relatedAnime?: Record<number, Anime>;
     recommendations?: AnimeRecommendation[];
-    episodes?: AnimeEpisode[];
+    initialEpisodes?: AnimeEpisode[];
+    totalEpisodePages?: number;
     characters?: AnimeCharacter[];
     statistics?: AnimeStatistics | null;
 }
@@ -246,19 +249,41 @@ function CharactersSection({ characters }: { characters: AnimeCharacter[] }) {
 }
 
 interface EpisodesContentProps {
-    episodes: AnimeEpisode[];
+    initialEpisodes: AnimeEpisode[];
+    totalPages: number;
     animeId: number;
     episodeDetailsCache: Record<number, AnimeEpisodeDetail>;
     onEpisodeDetailFetched: (episodeId: number, detail: AnimeEpisodeDetail) => void;
 }
 
-function EpisodesContent({ episodes, animeId, episodeDetailsCache, onEpisodeDetailFetched }: EpisodesContentProps) {
+function EpisodesContent({
+    initialEpisodes,
+    totalPages,
+    animeId,
+    episodeDetailsCache,
+    onEpisodeDetailFetched,
+}: EpisodesContentProps) {
+    const [episodes, setEpisodes] = useState<AnimeEpisode[]>(initialEpisodes);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [loadingPage, setLoadingPage] = useState(false);
     const [expandedEpisodes, setExpandedEpisodes] = useState<Set<number>>(new Set());
     const [loadingEpisodes, setLoadingEpisodes] = useState<Set<number>>(new Set());
 
-    if (episodes.length === 0) {
+    if (initialEpisodes.length === 0) {
         return null;
     }
+
+    const loadPage = async (page: number) => {
+        if (loadingPage || page === currentPage) {
+            return;
+        }
+        setLoadingPage(true);
+        const data = await getEpisodes(animeId, page);
+        setEpisodes(data.episodes);
+        setCurrentPage(page);
+        setExpandedEpisodes(new Set());
+        setLoadingPage(false);
+    };
 
     const fetchEpisodeDetails = async (episodeId: number) => {
         if (episodeDetailsCache[episodeId] || loadingEpisodes.has(episodeId)) {
@@ -301,106 +326,170 @@ function EpisodesContent({ episodes, animeId, episodeDetailsCache, onEpisodeDeta
         return secs > 0 ? `${mins}m ${secs}s` : `${mins}m`;
     };
 
+    const renderPagination = () => {
+        if (totalPages <= 1) {
+            return null;
+        }
+
+        const pages: (number | string)[] = [];
+        for (let i = 1; i <= totalPages; i++) {
+            if (i === 1 || i === totalPages || (i >= currentPage - 1 && i <= currentPage + 1)) {
+                pages.push(i);
+            } else if (pages[pages.length - 1] !== "...") {
+                pages.push("...");
+            }
+        }
+
+        return (
+            <div className={styles.episodePagination}>
+                <button
+                    className={styles.pageButton}
+                    onClick={() => loadPage(currentPage - 1)}
+                    disabled={currentPage === 1 || loadingPage}
+                >
+                    <i className="bi bi-chevron-left" />
+                </button>
+                {pages.map((page, i) =>
+                    typeof page === "number" ? (
+                        <button
+                            key={i}
+                            className={`${styles.pageButton} ${page === currentPage ? styles.active : ""}`}
+                            onClick={() => loadPage(page)}
+                            disabled={loadingPage}
+                        >
+                            {page}
+                        </button>
+                    ) : (
+                        <span key={i} className={styles.pageEllipsis}>
+                            {page}
+                        </span>
+                    ),
+                )}
+                <button
+                    className={styles.pageButton}
+                    onClick={() => loadPage(currentPage + 1)}
+                    disabled={currentPage === totalPages || loadingPage}
+                >
+                    <i className="bi bi-chevron-right" />
+                </button>
+            </div>
+        );
+    };
+
     return (
         <div className={styles.episodesSection}>
-            <div className={styles.episodesList}>
-                {episodes.map(episode => {
-                    const isExpanded = expandedEpisodes.has(episode.mal_id);
-                    const isLoading = loadingEpisodes.has(episode.mal_id);
-                    const detail = episodeDetailsCache[episode.mal_id];
-                    return (
-                        <div key={episode.mal_id} className={styles.episodeItem}>
-                            <div className={styles.episodeMain} onClick={() => toggleExpand(episode.mal_id)}>
-                                <span className={styles.episodeNumber}>{episode.mal_id}</span>
-                                <div className={styles.episodeInfo}>
-                                    <span className={styles.episodeTitle}>{episode.title}</span>
-                                    <div className={styles.episodeMeta}>
-                                        {episode.aired && (
-                                            <span className={styles.episodeAired}>{formatDate(episode.aired)}</span>
-                                        )}
-                                        {episode.score && (
-                                            <span className={styles.episodeScore}>
-                                                <i className="bi bi-star-fill" /> {episode.score.toFixed(2)}
-                                            </span>
-                                        )}
-                                        {episode.filler && <span className={styles.episodeFiller}>Filler</span>}
-                                        {episode.recap && <span className={styles.episodeRecap}>Recap</span>}
-                                    </div>
-                                </div>
-                                <i className={`bi bi-chevron-${isExpanded ? "up" : "down"} ${styles.expandIcon}`} />
-                            </div>
-                            {isExpanded && (
-                                <div className={styles.episodeExpanded}>
-                                    {isLoading ? (
-                                        <div className={styles.episodeLoading}>
-                                            <i className="bi bi-arrow-repeat" /> Loading...
-                                        </div>
-                                    ) : (
-                                        <>
-                                            {detail?.synopsis && (
-                                                <div className={styles.episodeSynopsis}>
-                                                    {formatLongText(detail.synopsis).map((p, i) => (
-                                                        <p
-                                                            key={i}
-                                                            className={
-                                                                p.isAttribution ? styles.synopsisAttribution : undefined
-                                                            }
-                                                        >
-                                                            {p.text}
-                                                        </p>
-                                                    ))}
-                                                </div>
+            {renderPagination()}
+            {loadingPage ? (
+                <div className={styles.episodesLoading}>
+                    <Spinner size="sm" text="Loading episodes..." />
+                </div>
+            ) : (
+                <div className={styles.episodesList}>
+                    {episodes.map(episode => {
+                        const isExpanded = expandedEpisodes.has(episode.mal_id);
+                        const isLoading = loadingEpisodes.has(episode.mal_id);
+                        const detail = episodeDetailsCache[episode.mal_id];
+                        return (
+                            <div key={episode.mal_id} className={styles.episodeItem}>
+                                <div className={styles.episodeMain} onClick={() => toggleExpand(episode.mal_id)}>
+                                    <span className={styles.episodeNumber}>{episode.mal_id}</span>
+                                    <div className={styles.episodeInfo}>
+                                        <span className={styles.episodeTitle}>{episode.title}</span>
+                                        <div className={styles.episodeMeta}>
+                                            {episode.aired && (
+                                                <span className={styles.episodeAired}>{formatDate(episode.aired)}</span>
                                             )}
-                                            <div className={styles.episodeDetailGrid}>
-                                                {(detail?.title_japanese || episode.title_japanese) && (
-                                                    <div className={styles.episodeDetail}>
-                                                        <span className={styles.detailLabel}>Japanese</span>
-                                                        <span>{detail?.title_japanese || episode.title_japanese}</span>
-                                                    </div>
-                                                )}
-                                                {(detail?.title_romanji || episode.title_romanji) && (
-                                                    <div className={styles.episodeDetail}>
-                                                        <span className={styles.detailLabel}>Romanji</span>
-                                                        <span>{detail?.title_romanji || episode.title_romanji}</span>
-                                                    </div>
-                                                )}
-                                                {detail?.duration && (
-                                                    <div className={styles.episodeDetail}>
-                                                        <span className={styles.detailLabel}>Duration</span>
-                                                        <span>{formatDuration(detail.duration)}</span>
-                                                    </div>
-                                                )}
-                                            </div>
-                                            <div className={styles.episodeLinks}>
-                                                {episode.url && (
-                                                    <a
-                                                        href={episode.url}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        className={styles.episodeLink}
-                                                    >
-                                                        <i className="bi bi-box-arrow-up-right" /> MAL
-                                                    </a>
-                                                )}
-                                                {episode.forum_url && (
-                                                    <a
-                                                        href={episode.forum_url}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        className={styles.episodeLink}
-                                                    >
-                                                        <i className="bi bi-chat-dots" /> Forum
-                                                    </a>
-                                                )}
-                                            </div>
-                                        </>
-                                    )}
+                                            {episode.score && (
+                                                <span className={styles.episodeScore}>
+                                                    <i className="bi bi-star-fill" /> {episode.score.toFixed(2)}
+                                                </span>
+                                            )}
+                                            {episode.filler && <span className={styles.episodeFiller}>Filler</span>}
+                                            {episode.recap && <span className={styles.episodeRecap}>Recap</span>}
+                                        </div>
+                                    </div>
+                                    <i className={`bi bi-chevron-${isExpanded ? "up" : "down"} ${styles.expandIcon}`} />
                                 </div>
-                            )}
-                        </div>
-                    );
-                })}
-            </div>
+                                {isExpanded && (
+                                    <div className={styles.episodeExpanded}>
+                                        {isLoading ? (
+                                            <div className={styles.episodeLoading}>
+                                                <i className="bi bi-arrow-repeat" /> Loading...
+                                            </div>
+                                        ) : (
+                                            <>
+                                                {detail?.synopsis && (
+                                                    <div className={styles.episodeSynopsis}>
+                                                        {formatLongText(detail.synopsis).map((p, i) => (
+                                                            <p
+                                                                key={i}
+                                                                className={
+                                                                    p.isAttribution
+                                                                        ? styles.synopsisAttribution
+                                                                        : undefined
+                                                                }
+                                                            >
+                                                                {p.text}
+                                                            </p>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                                <div className={styles.episodeDetailGrid}>
+                                                    {(detail?.title_japanese || episode.title_japanese) && (
+                                                        <div className={styles.episodeDetail}>
+                                                            <span className={styles.detailLabel}>Japanese</span>
+                                                            <span>
+                                                                {detail?.title_japanese || episode.title_japanese}
+                                                            </span>
+                                                        </div>
+                                                    )}
+                                                    {(detail?.title_romanji || episode.title_romanji) && (
+                                                        <div className={styles.episodeDetail}>
+                                                            <span className={styles.detailLabel}>Romanji</span>
+                                                            <span>
+                                                                {detail?.title_romanji || episode.title_romanji}
+                                                            </span>
+                                                        </div>
+                                                    )}
+                                                    {detail?.duration && (
+                                                        <div className={styles.episodeDetail}>
+                                                            <span className={styles.detailLabel}>Duration</span>
+                                                            <span>{formatDuration(detail.duration)}</span>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                <div className={styles.episodeLinks}>
+                                                    {episode.url && (
+                                                        <a
+                                                            href={episode.url}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className={styles.episodeLink}
+                                                        >
+                                                            <i className="bi bi-box-arrow-up-right" /> MAL
+                                                        </a>
+                                                    )}
+                                                    {episode.forum_url && (
+                                                        <a
+                                                            href={episode.forum_url}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className={styles.episodeLink}
+                                                        >
+                                                            <i className="bi bi-chat-dots" /> Forum
+                                                        </a>
+                                                    )}
+                                                </div>
+                                            </>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                        );
+                    })}
+                </div>
+            )}
+            {renderPagination()}
         </div>
     );
 }
@@ -669,7 +758,8 @@ function ContentTabs({
     pictures,
     relatedAnime,
     recommendations,
-    episodes,
+    initialEpisodes,
+    totalEpisodePages,
     characters,
     statistics,
 }: ContentTabsProps) {
@@ -682,7 +772,7 @@ function ContentTabs({
     const hasMedia = anime.trailer?.youtube_id || (pictures && pictures.length > 0);
     const hasRelated = anime.relations && anime.relations.some(r => r.entry.some(e => e.type === "anime"));
     const hasRecommendations = recommendations && recommendations.length > 0;
-    const hasEpisodes = episodes && episodes.length > 0;
+    const hasEpisodes = initialEpisodes && initialEpisodes.length > 0;
     const hasCharacters = characters && characters.length > 0;
 
     const tabs: Tab[] = [
@@ -702,12 +792,15 @@ function ContentTabs({
     }
 
     if (hasEpisodes) {
+        const totalEpisodes =
+            (totalEpisodePages || 1) > 1 ? `${(totalEpisodePages || 1) * 100}+` : initialEpisodes.length;
         tabs.push({
             id: "episodes",
-            label: `Episodes (${episodes.length})`,
+            label: `Episodes (${totalEpisodes})`,
             content: (
                 <EpisodesContent
-                    episodes={episodes}
+                    initialEpisodes={initialEpisodes}
+                    totalPages={totalEpisodePages || 1}
                     animeId={anime.mal_id}
                     episodeDetailsCache={episodeDetailsCache}
                     onEpisodeDetailFetched={handleEpisodeDetailFetched}
@@ -748,7 +841,8 @@ export function AnimePageClient({
     relatedAnime,
     pictures,
     recommendations,
-    episodes,
+    initialEpisodes,
+    totalEpisodePages,
     characters,
     statistics,
 }: AnimePageClientProps) {
@@ -1063,7 +1157,8 @@ export function AnimePageClient({
                             pictures={pictures}
                             relatedAnime={relatedAnime}
                             recommendations={recommendations}
-                            episodes={episodes}
+                            initialEpisodes={initialEpisodes}
+                            totalEpisodePages={totalEpisodePages}
                             characters={characters}
                             statistics={statistics}
                         />

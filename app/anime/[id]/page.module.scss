@@ -1003,6 +1003,55 @@
     width: 100%;
 }
 
+.episodePagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: $spacing-xs;
+    padding: $spacing-md 0;
+}
+
+.pageButton {
+    min-width: 36px;
+    height: 36px;
+    padding: 0 $spacing-sm;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-primary);
+    border-radius: $radius-md;
+    color: var(--text-primary);
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all $transition-fast;
+
+    &:hover:not(:disabled) {
+        background: var(--bg-hover);
+        border-color: var(--accent-primary);
+    }
+
+    &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    &.active {
+        background: var(--accent-primary);
+        border-color: var(--accent-primary);
+        color: white;
+    }
+}
+
+.pageEllipsis {
+    padding: 0 $spacing-xs;
+    color: var(--text-muted);
+}
+
+.episodesLoading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+}
+
 .episodesList {
     display: flex;
     flex-direction: column;

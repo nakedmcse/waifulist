@@ -1,4 +1,4 @@
-import { Anime, AnimeEpisodeDetail, TopReviewWithAnime } from "@/types/anime";
+import { Anime, AnimeEpisode, AnimeEpisodeDetail, TopReviewWithAnime } from "@/types/anime";
 import { BrowseSortType } from "@/types/filter";
 
 export type { BrowseSortType };
@@ -81,5 +81,21 @@ export async function getEpisodeDetail(animeId: number, episodeId: number): Prom
     } catch (error) {
         console.error(`Failed to fetch episode ${episodeId} for anime ${animeId}:`, error);
         return null;
+    }
+}
+
+export async function getEpisodes(
+    animeId: number,
+    page: number = 1,
+): Promise<{ episodes: AnimeEpisode[]; hasNextPage: boolean; lastPage: number }> {
+    try {
+        const response = await fetch(`/api/anime/${animeId}/episodes?page=${page}`);
+        if (!response.ok) {
+            return { episodes: [], hasNextPage: false, lastPage: 1 };
+        }
+        return await response.json();
+    } catch (error) {
+        console.error(`Failed to fetch episodes for anime ${animeId}:`, error);
+        return { episodes: [], hasNextPage: false, lastPage: 1 };
     }
 }

@@ -3,6 +3,7 @@ export { useBackup } from "./useBackup";
 export { useBookmarks, useBookmarkStatus } from "./useBookmarks";
 export { useRestore } from "./useRestore";
 export { usePublicList } from "./usePublicList";
+export { useSpinner } from "./useSpinner";
 export { useTrace } from "./useTrace";
 export type { BrowseSortType } from "./useAnime";
 export type { PublicListItem, PublicListData } from "./usePublicList";

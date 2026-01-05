@@ -9,6 +9,7 @@ import { useContextMenu } from "@/hooks/useContextMenu";
 import { Button } from "@/components/Button/Button";
 import { Pagination } from "@/components/Pagination/Pagination";
 import { useWatchList } from "@/contexts/WatchListContext";
+import { Spinner } from "@/components/Spinner/Spinner";
 import styles from "./AnimeListView.module.scss";
 
 interface FilteredItem {
@@ -310,8 +311,7 @@ export function AnimeListView({
 
                 {isLoading ? (
                     <div className={styles.loading}>
-                        <div className={styles.spinner} />
-                        <p>Loading...</p>
+                        <Spinner text="Loading..." />
                     </div>
                 ) : filtered > 0 ? (
                     <>

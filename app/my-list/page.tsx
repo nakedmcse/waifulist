@@ -9,6 +9,7 @@ import { useSettings } from "@/contexts/SettingsContext";
 import { useBackup, useRestore } from "@/hooks";
 import { AnimeListView, AnimeListViewHandle } from "@/components/AnimeListView/AnimeListView";
 import { Button } from "@/components/Button/Button";
+import { Spinner } from "@/components/Spinner/Spinner";
 import styles from "./page.module.scss";
 
 interface ImportResult {
@@ -272,7 +273,7 @@ export default function MyListPage() {
 
                             {importing && (
                                 <div className={styles.importProgressContainer}>
-                                    <div className={styles.spinner} />
+                                    <Spinner size="sm" />
                                     {importProgress ? (
                                         <>
                                             <p className={styles.progressText}>

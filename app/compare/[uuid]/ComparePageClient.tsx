@@ -4,6 +4,7 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { CompareAnimeItem, CompareApiResponse, ComparisonData } from "@/types/compare";
+import { Spinner } from "@/components/Spinner/Spinner";
 import styles from "./page.module.scss";
 
 interface ComparePageClientProps {
@@ -205,8 +206,7 @@ export function ComparePageClient({ targetUuid }: ComparePageClientProps) {
             <div className={styles.page}>
                 <div className={styles.container}>
                     <div className={styles.loading}>
-                        <div className={styles.spinner} />
-                        <p>Loading comparison...</p>
+                        <Spinner text="Loading comparison..." />
                     </div>
                 </div>
             </div>

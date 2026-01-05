@@ -1,9 +1,5 @@
-import styles from "@/contexts/LoadingContext.module.scss";
+import { Spinner } from "@/components/Spinner/Spinner";
 
 export default function Loading() {
-    return (
-        <div className={styles.overlay}>
-            <div className={styles.spinner} />
-        </div>
-    );
+    return <Spinner variant="fullpage" size="lg" />;
 }

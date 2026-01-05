@@ -18,6 +18,7 @@ import { StatsApiResponse, UserStats } from "@/types/stats";
 import { watchStatusLabels } from "@/types/anime";
 import { BookmarkedUsersSection } from "@/components/BookmarkedUsersSection/BookmarkedUsersSection";
 import { useBookmarks } from "@/hooks/useBookmarks";
+import { Spinner } from "@/components/Spinner/Spinner";
 import styles from "./page.module.scss";
 
 ChartJS.register(ArcElement, CategoryScale, LinearScale, BarElement, LineElement, PointElement, Title, Tooltip, Legend);
@@ -87,8 +88,7 @@ export function ProfilePageClient() {
             <div className={styles.page}>
                 <div className={styles.container}>
                     <div className={styles.loading}>
-                        <div className={styles.spinner} />
-                        <p>Loading stats...</p>
+                        <Spinner text="Loading stats..." />
                     </div>
                 </div>
             </div>

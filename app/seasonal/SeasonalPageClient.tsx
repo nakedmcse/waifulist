@@ -8,6 +8,7 @@ import { SeasonSelector } from "@/components/SeasonSelector/SeasonSelector";
 import { AnimeCard } from "@/components/AnimeCard/AnimeCard";
 import { Pagination } from "@/components/Pagination/Pagination";
 import { useWatchList } from "@/contexts/WatchListContext";
+import { Spinner } from "@/components/Spinner/Spinner";
 import styles from "./page.module.scss";
 
 const PAGE_SIZE = 24;
@@ -133,8 +134,7 @@ export function SeasonalPageClient() {
 
                 {loading ? (
                     <div className={styles.loading}>
-                        <div className={styles.spinner} />
-                        <p>Loading...</p>
+                        <Spinner text="Loading..." />
                     </div>
                 ) : anime.length > 0 ? (
                     <>

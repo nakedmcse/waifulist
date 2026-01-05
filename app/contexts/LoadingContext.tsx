@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, ReactNode, useCallback, useContext, useState } from "react";
-import styles from "./LoadingContext.module.scss";
+import { Spinner } from "@/components/Spinner/Spinner";
 
 interface LoadingContextType {
     isLoading: boolean;
@@ -30,11 +30,7 @@ export function LoadingProvider({ children }: { children: ReactNode }) {
     return (
         <LoadingContext.Provider value={{ isLoading, setLoading, withLoading }}>
             {children}
-            {isLoading && (
-                <div className={styles.overlay}>
-                    <div className={styles.spinner} />
-                </div>
-            )}
+            {isLoading && <Spinner variant="fullpage" size="lg" />}
         </LoadingContext.Provider>
     );
 }

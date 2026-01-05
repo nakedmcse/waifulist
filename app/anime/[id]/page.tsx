@@ -77,7 +77,7 @@ export default async function AnimePage({ params }: PageProps) {
         ? anime.relations.flatMap(r => r.entry.filter(e => e.type === "anime").map(e => e.mal_id))
         : [];
 
-    const [relatedAnimeResults, pictures, recommendations, episodes, characters, statistics] = await Promise.all([
+    const [relatedAnimeResults, pictures, recommendations, episodesData, characters, statistics] = await Promise.all([
         Promise.all(relatedIds.map(id => getAnimeById(id))),
         fetchAnimePictures(animeId),
         fetchAnimeRecommendations(animeId),
@@ -99,7 +99,8 @@ export default async function AnimePage({ params }: PageProps) {
             relatedAnime={relatedAnime}
             pictures={pictures}
             recommendations={recommendations}
-            episodes={episodes}
+            initialEpisodes={episodesData.episodes}
+            totalEpisodePages={episodesData.lastPage}
             characters={characters}
             statistics={statistics}
         />
