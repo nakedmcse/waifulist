@@ -3,7 +3,16 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Anime, AnimePicture, AnimeRecommendation, AnimeRelation, WatchStatus } from "@/types/anime";
+import {
+    Anime,
+    AnimeEpisode,
+    AnimeEpisodeDetail,
+    AnimePicture,
+    AnimeRecommendation,
+    AnimeRelation,
+    WatchStatus,
+} from "@/types/anime";
+import { getEpisodeDetail } from "@/services/animeService";
 import { useAuth } from "@/contexts/AuthContext";
 import { useWatchList } from "@/contexts/WatchListContext";
 import { Button } from "@/components/Button/Button";
@@ -18,6 +27,7 @@ interface AnimePageClientProps {
     relatedAnime?: Record<number, Anime>;
     pictures?: AnimePicture[];
     recommendations?: AnimeRecommendation[];
+    episodes?: AnimeEpisode[];
 }
 
 interface RelatedAnimeSectionProps {
@@ -30,6 +40,7 @@ interface ContentTabsProps {
     pictures?: AnimePicture[];
     relatedAnime?: Record<number, Anime>;
     recommendations?: AnimeRecommendation[];
+    episodes?: AnimeEpisode[];
 }
 
 interface SynopsisParagraph {
@@ -129,6 +140,155 @@ function RecommendationsSection({ recommendations }: { recommendations: AnimeRec
                             <span className={styles.recommendationTitle}>{rec.entry.title}</span>
                             <span className={styles.recommendationVotes}>{rec.votes} votes</span>
                         </Link>
+                    );
+                })}
+            </div>
+        </div>
+    );
+}
+
+interface EpisodesContentProps {
+    episodes: AnimeEpisode[];
+    animeId: number;
+    episodeDetailsCache: Record<number, AnimeEpisodeDetail>;
+    onEpisodeDetailFetched: (episodeId: number, detail: AnimeEpisodeDetail) => void;
+}
+
+function EpisodesContent({ episodes, animeId, episodeDetailsCache, onEpisodeDetailFetched }: EpisodesContentProps) {
+    const [expandedEpisodes, setExpandedEpisodes] = useState<Set<number>>(new Set());
+    const [loadingEpisodes, setLoadingEpisodes] = useState<Set<number>>(new Set());
+
+    if (episodes.length === 0) {
+        return null;
+    }
+
+    const fetchEpisodeDetails = async (episodeId: number) => {
+        if (episodeDetailsCache[episodeId] || loadingEpisodes.has(episodeId)) {
+            return;
+        }
+
+        setLoadingEpisodes(prev => new Set(prev).add(episodeId));
+
+        const detail = await getEpisodeDetail(animeId, episodeId);
+        if (detail) {
+            onEpisodeDetailFetched(episodeId, detail);
+        }
+
+        setLoadingEpisodes(prev => {
+            const newSet = new Set(prev);
+            newSet.delete(episodeId);
+            return newSet;
+        });
+    };
+
+    const toggleExpand = (episodeId: number) => {
+        const newExpanded = new Set(expandedEpisodes);
+        if (newExpanded.has(episodeId)) {
+            newExpanded.delete(episodeId);
+        } else {
+            newExpanded.add(episodeId);
+            fetchEpisodeDetails(episodeId);
+        }
+        setExpandedEpisodes(newExpanded);
+    };
+
+    const formatDate = (dateString: string) => {
+        const date = new Date(dateString);
+        return date.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
+    };
+
+    const formatDuration = (seconds: number) => {
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return secs > 0 ? `${mins}m ${secs}s` : `${mins}m`;
+    };
+
+    return (
+        <div className={styles.episodesSection}>
+            <div className={styles.episodesList}>
+                {episodes.map(episode => {
+                    const isExpanded = expandedEpisodes.has(episode.mal_id);
+                    const isLoading = loadingEpisodes.has(episode.mal_id);
+                    const detail = episodeDetailsCache[episode.mal_id];
+                    return (
+                        <div key={episode.mal_id} className={styles.episodeItem}>
+                            <div className={styles.episodeMain} onClick={() => toggleExpand(episode.mal_id)}>
+                                <span className={styles.episodeNumber}>{episode.mal_id}</span>
+                                <div className={styles.episodeInfo}>
+                                    <span className={styles.episodeTitle}>{episode.title}</span>
+                                    <div className={styles.episodeMeta}>
+                                        {episode.aired && (
+                                            <span className={styles.episodeAired}>{formatDate(episode.aired)}</span>
+                                        )}
+                                        {episode.score && (
+                                            <span className={styles.episodeScore}>
+                                                <i className="bi bi-star-fill" /> {episode.score.toFixed(2)}
+                                            </span>
+                                        )}
+                                        {episode.filler && <span className={styles.episodeFiller}>Filler</span>}
+                                        {episode.recap && <span className={styles.episodeRecap}>Recap</span>}
+                                    </div>
+                                </div>
+                                <i className={`bi bi-chevron-${isExpanded ? "up" : "down"} ${styles.expandIcon}`} />
+                            </div>
+                            {isExpanded && (
+                                <div className={styles.episodeExpanded}>
+                                    {isLoading ? (
+                                        <div className={styles.episodeLoading}>
+                                            <i className="bi bi-arrow-repeat" /> Loading...
+                                        </div>
+                                    ) : (
+                                        <>
+                                            {detail?.synopsis && (
+                                                <p className={styles.episodeSynopsis}>{detail.synopsis}</p>
+                                            )}
+                                            <div className={styles.episodeDetailGrid}>
+                                                {(detail?.title_japanese || episode.title_japanese) && (
+                                                    <div className={styles.episodeDetail}>
+                                                        <span className={styles.detailLabel}>Japanese</span>
+                                                        <span>{detail?.title_japanese || episode.title_japanese}</span>
+                                                    </div>
+                                                )}
+                                                {(detail?.title_romanji || episode.title_romanji) && (
+                                                    <div className={styles.episodeDetail}>
+                                                        <span className={styles.detailLabel}>Romanji</span>
+                                                        <span>{detail?.title_romanji || episode.title_romanji}</span>
+                                                    </div>
+                                                )}
+                                                {detail?.duration && (
+                                                    <div className={styles.episodeDetail}>
+                                                        <span className={styles.detailLabel}>Duration</span>
+                                                        <span>{formatDuration(detail.duration)}</span>
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <div className={styles.episodeLinks}>
+                                                {episode.url && (
+                                                    <a
+                                                        href={episode.url}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className={styles.episodeLink}
+                                                    >
+                                                        <i className="bi bi-box-arrow-up-right" /> MAL
+                                                    </a>
+                                                )}
+                                                {episode.forum_url && (
+                                                    <a
+                                                        href={episode.forum_url}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className={styles.episodeLink}
+                                                    >
+                                                        <i className="bi bi-chat-dots" /> Forum
+                                                    </a>
+                                                )}
+                                            </div>
+                                        </>
+                                    )}
+                                </div>
+                            )}
+                        </div>
                     );
                 })}
             </div>
@@ -280,10 +440,17 @@ function MediaContent({ anime, pictures }: { anime: Anime; pictures?: AnimePictu
     return <Tabs tabs={mediaTabs} />;
 }
 
-function ContentTabs({ anime, pictures, relatedAnime, recommendations }: ContentTabsProps) {
+function ContentTabs({ anime, pictures, relatedAnime, recommendations, episodes }: ContentTabsProps) {
+    const [episodeDetailsCache, setEpisodeDetailsCache] = useState<Record<number, AnimeEpisodeDetail>>({});
+
+    const handleEpisodeDetailFetched = useCallback((episodeId: number, detail: AnimeEpisodeDetail) => {
+        setEpisodeDetailsCache(prev => ({ ...prev, [episodeId]: detail }));
+    }, []);
+
     const hasMedia = anime.trailer?.youtube_id || (pictures && pictures.length > 0);
     const hasRelated = anime.relations && anime.relations.some(r => r.entry.some(e => e.type === "anime"));
     const hasRecommendations = recommendations && recommendations.length > 0;
+    const hasEpisodes = episodes && episodes.length > 0;
 
     const tabs: Tab[] = [
         {
@@ -292,6 +459,21 @@ function ContentTabs({ anime, pictures, relatedAnime, recommendations }: Content
             content: <OverviewContent anime={anime} />,
         },
     ];
+
+    if (hasEpisodes) {
+        tabs.push({
+            id: "episodes",
+            label: `Episodes (${episodes.length})`,
+            content: (
+                <EpisodesContent
+                    episodes={episodes}
+                    animeId={anime.mal_id}
+                    episodeDetailsCache={episodeDetailsCache}
+                    onEpisodeDetailFetched={handleEpisodeDetailFetched}
+                />
+            ),
+        });
+    }
 
     if (hasMedia) {
         tabs.push({
@@ -320,7 +502,7 @@ function ContentTabs({ anime, pictures, relatedAnime, recommendations }: Content
     return <Tabs tabs={tabs} />;
 }
 
-export function AnimePageClient({ anime, relatedAnime, pictures, recommendations }: AnimePageClientProps) {
+export function AnimePageClient({ anime, relatedAnime, pictures, recommendations, episodes }: AnimePageClientProps) {
     const [showStatusMenu, setShowStatusMenu] = useState(false);
     const [localNoteText, setLocalNoteText] = useState<string | null>(null);
     const [noteSaved, setNoteSaved] = useState(false);
@@ -632,6 +814,7 @@ export function AnimePageClient({ anime, relatedAnime, pictures, recommendations
                             pictures={pictures}
                             relatedAnime={relatedAnime}
                             recommendations={recommendations}
+                            episodes={episodes}
                         />
                     </div>
                 </div>

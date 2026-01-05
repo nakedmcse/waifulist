@@ -1,8 +1,12 @@
 import {
     Anime,
+    AnimeEpisode,
+    AnimeEpisodeDetail,
     AnimePicture,
     AnimeRecommendation,
     AnimeRelation,
+    EpisodeDetailResponse,
+    EpisodesResponse,
     PicturesResponse,
     RecommendationsResponse,
 } from "@/types/anime";
@@ -105,6 +109,19 @@ export async function fetchAnimeRecommendations(id: number, limit = 12): Promise
         return [];
     }
     return response.data.sort((a, b) => b.votes - a.votes).slice(0, limit);
+}
+
+export async function fetchAnimeEpisodes(id: number): Promise<AnimeEpisode[]> {
+    const response = await fetchFromJikan<EpisodesResponse | null>(`/anime/${id}/episodes`, null);
+    return response?.data || [];
+}
+
+export async function fetchAnimeEpisodeDetail(animeId: number, episodeId: number): Promise<AnimeEpisodeDetail | null> {
+    const response = await fetchFromJikan<EpisodeDetailResponse | null>(
+        `/anime/${animeId}/episodes/${episodeId}`,
+        null,
+    );
+    return response?.data || null;
 }
 
 export const fetchAnimeFromCdn = fetchAnimeFromJikan;

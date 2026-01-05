@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getAnimeById } from "@/services/animeData";
-import { fetchAnimePictures, fetchAnimeRecommendations } from "@/lib/cdn";
+import { fetchAnimeEpisodes, fetchAnimePictures, fetchAnimeRecommendations } from "@/lib/cdn";
 import { AnimePageClient } from "./AnimePageClient";
 import { Anime } from "@/types/anime";
 
@@ -71,10 +71,11 @@ export default async function AnimePage({ params }: PageProps) {
         ? anime.relations.flatMap(r => r.entry.filter(e => e.type === "anime").map(e => e.mal_id))
         : [];
 
-    const [relatedAnimeResults, pictures, recommendations] = await Promise.all([
+    const [relatedAnimeResults, pictures, recommendations, episodes] = await Promise.all([
         Promise.all(relatedIds.map(id => getAnimeById(id))),
         fetchAnimePictures(animeId),
         fetchAnimeRecommendations(animeId),
+        fetchAnimeEpisodes(animeId),
     ]);
 
     relatedIds.forEach((id, index) => {
@@ -90,6 +91,7 @@ export default async function AnimePage({ params }: PageProps) {
             relatedAnime={relatedAnime}
             pictures={pictures}
             recommendations={recommendations}
+            episodes={episodes}
         />
     );
 }

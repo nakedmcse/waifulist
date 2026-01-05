@@ -1,4 +1,4 @@
-import { Anime } from "@/types/anime";
+import { Anime, AnimeEpisodeDetail } from "@/types/anime";
 import { BrowseSortType } from "@/types/filter";
 
 export type { BrowseSortType };
@@ -68,5 +68,18 @@ export async function searchAnime(query: string, limit: number = 20, hideSpecial
     } catch (error) {
         console.error("Search failed:", error);
         return [];
+    }
+}
+
+export async function getEpisodeDetail(animeId: number, episodeId: number): Promise<AnimeEpisodeDetail | null> {
+    try {
+        const response = await fetch(`/api/anime/${animeId}/episodes/${episodeId}`);
+        if (!response.ok) {
+            return null;
+        }
+        return await response.json();
+    } catch (error) {
+        console.error(`Failed to fetch episode ${episodeId} for anime ${animeId}:`, error);
+        return null;
     }
 }

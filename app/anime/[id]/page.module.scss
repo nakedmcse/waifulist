@@ -980,3 +980,185 @@
     font-size: 0.75rem;
     color: var(--text-muted);
 }
+
+.episodesSection {
+    width: 100%;
+}
+
+.episodesList {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-xs;
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+.episodeItem {
+    flex-shrink: 0;
+    background: var(--bg-tertiary);
+    border-radius: $radius-md;
+    overflow: hidden;
+    transition: background $transition-fast;
+
+    &:hover {
+        background: var(--bg-hover, rgba(255, 255, 255, 0.05));
+    }
+}
+
+.episodeMain {
+    display: flex;
+    align-items: center;
+    gap: $spacing-md;
+    padding: $spacing-md;
+    cursor: pointer;
+}
+
+.episodeNumber {
+    flex-shrink: 0;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-secondary);
+    border-radius: $radius-sm;
+    font-weight: 600;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.episodeInfo {
+    flex: 1;
+    min-width: 0;
+}
+
+.episodeTitle {
+    display: block;
+    font-weight: 500;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.episodeMeta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $spacing-sm;
+    margin-top: $spacing-xs;
+    font-size: 0.8rem;
+}
+
+.episodeAired {
+    color: var(--text-muted);
+}
+
+.episodeScore {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    color: var(--text-secondary);
+
+    i {
+        color: #fbbf24;
+        font-size: 0.7rem;
+    }
+}
+
+.episodeFiller {
+    padding: 2px 6px;
+    background: var(--warning, #f59e0b);
+    color: #000;
+    border-radius: $radius-sm;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.episodeRecap {
+    padding: 2px 6px;
+    background: var(--info, #3b82f6);
+    color: #fff;
+    border-radius: $radius-sm;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.expandIcon {
+    color: var(--text-muted);
+    transition: transform $transition-fast;
+}
+
+.episodeExpanded {
+    padding: $spacing-sm $spacing-md $spacing-md;
+    padding-left: calc(36px + $spacing-md * 2);
+    border-top: 1px solid var(--border-primary);
+    background: var(--bg-secondary);
+}
+
+.episodeLoading {
+    display: flex;
+    align-items: center;
+    gap: $spacing-xs;
+    color: var(--text-muted);
+    font-size: 0.875rem;
+
+    i {
+        animation: spin 1s linear infinite;
+    }
+}
+
+.episodeSynopsis {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    line-height: 1.6;
+    margin-bottom: $spacing-md;
+}
+
+.episodeDetailGrid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $spacing-sm $spacing-lg;
+    margin-bottom: $spacing-sm;
+}
+
+.episodeDetail {
+    display: flex;
+    gap: $spacing-sm;
+    font-size: 0.875rem;
+}
+
+.detailLabel {
+    min-width: 70px;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.episodeLinks {
+    display: flex;
+    gap: $spacing-sm;
+    margin-top: $spacing-sm;
+}
+
+.episodeLink {
+    display: inline-flex;
+    align-items: center;
+    gap: $spacing-xs;
+    padding: $spacing-xs $spacing-sm;
+    background: var(--bg-tertiary);
+    border-radius: $radius-sm;
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    text-decoration: none;
+    transition: all $transition-fast;
+
+    &:hover {
+        background: var(--accent-primary);
+        color: white;
+    }
+
+    i {
+        font-size: 0.7rem;
+    }
+}
