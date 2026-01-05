@@ -118,8 +118,21 @@ export async function fetchAnimeRecommendations(id: number, limit = 12): Promise
 }
 
 export async function fetchAnimeEpisodes(id: number): Promise<AnimeEpisode[]> {
-    const response = await fetchFromJikan<EpisodesResponse | null>(`/anime/${id}/episodes`, null);
-    return response?.data || [];
+    const allEpisodes: AnimeEpisode[] = [];
+    let page = 1;
+    let hasNextPage = true;
+
+    while (hasNextPage) {
+        const response = await fetchFromJikan<EpisodesResponse | null>(`/anime/${id}/episodes?page=${page}`, null);
+        if (!response?.data) {
+            break;
+        }
+        allEpisodes.push(...response.data);
+        hasNextPage = response.pagination?.has_next_page ?? false;
+        page++;
+    }
+
+    return allEpisodes;
 }
 
 export async function fetchAnimeEpisodeDetail(animeId: number, episodeId: number): Promise<AnimeEpisodeDetail | null> {
