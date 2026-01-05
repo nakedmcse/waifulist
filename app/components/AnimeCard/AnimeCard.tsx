@@ -150,7 +150,7 @@ export function AnimeCard({
                         <div className={styles.dateAdded} title={parseUtcDate(watchData.dateAdded).toLocaleString()}>
                             <i className="bi bi-calendar-plus" />
                             <span className={styles.dateLabel}>Added:</span>
-                            {formatDate(watchData.dateAdded)}
+                            {formatDate(watchData.dateAdded, true)}
                         </div>
                     )}
                     {watchData?.rating != null && watchData.rating !== 0 && (
