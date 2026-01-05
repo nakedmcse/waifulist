@@ -40,7 +40,6 @@ export function PictureGallery({ pictures }: PictureGalleryProps) {
                         alt={`Gallery image ${currentIndex + 1}`}
                         width={450}
                         height={675}
-                        unoptimized
                         className={styles.carouselImage}
                     />
                     <span className={styles.carouselCount}>

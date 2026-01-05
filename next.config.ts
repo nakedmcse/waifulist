@@ -12,6 +12,10 @@ const nextConfig: NextConfig = {
                 protocol: "https",
                 hostname: "api-cdn.myanimelist.net",
             },
+            {
+                protocol: "https",
+                hostname: "api.trace.moe",
+            },
         ],
     },
 };

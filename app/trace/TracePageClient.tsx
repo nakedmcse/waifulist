@@ -187,13 +187,7 @@ export function TracePageClient() {
 
                     {previewUrl ? (
                         <div className={styles.previewContainer}>
-                            <Image
-                                src={previewUrl}
-                                alt="Uploaded screenshot"
-                                fill
-                                className={styles.previewImage}
-                                unoptimized
-                            />
+                            <Image src={previewUrl} alt="Uploaded screenshot" fill className={styles.previewImage} />
                             <button className={styles.resetButton} onClick={handleReset}>
                                 <i className="bi bi-x-lg" />
                             </button>
@@ -273,7 +267,7 @@ function ResultCard({ result, isTop }: ResultCardProps) {
                     <video src={result.video} controls autoPlay loop muted className={styles.video} />
                 ) : (
                     <>
-                        <Image src={result.image} alt={title} fill className={styles.resultImage} unoptimized />
+                        <Image src={result.image} alt={title} fill className={styles.resultImage} />
                         <button className={styles.playButton} onClick={() => setShowVideo(true)}>
                             <i className="bi bi-play-fill" />
                         </button>
