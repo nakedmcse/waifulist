@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Anime, WatchStatus, watchStatusLabels } from "@/types/anime";
 import { useWatchList } from "@/contexts/WatchListContext";
 import styles from "./AnimeCard.module.scss";
+import { formatDate, parseUtcDate } from "@/lib/dateUtils";
 
 export interface AnimeCardWatchData {
     status: WatchStatus;
@@ -21,34 +22,6 @@ interface AnimeCardProps {
     ratingLabel?: string;
     showStartDate?: boolean;
     onContextMenu?: (e: React.MouseEvent, animeId: number) => void;
-}
-
-function parseUtcDate(dateString: string): Date {
-    return new Date(dateString.includes("Z") ? dateString : dateString.replace(" ", "T") + "Z");
-}
-
-function formatDateAdded(dateString: string): string {
-    const date = parseUtcDate(dateString);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-
-    if (diffDays === 0) {
-        return "Today";
-    }
-    if (diffDays === 1) {
-        return "Yesterday";
-    }
-    if (diffDays < 7) {
-        return `${diffDays} days ago`;
-    }
-    if (diffDays < 30) {
-        return `${Math.floor(diffDays / 7)} weeks ago`;
-    }
-    if (diffDays < 365) {
-        return `${Math.floor(diffDays / 30)} months ago`;
-    }
-    return date.toLocaleDateString();
 }
 
 function getOrdinalSuffix(day: number): string {
@@ -177,7 +150,7 @@ export function AnimeCard({
                         <div className={styles.dateAdded} title={parseUtcDate(watchData.dateAdded).toLocaleString()}>
                             <i className="bi bi-calendar-plus" />
                             <span className={styles.dateLabel}>Added:</span>
-                            {formatDateAdded(watchData.dateAdded)}
+                            {formatDate(watchData.dateAdded)}
                         </div>
                     )}
                     {watchData?.rating != null && watchData.rating !== 0 && (
