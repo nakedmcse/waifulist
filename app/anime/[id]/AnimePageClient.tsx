@@ -24,6 +24,7 @@ import { Pill } from "@/components/Pill/Pill";
 import { PictureGallery } from "@/components/PictureGallery/PictureGallery";
 import { StatusBadge } from "@/components/StatusBadge/StatusBadge";
 import { Tab, Tabs } from "@/components/Tabs/Tabs";
+import { formatLongText } from "@/lib/textUtils";
 import styles from "./page.module.scss";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, ArcElement, Legend);
@@ -51,11 +52,6 @@ interface ContentTabsProps {
     episodes?: AnimeEpisode[];
     characters?: AnimeCharacter[];
     statistics?: AnimeStatistics | null;
-}
-
-interface SynopsisParagraph {
-    text: string;
-    isAttribution: boolean;
 }
 
 const statusOptions: WatchStatus[] = ["watching", "plan_to_watch", "completed", "on_hold", "dropped"];
@@ -296,7 +292,7 @@ function EpisodesContent({ episodes, animeId, episodeDetailsCache, onEpisodeDeta
 
     const formatDate = (dateString: string) => {
         const date = new Date(dateString);
-        return date.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
+        return date.toLocaleDateString("en-GB", { year: "numeric", month: "short", day: "numeric" });
     };
 
     const formatDuration = (seconds: number) => {
@@ -342,7 +338,18 @@ function EpisodesContent({ episodes, animeId, episodeDetailsCache, onEpisodeDeta
                                     ) : (
                                         <>
                                             {detail?.synopsis && (
-                                                <p className={styles.episodeSynopsis}>{detail.synopsis}</p>
+                                                <div className={styles.episodeSynopsis}>
+                                                    {formatLongText(detail.synopsis).map((p, i) => (
+                                                        <p
+                                                            key={i}
+                                                            className={
+                                                                p.isAttribution ? styles.synopsisAttribution : undefined
+                                                            }
+                                                        >
+                                                            {p.text}
+                                                        </p>
+                                                    ))}
+                                                </div>
                                             )}
                                             <div className={styles.episodeDetailGrid}>
                                                 {(detail?.title_japanese || episode.title_japanese) && (
@@ -396,49 +403,6 @@ function EpisodesContent({ episodes, animeId, episodeDetailsCache, onEpisodeDeta
             </div>
         </div>
     );
-}
-
-function formatSynopsis(text: string): SynopsisParagraph[] {
-    const paragraphs = text.split(/\n\n+/).filter(p => p.trim());
-
-    if (paragraphs.length === 1 && text.length > 400) {
-        const result: SynopsisParagraph[] = [];
-        let remaining = text;
-
-        const attributionMatch = remaining.match(/\s*\[([^\]]+)]\s*$/);
-        let attribution = "";
-        if (attributionMatch) {
-            attribution = `[${attributionMatch[1]}]`;
-            remaining = remaining.slice(0, attributionMatch.index).trim();
-        }
-
-        const sentences = remaining.split(/(?<=[.!?])\s+(?=[A-Z])/);
-        let currentParagraph = "";
-
-        for (const sentence of sentences) {
-            if (currentParagraph.length + sentence.length > 350 && currentParagraph.length > 200) {
-                result.push({ text: currentParagraph.trim(), isAttribution: false });
-                currentParagraph = sentence;
-            } else {
-                currentParagraph += (currentParagraph ? " " : "") + sentence;
-            }
-        }
-
-        if (currentParagraph.trim()) {
-            result.push({ text: currentParagraph.trim(), isAttribution: false });
-        }
-
-        if (attribution) {
-            result.push({ text: attribution, isAttribution: true });
-        }
-
-        return result;
-    }
-
-    return paragraphs.map((p, i) => ({
-        text: p,
-        isAttribution: i === paragraphs.length - 1 && p.startsWith("["),
-    }));
 }
 
 function getChartColors() {
@@ -599,7 +563,7 @@ interface OverviewContentProps {
 }
 
 function OverviewContent({ anime, statistics }: OverviewContentProps) {
-    const synopsisParagraphs = anime.synopsis ? formatSynopsis(anime.synopsis) : [];
+    const synopsisParagraphs = anime.synopsis ? formatLongText(anime.synopsis) : [];
 
     return (
         <div className={styles.overviewTab}>

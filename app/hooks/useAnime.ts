@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback } from "react";
-import { Anime } from "@/types/anime";
+import { Anime, TopReviewWithAnime } from "@/types/anime";
 import * as animeService from "@/services/animeService";
 import { BrowseSortType } from "@/services/animeService";
 import { useLoading } from "@/contexts/LoadingContext";
@@ -30,7 +30,7 @@ export function useAnime() {
         [withLoading],
     );
 
-    const getHomePageAnime = useCallback(async (): Promise<{ featured: Anime[]; popular: Anime[] }> => {
+    const getHomePageAnime = useCallback(async (): Promise<{ popular: Anime[]; reviews: TopReviewWithAnime[] }> => {
         return withLoading(() => animeService.getHomePageAnime());
     }, [withLoading]);
 
@@ -57,7 +57,10 @@ export function useAnime() {
         [],
     );
 
-    const getHomePageAnimeSilent = useCallback(async (): Promise<{ featured: Anime[]; popular: Anime[] }> => {
+    const getHomePageAnimeSilent = useCallback(async (): Promise<{
+        popular: Anime[];
+        reviews: TopReviewWithAnime[];
+    }> => {
         return animeService.getHomePageAnime();
     }, []);
 

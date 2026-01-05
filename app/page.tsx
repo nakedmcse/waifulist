@@ -2,19 +2,20 @@
 
 import React, { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Anime } from "@/types/anime";
+import { Anime, TopReviewWithAnime } from "@/types/anime";
 import { useAnime } from "@/hooks";
 import { useWatchList } from "@/contexts/WatchListContext";
 import { SearchBar } from "@/components/SearchBar/SearchBar";
 import { AnimeCard } from "@/components/AnimeCard/AnimeCard";
+import { ReviewCard } from "@/components/ReviewCard/ReviewCard";
 import styles from "./page.module.scss";
 
 export default function Home() {
     const router = useRouter();
     const { getHomePageAnime } = useAnime();
     const { ensureLoaded } = useWatchList();
-    const [featuredAnime, setFeaturedAnime] = useState<Anime[]>([]);
     const [popularAnime, setPopularAnime] = useState<Anime[]>([]);
+    const [reviews, setReviews] = useState<TopReviewWithAnime[]>([]);
 
     useEffect(() => {
         ensureLoaded();
@@ -30,9 +31,9 @@ export default function Home() {
     );
 
     useEffect(() => {
-        getHomePageAnime().then(({ featured, popular }) => {
-            setFeaturedAnime(featured);
+        getHomePageAnime().then(({ popular, reviews }) => {
             setPopularAnime(popular);
+            setReviews(reviews);
         });
     }, [getHomePageAnime]);
 
@@ -53,18 +54,20 @@ export default function Home() {
                 </div>
             </section>
 
-            <section className={styles.section}>
-                <div className={styles.container}>
-                    <div className={styles.sectionHeader}>
-                        <h2>Recommendations</h2>
+            {reviews.length > 0 && (
+                <section className={styles.section}>
+                    <div className={styles.container}>
+                        <div className={styles.sectionHeader}>
+                            <h2>Recent Reviews</h2>
+                        </div>
+                        <div className={styles.reviewsGrid}>
+                            {reviews.map(review => (
+                                <ReviewCard key={review.mal_id} review={review} />
+                            ))}
+                        </div>
                     </div>
-                    <div className={styles.grid}>
-                        {featuredAnime.map(anime => (
-                            <AnimeCard key={anime.mal_id} anime={anime} />
-                        ))}
-                    </div>
-                </div>
-            </section>
+                </section>
+            )}
 
             <section className={styles.section}>
                 <div className={styles.container}>

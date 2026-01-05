@@ -1132,6 +1132,14 @@
     font-size: 0.875rem;
     line-height: 1.6;
     margin-bottom: $spacing-md;
+
+    p {
+        margin-bottom: $spacing-md;
+
+        &:last-child {
+            margin-bottom: 0;
+        }
+    }
 }
 
 .episodeDetailGrid {

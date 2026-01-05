@@ -1,6 +1,6 @@
-import { Anime } from "@/types/anime";
+import { Anime, TopReviewWithAnime } from "@/types/anime";
 import { getRedis, getSubscriber, REDIS_KEYS, REDIS_TTL } from "@/lib/redis";
-import { fetchAnimeFromCdn } from "@/lib/cdn";
+import { fetchAnimeFromCdn, fetchTopReviews } from "@/lib/cdn";
 import { getCurrentSeason, parseSeasonFromStartDate, Season } from "@/lib/seasonUtils";
 import {
     BrowseSortType,
@@ -617,9 +617,9 @@ export async function browseAnime(
     }
 }
 
-export async function getHomePageAnime(): Promise<{ featured: Anime[]; popular: Anime[] }> {
-    const [featured, popularResult] = await Promise.all([getFeaturedAnime(), browseAnime(20)]);
-    return { featured, popular: popularResult.anime };
+export async function getHomePageAnime(): Promise<{ popular: Anime[]; reviews: TopReviewWithAnime[] }> {
+    const [popularResult, reviews] = await Promise.all([browseAnime(20), getTopReviews(6)]);
+    return { popular: popularResult.anime, reviews };
 }
 
 export async function getAnimeBySeason(
@@ -649,4 +649,19 @@ export async function getAnimeBySeason(
         console.error(`[Redis] Failed to get seasonal anime for ${season} ${year}:`, error);
         return { anime: [], total: 0 };
     }
+}
+
+export async function getTopReviews(limit: number = 6): Promise<TopReviewWithAnime[]> {
+    const reviews = await fetchTopReviews(limit);
+    if (reviews.length === 0) {
+        return [];
+    }
+
+    const animeIds = reviews.map(r => r.entry.mal_id);
+    const animeMap = await getAnimeFromRedisByIds(animeIds);
+
+    return reviews.map(review => ({
+        ...review,
+        anime: animeMap.get(review.entry.mal_id) || null,
+    }));
 }

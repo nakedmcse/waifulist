@@ -1,4 +1,4 @@
-import { Anime, AnimeEpisodeDetail } from "@/types/anime";
+import { Anime, AnimeEpisodeDetail, TopReviewWithAnime } from "@/types/anime";
 import { BrowseSortType } from "@/types/filter";
 
 export type { BrowseSortType };
@@ -40,16 +40,16 @@ export async function browseAnime(
     }
 }
 
-export async function getHomePageAnime(): Promise<{ featured: Anime[]; popular: Anime[] }> {
+export async function getHomePageAnime(): Promise<{ popular: Anime[]; reviews: TopReviewWithAnime[] }> {
     try {
         const response = await fetch("/api/anime?home=true");
         if (!response.ok) {
-            return { featured: [], popular: [] };
+            return { popular: [], reviews: [] };
         }
         return await response.json();
     } catch (error) {
         console.error("Failed to fetch homepage anime:", error);
-        return { featured: [], popular: [] };
+        return { popular: [], reviews: [] };
     }
 }
 

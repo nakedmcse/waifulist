@@ -1,0 +1,150 @@
+@use "../../styles/variables" as *;
+
+.card {
+    @include card-base;
+    padding: $spacing-md;
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-sm;
+    height: 100%;
+}
+
+.animeLink {
+    display: flex;
+    gap: $spacing-md;
+    text-decoration: none;
+    color: inherit;
+
+    &:hover .animeTitle {
+        color: var(--accent-primary);
+    }
+}
+
+.animeImage {
+    position: relative;
+    width: 60px;
+    height: 85px;
+    flex-shrink: 0;
+    border-radius: $radius-sm;
+    overflow: hidden;
+}
+
+.image {
+    object-fit: cover;
+}
+
+.animeInfo {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-xs;
+    min-width: 0;
+}
+
+.animeTitle {
+    font-size: 0.9rem;
+    font-weight: 600;
+    @include truncate(2);
+    transition: color $transition-fast;
+}
+
+.score {
+    display: flex;
+    align-items: center;
+    gap: $spacing-xs;
+    font-size: 0.85rem;
+    color: var(--accent-primary);
+
+    i {
+        font-size: 0.75rem;
+    }
+}
+
+.reviewContent {
+    flex: 1;
+    max-height: 150px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-primary) transparent;
+
+    &::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    &::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background: var(--border-primary);
+        border-radius: 3px;
+
+        &:hover {
+            background: var(--text-muted);
+        }
+    }
+}
+
+.reviewText {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    line-height: 1.7;
+    margin: 0 0 $spacing-md 0;
+
+    &:last-child {
+        margin-bottom: 0;
+    }
+}
+
+.reviewAttribution {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    font-style: italic;
+    margin: $spacing-sm 0 0 0;
+}
+
+.footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: $spacing-sm;
+    border-top: 1px solid var(--border-primary);
+}
+
+.user {
+    display: flex;
+    align-items: center;
+    gap: $spacing-xs;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: color $transition-fast;
+
+    &:hover {
+        color: var(--accent-primary);
+    }
+}
+
+.userAvatar {
+    border-radius: $radius-full;
+    object-fit: cover;
+}
+
+.date {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.tags {
+    display: flex;
+    gap: $spacing-xs;
+    flex-wrap: wrap;
+}
+
+.tag {
+    font-size: 0.7rem;
+    padding: 2px $spacing-xs;
+    background: var(--bg-tertiary);
+    border-radius: $radius-sm;
+    color: var(--text-muted);
+    text-transform: capitalize;
+}

@@ -13,6 +13,8 @@ import {
     PicturesResponse,
     RecommendationsResponse,
     StatisticsResponse,
+    TopReview,
+    TopReviewsResponse,
 } from "@/types/anime";
 
 const JIKAN_API_URL = process.env.JIKAN_API_URL || "http://jikan:8080/v4";
@@ -147,6 +149,14 @@ export async function fetchAnimeCharacters(id: number): Promise<AnimeCharacter[]
 export async function fetchAnimeStatistics(id: number): Promise<AnimeStatistics | null> {
     const response = await fetchFromJikan<StatisticsResponse | null>(`/anime/${id}/statistics`, null);
     return response?.data || null;
+}
+
+export async function fetchTopReviews(limit: number = 6): Promise<TopReview[]> {
+    const response = await fetchFromJikan<TopReviewsResponse | null>(`/top/reviews`, null);
+    if (!response?.data) {
+        return [];
+    }
+    return response.data.filter(review => review.type === "anime" && !review.is_spoiler).slice(0, limit);
 }
 
 export const fetchAnimeFromCdn = fetchAnimeFromJikan;

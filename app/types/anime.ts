@@ -204,6 +204,55 @@ export interface StatisticsResponse {
     data: AnimeStatistics;
 }
 
+export interface TopReview {
+    mal_id: number;
+    url: string;
+    type: string;
+    reactions: {
+        overall: number;
+        nice: number;
+        love_it: number;
+        funny: number;
+        confusing: number;
+        informative: number;
+        well_written: number;
+        creative: number;
+    };
+    date: string;
+    review: string;
+    score: number;
+    tags: string[];
+    is_spoiler: boolean;
+    is_preliminary: boolean;
+    entry: {
+        mal_id: number;
+        url: string;
+        images: AnimePicture;
+        title: string;
+    };
+    user: {
+        url: string;
+        username: string;
+        images?: {
+            jpg: { image_url: string };
+            webp: { image_url: string };
+        };
+    };
+}
+
+export interface TopReviewWithAnime extends Omit<TopReview, "entry"> {
+    anime: Anime | null;
+    entry: TopReview["entry"];
+}
+
+export interface TopReviewsResponse {
+    pagination: {
+        last_visible_page: number;
+        has_next_page: boolean;
+    };
+    data: TopReview[];
+}
+
 export interface WatchedAnime {
     animeId: number;
     status: WatchStatus;
