@@ -10,8 +10,10 @@ services:
     env_file:
       - .env
     depends_on:
-      - redis
-      - jikan
+      redis:
+        condition: service_started
+      jikan:
+        condition: service_healthy
     restart: always
 
   redis:
@@ -36,7 +38,12 @@ services:
       - ./jikan-entrypoint.sh:/app/jikan-entrypoint.sh:ro
     depends_on:
       - mongodb_jikan
-#    entrypoint: ["sh", "/app/jikan-entrypoint.sh"]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/v4/anime/1"]
+      interval: 15s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
 
   mongodb_jikan:
     image: mongo:latest
@@ -46,6 +53,15 @@ services:
       - jikan.env
     volumes:
       - mongodb_jikan_data:/data/db
+
+  autoheal:
+    image: willfarrell/autoheal:latest
+    container_name: autoheal
+    restart: always
+    environment:
+      - AUTOHEAL_CONTAINER_LABEL=all
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
 
 volumes:
   waifulist-data:
