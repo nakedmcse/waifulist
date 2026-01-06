@@ -967,9 +967,11 @@ export function AnimePageClient({
                         {anime.genres && anime.genres.length > 0 && (
                             <div className={styles.genres}>
                                 {anime.genres.map(genre => (
-                                    <Pill key={genre.mal_id} variant="accent">
-                                        {genre.name}
-                                    </Pill>
+                                    <Link key={genre.mal_id} href={`/browse?genres=${encodeURIComponent(genre.name)}`}>
+                                        <Pill variant="accent" className={styles.genreLink}>
+                                            {genre.name}
+                                        </Pill>
+                                    </Link>
                                 ))}
                             </div>
                         )}

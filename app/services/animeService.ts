@@ -21,6 +21,7 @@ export async function browseAnime(
     offset: number = 0,
     sort: BrowseSortType = "rating",
     hideSpecials: boolean = false,
+    genres: string[] = [],
 ): Promise<{ anime: Anime[]; total: number }> {
     try {
         const params = new URLSearchParams({
@@ -29,6 +30,9 @@ export async function browseAnime(
             sort,
             hideSpecials: String(hideSpecials),
         });
+        if (genres.length > 0) {
+            params.set("genres", genres.join(","));
+        }
         const response = await fetch(`/api/anime?${params}`);
         if (!response.ok) {
             return { anime: [], total: 0 };
@@ -53,13 +57,21 @@ export async function getHomePageAnime(): Promise<{ popular: Anime[]; reviews: T
     }
 }
 
-export async function searchAnime(query: string, limit: number = 20, hideSpecials: boolean = false): Promise<Anime[]> {
+export async function searchAnime(
+    query: string,
+    limit: number = 20,
+    hideSpecials: boolean = false,
+    genres: string[] = [],
+): Promise<Anime[]> {
     try {
         const params = new URLSearchParams({
             q: query,
             limit: String(limit),
             hideSpecials: String(hideSpecials),
         });
+        if (genres.length > 0) {
+            params.set("genres", genres.join(","));
+        }
         const response = await fetch(`/api/anime?${params}`);
         if (!response.ok) {
             return [];
@@ -67,6 +79,20 @@ export async function searchAnime(query: string, limit: number = 20, hideSpecial
         return await response.json();
     } catch (error) {
         console.error("Search failed:", error);
+        return [];
+    }
+}
+
+export async function getGenres(): Promise<string[]> {
+    try {
+        const response = await fetch("/api/genres");
+        if (!response.ok) {
+            return [];
+        }
+        const data = await response.json();
+        return data.genres;
+    } catch (error) {
+        console.error("Failed to fetch genres:", error);
         return [];
     }
 }

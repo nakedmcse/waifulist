@@ -16,6 +16,8 @@ const MAL_STATUS_MAP: Record<string, WatchStatus> = {
     "Plan to Watch": "plan_to_watch",
 };
 
+const animeRegex = /<anime>([\s\S]*?)<\/anime>/g;
+
 class MalImportEngine implements IImportEngine {
     public canHandle(type: ImportType): boolean {
         return type === "mal";
@@ -52,7 +54,6 @@ class MalImportEngine implements IImportEngine {
 
     private parseEntries(content: string): MalAnimeEntry[] {
         const entries: MalAnimeEntry[] = [];
-        const animeRegex = /<anime>([\s\S]*?)<\/anime>/g;
 
         let match;
         while ((match = animeRegex.exec(content)) !== null) {

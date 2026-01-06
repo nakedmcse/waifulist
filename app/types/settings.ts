@@ -5,6 +5,7 @@ export interface BrowseSettings {
 
 export interface MyListSettings {
     sort?: string;
+    genres?: string[];
 }
 
 export interface UserSettings {

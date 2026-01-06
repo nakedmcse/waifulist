@@ -24,8 +24,9 @@ export function useAnime() {
             offset: number = 0,
             sort: BrowseSortType = "rating",
             hideSpecials: boolean = false,
+            genres: string[] = [],
         ): Promise<{ anime: Anime[]; total: number }> => {
-            return withLoading(() => animeService.browseAnime(limit, offset, sort, hideSpecials));
+            return withLoading(() => animeService.browseAnime(limit, offset, sort, hideSpecials, genres));
         },
         [withLoading],
     );
@@ -35,8 +36,13 @@ export function useAnime() {
     }, [withLoading]);
 
     const searchAnime = useCallback(
-        async (query: string, limit: number = 20, hideSpecials: boolean = false): Promise<Anime[]> => {
-            return withLoading(() => animeService.searchAnime(query, limit, hideSpecials));
+        async (
+            query: string,
+            limit: number = 20,
+            hideSpecials: boolean = false,
+            genres: string[] = [],
+        ): Promise<Anime[]> => {
+            return withLoading(() => animeService.searchAnime(query, limit, hideSpecials, genres));
         },
         [withLoading],
     );
@@ -51,8 +57,9 @@ export function useAnime() {
             offset: number = 0,
             sort: BrowseSortType = "rating",
             hideSpecials: boolean = false,
+            genres: string[] = [],
         ): Promise<{ anime: Anime[]; total: number }> => {
-            return animeService.browseAnime(limit, offset, sort, hideSpecials);
+            return animeService.browseAnime(limit, offset, sort, hideSpecials, genres);
         },
         [],
     );
@@ -65,11 +72,20 @@ export function useAnime() {
     }, []);
 
     const searchAnimeSilent = useCallback(
-        async (query: string, limit: number = 20, hideSpecials: boolean = false): Promise<Anime[]> => {
-            return animeService.searchAnime(query, limit, hideSpecials);
+        async (
+            query: string,
+            limit: number = 20,
+            hideSpecials: boolean = false,
+            genres: string[] = [],
+        ): Promise<Anime[]> => {
+            return animeService.searchAnime(query, limit, hideSpecials, genres);
         },
         [],
     );
+
+    const getGenres = useCallback(async (): Promise<string[]> => {
+        return animeService.getGenres();
+    }, []);
 
     return {
         // With global loading spinner
@@ -82,6 +98,8 @@ export function useAnime() {
         browseAnimeSilent,
         getHomePageAnimeSilent,
         searchAnimeSilent,
+        // Utilities
+        getGenres,
         // Direct access to loading control
         setLoading,
         withLoading,

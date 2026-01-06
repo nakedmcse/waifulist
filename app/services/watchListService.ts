@@ -19,6 +19,8 @@ export async function getFilteredWatchList(userId: number, url: URL): Promise<Wa
     const status = (searchParams.get("status") as WatchStatus | "all") || "all";
     const page = parseInt(searchParams.get("page") || "1", 10);
     const limit = parseInt(searchParams.get("limit") || String(PAGE_SIZE), 10);
+    const genresParam = searchParams.get("genres");
+    const genres = genresParam ? genresParam.split(",").filter(g => g.trim()) : [];
 
     const items = getAllWatched(userId);
     const animeIds = items.map(item => item.anime_id);
@@ -33,7 +35,7 @@ export async function getFilteredWatchList(userId: number, url: URL): Promise<Wa
         episodesWatched: item.episodes_watched,
     }));
 
-    return filterWatchList(watchedItems, animeMap, { query, sort, status, page, limit });
+    return filterWatchList(watchedItems, animeMap, { query, sort, status, page, limit, genres });
 }
 
 function filterWatchList(
@@ -41,7 +43,7 @@ function filterWatchList(
     animeMap: Map<number, Anime>,
     params: WatchListQueryParams,
 ): WatchListResponse {
-    const { query, sort, status, page, limit } = params;
+    const { query, sort, status, page, limit, genres = [] } = params;
 
     const filterableItems = toFilterableItemsFromWatchList(watchedItems, animeMap);
     const filterResult = filterAnime(filterableItems, {
@@ -50,6 +52,7 @@ function filterWatchList(
         sort,
         sortDirection: sort === "name" ? "asc" : "desc",
         statusFilter: status,
+        genres,
         limit,
         offset: (page - 1) * limit,
     });
@@ -66,10 +69,14 @@ function filterWatchList(
     }));
 
     const counts: Record<string, number> = { all: filterableItems.length };
+    const genreSet = new Set<string>();
     for (const item of filterableItems) {
         const s = item.watchData?.status;
         if (s) {
             counts[s] = (counts[s] || 0) + 1;
+        }
+        for (const genre of item.anime.genres || []) {
+            genreSet.add(genre.name);
         }
     }
 
@@ -80,6 +87,7 @@ function filterWatchList(
         page,
         totalPages: Math.ceil(filterResult.filtered / limit),
         counts,
+        availableGenres: Array.from(genreSet).sort(),
     };
 }
 

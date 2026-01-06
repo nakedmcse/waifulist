@@ -31,6 +31,7 @@ interface FilterResponse {
     totalPages: number;
     counts: Record<string, number>;
     username?: string;
+    availableGenres?: string[];
 }
 
 export interface AnimeListViewHandle {
@@ -47,6 +48,9 @@ interface AnimeListViewProps {
     initialSort?: SortType;
     onSortChange?: (sort: SortType) => void;
     ratingLabel?: string;
+    genres?: string[];
+    sidebar?: React.ReactNode;
+    onAvailableGenresChange?: (genres: string[]) => void;
     ref?: React.Ref<AnimeListViewHandle>;
 }
 
@@ -70,6 +74,9 @@ export function AnimeListView({
     initialSort = "added",
     onSortChange,
     ratingLabel,
+    genres = [],
+    sidebar,
+    onAvailableGenresChange,
     ref,
 }: AnimeListViewProps) {
     const searchParams = useSearchParams();
@@ -102,6 +109,9 @@ export function AnimeListView({
         };
     }, []);
 
+    const onAvailableGenresChangeRef = useRef(onAvailableGenresChange);
+    onAvailableGenresChangeRef.current = onAvailableGenresChange;
+
     const fetchData = useCallback(async () => {
         setLoading(true);
         try {
@@ -114,6 +124,9 @@ export function AnimeListView({
                 params.set("status", activeTab);
             }
             params.set("page", String(page));
+            if (genres.length > 0) {
+                params.set("genres", genres.join(","));
+            }
 
             const url = `${apiEndpoint}?${params.toString()}`;
             const response = await fetch(url);
@@ -126,13 +139,16 @@ export function AnimeListView({
             setCounts(data.counts);
             setFiltered(data.filtered);
             setTotalPages(data.totalPages);
+            if (data.availableGenres) {
+                onAvailableGenresChangeRef.current?.(data.availableGenres);
+            }
         } catch (error) {
             console.error("Failed to fetch list:", error);
             setItems([]);
         } finally {
             setLoading(false);
         }
-    }, [apiEndpoint, searchQuery, sortBy, activeTab, page]);
+    }, [apiEndpoint, searchQuery, sortBy, activeTab, page, genres]);
 
     useEffect(() => {
         fetchData();
@@ -240,8 +256,9 @@ export function AnimeListView({
     const isLoading = loading || externalLoading;
 
     return (
-        <div className={styles.page}>
-            <div className={styles.container}>
+        <div className={sidebar ? styles.pageWithSidebar : styles.page}>
+            {sidebar && <aside className={styles.sidebar}>{sidebar}</aside>}
+            <div className={sidebar ? styles.main : styles.container}>
                 <div className={styles.header}>
                     <h1>{title}</h1>
                     <p className={styles.subtitle}>{subtitle}</p>
@@ -315,7 +332,7 @@ export function AnimeListView({
                     </div>
                 ) : filtered > 0 ? (
                     <>
-                        <div className={styles.grid}>
+                        <div className={sidebar ? styles.gridWithSidebar : styles.grid}>
                             {pagedItems.map(({ anime, watchData }) => (
                                 <AnimeCard
                                     key={anime.mal_id}

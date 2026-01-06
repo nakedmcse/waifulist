@@ -9,9 +9,11 @@ export async function GET(request: NextRequest) {
     const offset = parseInt(searchParams.get("offset") || "0", 10);
     const sort = (searchParams.get("sort") as BrowseSortType) || "rating";
     const hideSpecials = searchParams.get("hideSpecials") === "true";
+    const genresParam = searchParams.get("genres");
+    const genres = genresParam ? genresParam.split(",").filter(g => g.trim()) : [];
 
     if (query) {
-        const results = await searchAnime(query, limit, hideSpecials);
+        const results = await searchAnime(query, limit, hideSpecials, genres);
         return NextResponse.json(results);
     }
 
@@ -20,6 +22,6 @@ export async function GET(request: NextRequest) {
         return NextResponse.json(data);
     }
 
-    const result = await browseAnime(limit, offset, sort, hideSpecials);
+    const result = await browseAnime(limit, offset, sort, hideSpecials, genres);
     return NextResponse.json(result);
 }

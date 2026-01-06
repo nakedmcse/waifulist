@@ -53,6 +53,7 @@ export function filterAnime<T extends Anime = Anime>(
         sortDirection = "desc",
         hideSpecials = false,
         statusFilter,
+        genres = [],
         limit,
         offset = 0,
     } = options;
@@ -66,6 +67,10 @@ export function filterAnime<T extends Anime = Anime>(
 
     if (hideSpecials) {
         result = applyHideSpecials(result);
+    }
+
+    if (genres.length > 0) {
+        result = applyGenreFilter(result, genres);
     }
 
     if (query) {
@@ -138,6 +143,21 @@ function applyStatusFilter<T extends Anime>(
 
 function applyHideSpecials<T extends Anime>(items: FilterableItem<T>[]): FilterableItem<T>[] {
     return items.filter(item => item.anime.type?.toLowerCase() !== "special");
+}
+
+function applyGenreFilter<T extends Anime>(items: FilterableItem<T>[], genres: string[]): FilterableItem<T>[] {
+    if (genres.length === 0) {
+        return items;
+    }
+    return items.filter(item => {
+        const animeGenres = item.anime.genres?.map(g => g.name) || [];
+        for (const genre of genres) {
+            if (!animeGenres.includes(genre)) {
+                return false;
+            }
+        }
+        return true;
+    });
 }
 
 function searchSimple<T extends Anime>(items: FilterableItem<T>[], query: string): FilterableItem<T>[] {

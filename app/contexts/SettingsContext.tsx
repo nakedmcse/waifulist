@@ -18,6 +18,7 @@ const DEFAULT_SETTINGS: ResolvedUserSettings = {
     },
     myList: {
         sort: "added",
+        genres: [],
     },
 };
 

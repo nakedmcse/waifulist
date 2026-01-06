@@ -8,6 +8,7 @@ import { ImportEntry, useWatchList } from "@/contexts/WatchListContext";
 import { useSettings } from "@/contexts/SettingsContext";
 import { useBackup, useRestore } from "@/hooks";
 import { AnimeListView, AnimeListViewHandle } from "@/components/AnimeListView/AnimeListView";
+import { GenreFilter } from "@/components/GenreFilter/GenreFilter";
 import { Button } from "@/components/Button/Button";
 import { Pill } from "@/components/Pill/Pill";
 import { Spinner } from "@/components/Spinner/Spinner";
@@ -49,6 +50,18 @@ export default function MyListPage() {
     const { settings, loading: settingsLoading, updateMyListSettings } = useSettings();
     const { backupList } = useBackup();
     const { restoreList } = useRestore();
+
+    const [availableGenres, setAvailableGenres] = useState<string[]>([]);
+
+    const selectedGenres = settings.myList.genres || [];
+
+    const handleGenreChange = useCallback(
+        (genres: string[]) => {
+            window.scrollTo({ top: 0 });
+            updateMyListSettings({ genres });
+        },
+        [updateMyListSettings],
+    );
 
     const handleSortChange = useCallback(
         (sort: SortType) => {
@@ -298,6 +311,10 @@ export default function MyListPage() {
         </>
     );
 
+    const genreFilterSidebar = (
+        <GenreFilter genres={availableGenres} selected={selectedGenres} onChange={handleGenreChange} />
+    );
+
     return (
         <>
             <AnimeListView
@@ -310,7 +327,10 @@ export default function MyListPage() {
                 showStatusBadge={true}
                 initialSort={settingsLoading ? "added" : (settings.myList.sort as SortType) || "added"}
                 onSortChange={handleSortChange}
+                onAvailableGenresChange={setAvailableGenres}
                 ratingLabel="Your rating"
+                genres={selectedGenres}
+                sidebar={genreFilterSidebar}
             />
 
             {showImportModal && (

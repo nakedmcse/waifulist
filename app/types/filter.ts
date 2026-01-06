@@ -26,6 +26,7 @@ export interface AnimeFilterOptions {
     sortDirection?: "asc" | "desc";
     hideSpecials?: boolean;
     statusFilter?: WatchStatus | "all";
+    genres?: string[];
     limit?: number;
     offset?: number;
 }
@@ -51,6 +52,7 @@ export type WatchListQueryParams = {
     status: WatchStatus | "all";
     page: number;
     limit: number;
+    genres?: string[];
 };
 
 export type WatchListResponse = {
@@ -69,4 +71,5 @@ export type WatchListResponse = {
     page: number;
     totalPages: number;
     counts: Record<string, number>;
+    availableGenres: string[];
 };

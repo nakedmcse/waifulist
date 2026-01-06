@@ -11,6 +11,7 @@ export async function GET(request: NextRequest) {
     const seasonParam = searchParams.get("season");
     const limitParam = searchParams.get("limit");
     const offsetParam = searchParams.get("offset");
+    const genresParam = searchParams.get("genres");
 
     if (!yearParam || !seasonParam) {
         return NextResponse.json({ error: "Missing required parameters: year and season" }, { status: 400 });
@@ -31,10 +32,11 @@ export async function GET(request: NextRequest) {
     const season = seasonParam as Season;
     const limit = limitParam ? parseInt(limitParam, 10) : 24;
     const offset = offsetParam ? parseInt(offsetParam, 10) : 0;
+    const genres = genresParam ? genresParam.split(",").filter(g => g.trim()) : [];
 
     await ensureSearchIndex();
 
-    const result = await getAnimeBySeason(year, season, { limit, offset });
+    const result = await getAnimeBySeason(year, season, { limit, offset, genres });
 
     return NextResponse.json(result);
 }

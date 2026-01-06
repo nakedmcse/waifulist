@@ -36,7 +36,7 @@ services:
       - ./jikan-entrypoint.sh:/app/jikan-entrypoint.sh:ro
     depends_on:
       - mongodb_jikan
-    entrypoint: ["sh", "/app/jikan-entrypoint.sh"]
+#    entrypoint: ["sh", "/app/jikan-entrypoint.sh"]
 
   mongodb_jikan:
     image: mongo:latest

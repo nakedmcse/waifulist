@@ -7,7 +7,9 @@ import { getAllSeasons, getCurrentSeason, Season, SeasonYear } from "@/lib/seaso
 import { SeasonSelector } from "@/components/SeasonSelector/SeasonSelector";
 import { AnimeCard } from "@/components/AnimeCard/AnimeCard";
 import { Pagination } from "@/components/Pagination/Pagination";
+import { GenreFilter } from "@/components/GenreFilter/GenreFilter";
 import { useWatchList } from "@/contexts/WatchListContext";
+import { useGenreFilter } from "@/hooks";
 import { Spinner } from "@/components/Spinner/Spinner";
 import styles from "./page.module.scss";
 
@@ -36,6 +38,7 @@ export function SeasonalPageClient() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const { ensureLoaded } = useWatchList();
+    const { allGenres, selectedGenres, genresLoading, handleGenreChange } = useGenreFilter();
 
     const seasonParam = parseSeasonParam(searchParams.get("season"));
     const yearParam = parseYearParam(searchParams.get("year"));
@@ -52,40 +55,57 @@ export function SeasonalPageClient() {
     const [loading, setLoading] = useState(true);
     const [page, setPage] = useState(pageParam);
     const [totalCount, setTotalCount] = useState(0);
+    const [filteredCount, setFilteredCount] = useState(0);
 
-    const totalPages = Math.ceil(totalCount / PAGE_SIZE);
+    const totalPages = Math.ceil(filteredCount / PAGE_SIZE);
 
     useEffect(() => {
         ensureLoaded();
     }, [ensureLoaded]);
 
-    const fetchSeasonalAnime = useCallback(async (seasonYear: SeasonYear, pageNum: number) => {
-        setLoading(true);
-        try {
-            const offset = (pageNum - 1) * PAGE_SIZE;
-            const response = await fetch(
-                `/api/anime/seasonal?year=${seasonYear.year}&season=${seasonYear.season}&limit=${PAGE_SIZE}&offset=${offset}`,
-            );
+    const fetchSeasonalAnime = useCallback(
+        async (seasonYear: SeasonYear, pageNum: number) => {
+            setLoading(true);
+            try {
+                const offset = (pageNum - 1) * PAGE_SIZE;
+                const params = new URLSearchParams({
+                    year: seasonYear.year.toString(),
+                    season: seasonYear.season,
+                    limit: PAGE_SIZE.toString(),
+                    offset: offset.toString(),
+                });
+                if (selectedGenres.length > 0) {
+                    params.set("genres", selectedGenres.join(","));
+                }
+                const response = await fetch(`/api/anime/seasonal?${params.toString()}`);
 
-            if (!response.ok) {
-                throw new Error("Failed to fetch seasonal anime");
+                if (!response.ok) {
+                    throw new Error("Failed to fetch seasonal anime");
+                }
+
+                const data = await response.json();
+                setAnime(data.anime);
+                setTotalCount(data.total);
+                setFilteredCount(data.filtered);
+            } catch (error) {
+                console.error("Failed to fetch seasonal anime:", error);
+                setAnime([]);
+                setTotalCount(0);
+                setFilteredCount(0);
+            } finally {
+                setLoading(false);
             }
-
-            const data = await response.json();
-            setAnime(data.anime);
-            setTotalCount(data.total);
-        } catch (error) {
-            console.error("Failed to fetch seasonal anime:", error);
-            setAnime([]);
-            setTotalCount(0);
-        } finally {
-            setLoading(false);
-        }
-    }, []);
+        },
+        [selectedGenres],
+    );
 
     useEffect(() => {
         fetchSeasonalAnime(seasonYear, page);
     }, [seasonYear, page, fetchSeasonalAnime]);
+
+    useEffect(() => {
+        setPage(1);
+    }, [selectedGenres]);
 
     const updateUrl = useCallback(
         (newSeasonYear: SeasonYear, newPage: number) => {
@@ -122,7 +142,15 @@ export function SeasonalPageClient() {
 
     return (
         <div className={styles.page}>
-            <div className={styles.container}>
+            <aside className={styles.sidebar}>
+                <GenreFilter
+                    genres={allGenres}
+                    selected={selectedGenres}
+                    onChange={handleGenreChange}
+                    loading={genresLoading}
+                />
+            </aside>
+            <div className={styles.main}>
                 <div className={styles.header}>
                     <h1>Seasonal Anime</h1>
                     <p className={styles.subtitle}>Browse anime by season and year</p>
@@ -140,7 +168,10 @@ export function SeasonalPageClient() {
                     <>
                         <div className={styles.resultInfo}>
                             <span>
-                                {totalCount} anime found for {seasonYear.season.charAt(0).toUpperCase()}
+                                {selectedGenres.length > 0
+                                    ? `${filteredCount} of ${totalCount} anime`
+                                    : `${totalCount} anime found`}{" "}
+                                for {seasonYear.season.charAt(0).toUpperCase()}
                                 {seasonYear.season.slice(1)} {seasonYear.year}
                             </span>
                         </div>
@@ -160,8 +191,9 @@ export function SeasonalPageClient() {
                         <i className="bi bi-calendar-x" />
                         <h3>No anime found</h3>
                         <p>
-                            There are no anime for {seasonYear.season.charAt(0).toUpperCase()}
-                            {seasonYear.season.slice(1)} {seasonYear.year}
+                            {selectedGenres.length > 0
+                                ? `No anime match the selected genres for ${seasonYear.season.charAt(0).toUpperCase()}${seasonYear.season.slice(1)} ${seasonYear.year}`
+                                : `There are no anime for ${seasonYear.season.charAt(0).toUpperCase()}${seasonYear.season.slice(1)} ${seasonYear.year}`}
                         </p>
                     </div>
                 )}

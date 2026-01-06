@@ -5,6 +5,33 @@
     padding: $spacing-xl $spacing-lg;
 }
 
+.pageWithSidebar {
+    min-height: calc(100vh - 80px);
+    padding: $spacing-xl $spacing-lg;
+    display: flex;
+    gap: $spacing-xl;
+    max-width: 1600px;
+    margin: 0 auto;
+}
+
+.sidebar {
+    display: none;
+    flex-shrink: 0;
+    width: 240px;
+    position: sticky;
+    top: 100px;
+    align-self: flex-start;
+
+    @include md {
+        display: block;
+    }
+}
+
+.main {
+    flex: 1;
+    min-width: 0;
+}
+
 .container {
     max-width: 1400px;
     margin: 0 auto;
@@ -138,6 +165,29 @@
 
     @include xl {
         grid-template-columns: repeat(6, 1fr);
+        gap: $spacing-lg;
+    }
+}
+
+.gridWithSidebar {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: $spacing-md;
+
+    @include sm {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    @include md {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    @include lg {
+        grid-template-columns: repeat(4, 1fr);
+    }
+
+    @include xl {
+        grid-template-columns: repeat(5, 1fr);
         gap: $spacing-lg;
     }
 }

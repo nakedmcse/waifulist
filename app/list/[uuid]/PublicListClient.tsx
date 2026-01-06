@@ -4,6 +4,7 @@ import React, { useCallback, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { SortType } from "@/types/anime";
 import { AnimeListView } from "@/components/AnimeListView/AnimeListView";
+import { GenreFilter } from "@/components/GenreFilter/GenreFilter";
 import { BookmarkButton } from "@/components/BookmarkButton/BookmarkButton";
 import { CompareButton } from "@/components/CompareButton/CompareButton";
 import { LocalStorage, STORAGE_KEYS } from "@/constants/localStorage";
@@ -22,6 +23,17 @@ function getStoredSort(): SortType {
     return "added";
 }
 
+function getInitialGenres(): string[] {
+    if (typeof window !== "undefined") {
+        const params = new URLSearchParams(window.location.search);
+        const genresParam = params.get("genres");
+        if (genresParam) {
+            return genresParam.split(",").filter(g => g.trim());
+        }
+    }
+    return [];
+}
+
 interface PublicListClientProps {
     uuid: string;
     initialUsername: string;
@@ -35,6 +47,8 @@ export function PublicListClient({ uuid, initialUsername }: PublicListClientProp
 
     const [username] = useState<string>(initialUsername);
     const [sort, setSort] = useState<SortType>(initialSort);
+    const [availableGenres, setAvailableGenres] = useState<string[]>([]);
+    const [selectedGenres, setSelectedGenres] = useState<string[]>(getInitialGenres);
 
     const handleSortChange = useCallback((newSort: SortType) => {
         setSort(newSort);
@@ -45,6 +59,24 @@ export function PublicListClient({ uuid, initialUsername }: PublicListClientProp
         window.history.replaceState({}, "", url.toString());
     }, []);
 
+    const handleGenreChange = useCallback((genres: string[]) => {
+        window.scrollTo({ top: 0 });
+        setSelectedGenres(genres);
+
+        const url = new URL(window.location.href);
+        if (genres.length > 0) {
+            url.searchParams.set("genres", genres.join(","));
+        } else {
+            url.searchParams.delete("genres");
+        }
+        url.searchParams.delete("page");
+        window.history.replaceState({}, "", url.toString());
+    }, []);
+
+    const genreFilterSidebar = (
+        <GenreFilter genres={availableGenres} selected={selectedGenres} onChange={handleGenreChange} />
+    );
+
     return (
         <AnimeListView
             title={`${username}'s Anime List`}
@@ -54,6 +86,9 @@ export function PublicListClient({ uuid, initialUsername }: PublicListClientProp
             initialSort={sort}
             onSortChange={handleSortChange}
             ratingLabel={`${username}'s rating`}
+            genres={selectedGenres}
+            sidebar={genreFilterSidebar}
+            onAvailableGenresChange={setAvailableGenres}
             headerActions={
                 <>
                     <BookmarkButton targetUuid={uuid} />

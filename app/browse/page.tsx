@@ -14,6 +14,7 @@ import { ContextMenu, type ContextMenuItem } from "@/components/ContextMenu";
 import { useContextMenu } from "@/hooks/useContextMenu";
 import { useAuth } from "@/contexts/AuthContext";
 import { Spinner } from "@/components/Spinner/Spinner";
+import { GenreFilter } from "@/components/GenreFilter/GenreFilter";
 import styles from "./page.module.scss";
 
 const PAGE_SIZE = 24;
@@ -22,8 +23,13 @@ function BrowseContent() {
     const searchParams = useSearchParams();
     const initialQuery = searchParams.get("q") || "";
     const initialPage = parseInt(searchParams.get("page") || "1", 10);
+    const initialGenres =
+        searchParams
+            .get("genres")
+            ?.split(",")
+            .filter(g => g.trim()) || [];
 
-    const { searchAnimeSilent, browseAnimeSilent } = useAnime();
+    const { searchAnimeSilent, browseAnimeSilent, getGenres } = useAnime();
     const { isLoading } = useLoading();
     const { settings, loading: settingsLoading, updateBrowseSettings } = useSettings();
     const { ensureLoaded, removeFromWatchList, addToWatchList, isInWatchList, getAllWatched, refreshList } =
@@ -36,11 +42,21 @@ function BrowseContent() {
         ensureLoaded();
     }, [ensureLoaded, getAllWatched]);
 
+    useEffect(() => {
+        getGenres().then(genres => {
+            setAllGenres(genres);
+            setGenresLoading(false);
+        });
+    }, [getGenres]);
+
     const [anime, setAnime] = useState<Anime[]>([]);
     const [loading, setLoading] = useState(true);
     const [query, setQuery] = useState(initialQuery);
     const [page, setPage] = useState(initialPage);
     const [totalCount, setTotalCount] = useState(0);
+    const [selectedGenres, setSelectedGenres] = useState<string[]>(initialGenres);
+    const [allGenres, setAllGenres] = useState<string[]>([]);
+    const [genresLoading, setGenresLoading] = useState(true);
     const searchIdRef = useRef(0);
     const lastFetchedSettingsRef = useRef<string | null>(null);
 
@@ -55,13 +71,14 @@ function BrowseContent() {
             pageNum: number = 1,
             sortBy: BrowseSortType = "rating",
             filterSpecials: boolean = false,
+            genres: string[] = [],
         ) => {
             const searchId = ++searchIdRef.current;
             setLoading(true);
 
             try {
                 if (searchQuery.trim()) {
-                    const results = await searchAnimeSilent(searchQuery, 20, filterSpecials);
+                    const results = await searchAnimeSilent(searchQuery, 20, filterSpecials, genres);
                     if (searchId === searchIdRef.current) {
                         setAnime(results);
                         setTotalCount(results.length);
@@ -69,7 +86,7 @@ function BrowseContent() {
                     }
                 } else {
                     const offset = (pageNum - 1) * PAGE_SIZE;
-                    const result = await browseAnimeSilent(PAGE_SIZE, offset, sortBy, filterSpecials);
+                    const result = await browseAnimeSilent(PAGE_SIZE, offset, sortBy, filterSpecials, genres);
                     if (searchId === searchIdRef.current) {
                         setAnime(result.anime);
                         setTotalCount(result.total);
@@ -90,20 +107,20 @@ function BrowseContent() {
         if (settingsLoading) {
             return;
         }
-        const settingsKey = `${settings.browse.sort}-${settings.browse.hideSpecials}`;
+        const settingsKey = `${settings.browse.sort}-${settings.browse.hideSpecials}-${selectedGenres.join(",")}`;
         if (lastFetchedSettingsRef.current === settingsKey) {
             return;
         }
         lastFetchedSettingsRef.current = settingsKey;
-        performSearch(initialQuery, initialPage, settings.browse.sort, settings.browse.hideSpecials);
+        performSearch(initialQuery, initialPage, settings.browse.sort, settings.browse.hideSpecials, selectedGenres);
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [settingsLoading, settings.browse.sort, settings.browse.hideSpecials]);
+    }, [settingsLoading, settings.browse.sort, settings.browse.hideSpecials, selectedGenres]);
 
     const handleLiveSearch = useCallback(
         (newQuery: string) => {
             setQuery(newQuery);
             setPage(1);
-            performSearch(newQuery, 1, sort, hideSpecials);
+            performSearch(newQuery, 1, sort, hideSpecials, selectedGenres);
 
             const url = new URL(window.location.href);
             if (newQuery) {
@@ -114,13 +131,13 @@ function BrowseContent() {
             url.searchParams.delete("page");
             window.history.replaceState({}, "", url);
         },
-        [performSearch, sort, hideSpecials],
+        [performSearch, sort, hideSpecials, selectedGenres],
     );
 
     const handlePageChange = useCallback(
         (newPage: number) => {
             setPage(newPage);
-            performSearch(query, newPage, sort, hideSpecials);
+            performSearch(query, newPage, sort, hideSpecials, selectedGenres);
             window.scrollTo({ top: 0, behavior: "smooth" });
 
             const url = new URL(window.location.href);
@@ -131,27 +148,47 @@ function BrowseContent() {
             }
             window.history.replaceState({}, "", url);
         },
-        [performSearch, query, sort, hideSpecials],
+        [performSearch, query, sort, hideSpecials, selectedGenres],
     );
 
     const handleSortChange = useCallback(
         (newSort: BrowseSortType) => {
-            lastFetchedSettingsRef.current = `${newSort}-${hideSpecials}`;
+            lastFetchedSettingsRef.current = `${newSort}-${hideSpecials}-${selectedGenres.join(",")}`;
             updateBrowseSettings({ sort: newSort });
             setPage(1);
-            performSearch(query, 1, newSort, hideSpecials);
+            performSearch(query, 1, newSort, hideSpecials, selectedGenres);
         },
-        [performSearch, query, hideSpecials, updateBrowseSettings],
+        [performSearch, query, hideSpecials, selectedGenres, updateBrowseSettings],
     );
 
     const handleHideSpecialsChange = useCallback(
         (checked: boolean) => {
-            lastFetchedSettingsRef.current = `${sort}-${checked}`;
+            lastFetchedSettingsRef.current = `${sort}-${checked}-${selectedGenres.join(",")}`;
             updateBrowseSettings({ hideSpecials: checked });
             setPage(1);
-            performSearch(query, 1, sort, checked);
+            performSearch(query, 1, sort, checked, selectedGenres);
         },
-        [performSearch, query, sort, updateBrowseSettings],
+        [performSearch, query, sort, selectedGenres, updateBrowseSettings],
+    );
+
+    const handleGenreChange = useCallback(
+        (genres: string[]) => {
+            window.scrollTo({ top: 0 });
+            setSelectedGenres(genres);
+            setPage(1);
+            lastFetchedSettingsRef.current = `${sort}-${hideSpecials}-${genres.join(",")}`;
+            performSearch(query, 1, sort, hideSpecials, genres);
+
+            const url = new URL(window.location.href);
+            if (genres.length > 0) {
+                url.searchParams.set("genres", genres.join(","));
+            } else {
+                url.searchParams.delete("genres");
+            }
+            url.searchParams.delete("page");
+            window.history.replaceState({}, "", url);
+        },
+        [performSearch, query, sort, hideSpecials],
     );
 
     const handleContextMenu = useCallback(
@@ -168,7 +205,7 @@ function BrowseContent() {
                             icon: <i className="bi bi-check-circle"></i>,
                             onClick: () => {
                                 addToWatchList(animeId, "completed").then(() => {
-                                    performSearch(query, page, sort, hideSpecials);
+                                    performSearch(query, page, sort, hideSpecials, selectedGenres);
                                 });
                             },
                         });
@@ -178,7 +215,7 @@ function BrowseContent() {
                             icon: <i className="bi bi-play-circle"></i>,
                             onClick: () => {
                                 addToWatchList(animeId, "watching").then(() => {
-                                    performSearch(query, page, sort, hideSpecials);
+                                    performSearch(query, page, sort, hideSpecials, selectedGenres);
                                 });
                             },
                         });
@@ -188,7 +225,7 @@ function BrowseContent() {
                             icon: <i className="bi bi-clock"></i>,
                             onClick: () => {
                                 addToWatchList(animeId, "plan_to_watch").then(() => {
-                                    performSearch(query, page, sort, hideSpecials);
+                                    performSearch(query, page, sort, hideSpecials, selectedGenres);
                                 });
                             },
                         });
@@ -198,7 +235,7 @@ function BrowseContent() {
                             icon: <i className="bi bi-pause-circle"></i>,
                             onClick: () => {
                                 addToWatchList(animeId, "on_hold").then(() => {
-                                    performSearch(query, page, sort, hideSpecials);
+                                    performSearch(query, page, sort, hideSpecials, selectedGenres);
                                 });
                             },
                         });
@@ -208,7 +245,7 @@ function BrowseContent() {
                             icon: <i className="bi bi-x-circle"></i>,
                             onClick: () => {
                                 addToWatchList(animeId, "dropped").then(() => {
-                                    performSearch(query, page, sort, hideSpecials);
+                                    performSearch(query, page, sort, hideSpecials, selectedGenres);
                                 });
                             },
                         });
@@ -220,7 +257,7 @@ function BrowseContent() {
                             icon: <i className="bi bi-trash"></i>,
                             onClick: () => {
                                 removeFromWatchList(animeId).then(() => {
-                                    performSearch(query, page, sort, hideSpecials);
+                                    performSearch(query, page, sort, hideSpecials, selectedGenres);
                                 });
                             },
                         });
@@ -236,6 +273,7 @@ function BrowseContent() {
             performSearch,
             sort,
             hideSpecials,
+            selectedGenres,
             query,
             page,
             refreshList,
@@ -248,7 +286,15 @@ function BrowseContent() {
 
     return (
         <div className={styles.page}>
-            <div className={styles.container}>
+            <aside className={styles.sidebar}>
+                <GenreFilter
+                    genres={allGenres}
+                    selected={selectedGenres}
+                    onChange={handleGenreChange}
+                    loading={genresLoading}
+                />
+            </aside>
+            <div className={styles.main}>
                 <div className={styles.header}>
                     <h1>Browse Anime</h1>
                     <p className={styles.subtitle}>
@@ -331,7 +377,8 @@ export default function BrowsePage() {
         <Suspense
             fallback={
                 <div className={styles.page}>
-                    <div className={styles.container}>
+                    <aside className={styles.sidebar}></aside>
+                    <div className={styles.main}>
                         <div className={styles.loading}>
                             <Spinner text="Loading..." />
                         </div>

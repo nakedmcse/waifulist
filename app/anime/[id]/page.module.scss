@@ -156,6 +156,18 @@
     }
 }
 
+.genreLink {
+    cursor: pointer;
+    transition:
+        transform $transition-fast,
+        filter $transition-fast;
+
+    &:hover {
+        transform: scale(1.05);
+        filter: brightness(1.1);
+    }
+}
+
 .actions {
     display: flex;
     justify-content: center;
