@@ -79,7 +79,7 @@ class MalImportEngine implements IImportEngine {
                     watchData: {
                         status,
                         episodesWatched: episodes,
-                        rating: score > 0 ? score : null,
+                        rating: score > 0 ? Math.round(score / 2) : null,
                         notes: comments || null,
                     },
                 });
