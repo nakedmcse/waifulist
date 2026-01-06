@@ -176,12 +176,8 @@ function CharactersSection({ characters }: { characters: AnimeCharacter[] }) {
                 const imageUrl = char.character.images?.webp?.image_url || char.character.images?.jpg?.image_url;
                 const japaneseVA = char.voice_actors.find(va => va.language === "Japanese");
                 return (
-                    <Link
-                        key={char.character.mal_id}
-                        href={`/character/${char.character.mal_id}`}
-                        className={styles.characterCard}
-                    >
-                        <div className={styles.characterImageWrapper}>
+                    <div key={char.character.mal_id} className={styles.characterCard}>
+                        <Link href={`/character/${char.character.mal_id}`} className={styles.characterImageWrapper}>
                             {imageUrl ? (
                                 <Image
                                     src={imageUrl}
@@ -193,19 +189,21 @@ function CharactersSection({ characters }: { characters: AnimeCharacter[] }) {
                             ) : (
                                 <div className={styles.noImage} />
                             )}
-                        </div>
+                        </Link>
                         <div className={styles.characterInfo}>
-                            <span className={styles.characterName}>{formatName(char.character.name)}</span>
+                            <Link href={`/character/${char.character.mal_id}`} className={styles.characterName}>
+                                {formatName(char.character.name)}
+                            </Link>
                             {japaneseVA && (
-                                <span className={styles.voiceActor}>
+                                <Link href={`/person/${japaneseVA.person.mal_id}`} className={styles.voiceActor}>
                                     <i className="bi bi-mic-fill" /> {formatName(japaneseVA.person.name)}
-                                </span>
+                                </Link>
                             )}
                             <span className={styles.characterFavorites}>
                                 <i className="bi bi-heart-fill" /> {char.favorites.toLocaleString()}
                             </span>
                         </div>
-                    </Link>
+                    </div>
                 );
             })}
         </div>

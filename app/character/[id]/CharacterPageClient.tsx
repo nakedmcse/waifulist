@@ -60,11 +60,9 @@ function VoiceActorsContent({ voices }: { voices: CharacterVoiceActor[] }) {
         return (
             <div className={styles.actorCards}>
                 {activeVoices.map(voice => (
-                    <a
+                    <Link
                         key={voice.person.mal_id}
-                        href={voice.person.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
+                        href={`/person/${voice.person.mal_id}`}
                         className={styles.actorCard}
                     >
                         <div className={styles.actorImage}>
@@ -80,7 +78,7 @@ function VoiceActorsContent({ voices }: { voices: CharacterVoiceActor[] }) {
                             )}
                         </div>
                         <span className={styles.actorName}>{formatName(voice.person.name)}</span>
-                    </a>
+                    </Link>
                 ))}
             </div>
         );
