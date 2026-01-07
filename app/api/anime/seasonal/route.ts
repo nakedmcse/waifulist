@@ -30,8 +30,8 @@ export async function GET(request: NextRequest) {
     }
 
     const season = seasonParam as Season;
-    const limit = limitParam ? parseInt(limitParam, 10) : 24;
-    const offset = offsetParam ? parseInt(offsetParam, 10) : 0;
+    const limit = Math.min(100, Math.max(1, limitParam ? parseInt(limitParam, 10) : 24));
+    const offset = Math.max(0, offsetParam ? parseInt(offsetParam, 10) : 0);
     const genres = genresParam ? genresParam.split(",").filter(g => g.trim()) : [];
 
     await ensureSearchIndex();

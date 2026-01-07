@@ -94,6 +94,12 @@ export default async function AnimePage({ params }: PageProps) {
         }
     }
 
+    let totalEpisodeCount = anime.episodes;
+    if (!totalEpisodeCount && episodesData.lastPage > 1) {
+        const lastPageData = await fetchAnimeEpisodes(animeId, episodesData.lastPage);
+        totalEpisodeCount = (episodesData.lastPage - 1) * 100 + lastPageData.episodes.length;
+    }
+
     return (
         <AnimePageClient
             anime={anime}
@@ -102,6 +108,7 @@ export default async function AnimePage({ params }: PageProps) {
             recommendations={recommendations}
             initialEpisodes={episodesData.episodes}
             totalEpisodePages={episodesData.lastPage}
+            totalEpisodeCount={totalEpisodeCount || episodesData.episodes.length}
             characters={characters}
             statistics={statistics}
         />

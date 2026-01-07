@@ -17,8 +17,8 @@ export async function getFilteredWatchList(userId: number, url: URL): Promise<Wa
     const query = searchParams.get("q") || undefined;
     const sort = (searchParams.get("sort") as UnifiedSortType) || "added";
     const status = (searchParams.get("status") as WatchStatus | "all") || "all";
-    const page = parseInt(searchParams.get("page") || "1", 10);
-    const limit = parseInt(searchParams.get("limit") || String(PAGE_SIZE), 10);
+    const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10));
+    const limit = Math.min(100, Math.max(1, parseInt(searchParams.get("limit") || String(PAGE_SIZE), 10)));
     const genresParam = searchParams.get("genres");
     const genres = genresParam ? genresParam.split(",").filter(g => g.trim()) : [];
 

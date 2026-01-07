@@ -38,6 +38,7 @@ interface AnimePageClientProps {
     recommendations?: AnimeRecommendation[];
     initialEpisodes?: AnimeEpisode[];
     totalEpisodePages?: number;
+    totalEpisodeCount?: number;
     characters?: AnimeCharacter[];
     statistics?: AnimeStatistics | null;
 }
@@ -54,6 +55,7 @@ interface ContentTabsProps {
     recommendations?: AnimeRecommendation[];
     initialEpisodes?: AnimeEpisode[];
     totalEpisodePages?: number;
+    totalEpisodeCount?: number;
     characters?: AnimeCharacter[];
     statistics?: AnimeStatistics | null;
 }
@@ -733,6 +735,7 @@ function ContentTabs({
     recommendations,
     initialEpisodes,
     totalEpisodePages,
+    totalEpisodeCount,
     characters,
     statistics,
 }: ContentTabsProps) {
@@ -765,10 +768,9 @@ function ContentTabs({
     }
 
     if (hasEpisodes) {
-        const episodeCount = anime.episodes || initialEpisodes.length;
         tabs.push({
             id: "episodes",
-            label: `Episodes (${episodeCount})`,
+            label: `Episodes (${totalEpisodeCount})`,
             content: (
                 <EpisodesContent
                     initialEpisodes={initialEpisodes}
@@ -815,6 +817,7 @@ export function AnimePageClient({
     recommendations,
     initialEpisodes,
     totalEpisodePages,
+    totalEpisodeCount,
     characters,
     statistics,
 }: AnimePageClientProps) {
@@ -1133,6 +1136,7 @@ export function AnimePageClient({
                             recommendations={recommendations}
                             initialEpisodes={initialEpisodes}
                             totalEpisodePages={totalEpisodePages}
+                            totalEpisodeCount={totalEpisodeCount}
                             characters={characters}
                             statistics={statistics}
                         />

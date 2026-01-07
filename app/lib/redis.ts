@@ -1,4 +1,5 @@
 import Redis from "ioredis";
+import { RateLimitType } from "@/types/rateLimit";
 
 const REDIS_URL = process.env.REDIS_URL || "redis://localhost:6379";
 
@@ -70,6 +71,7 @@ export const REDIS_KEYS = {
     LAST_FETCH_TIME: "anime:lastFetchTime",
     REFRESH_CHANNEL: "anime:refresh",
     OG_IMAGE: (uuid: string, hash: string) => `og:${uuid}:${hash}`,
+    RATE_LIMIT: (ip: string, type: RateLimitType) => `ratelimit:${ip}:${type}`,
 } as const;
 
 export const REDIS_TTL = {
