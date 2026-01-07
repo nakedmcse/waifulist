@@ -118,6 +118,15 @@
     }
 }
 
+.mobileGenreFilter {
+    display: block;
+    margin-bottom: $spacing-lg;
+
+    @include md {
+        display: none;
+    }
+}
+
 .grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);

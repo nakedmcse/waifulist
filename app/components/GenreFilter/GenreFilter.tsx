@@ -8,10 +8,11 @@ type GenreFilterProps = {
     selected: string[];
     onChange: (genres: string[]) => void;
     loading?: boolean;
+    defaultCollapsed?: boolean;
 };
 
-export function GenreFilter({ genres, selected, onChange, loading }: GenreFilterProps) {
-    const [collapsed, setCollapsed] = useState(false);
+export function GenreFilter({ genres, selected, onChange, loading, defaultCollapsed = false }: GenreFilterProps) {
+    const [collapsed, setCollapsed] = useState(defaultCollapsed);
     const [search, setSearch] = useState("");
 
     const filteredGenres = useMemo(() => {

@@ -27,6 +27,15 @@
     }
 }
 
+.mobileSidebar {
+    display: block;
+    margin-bottom: $spacing-lg;
+
+    @include md {
+        display: none;
+    }
+}
+
 .main {
     flex: 1;
     min-width: 0;

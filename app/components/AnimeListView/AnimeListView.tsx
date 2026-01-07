@@ -50,6 +50,7 @@ interface AnimeListViewProps {
     ratingLabel?: string;
     genres?: string[];
     sidebar?: React.ReactNode;
+    mobileSidebar?: React.ReactNode;
     onAvailableGenresChange?: (genres: string[]) => void;
     ref?: React.Ref<AnimeListViewHandle>;
 }
@@ -76,6 +77,7 @@ export function AnimeListView({
     ratingLabel,
     genres = [],
     sidebar,
+    mobileSidebar,
     onAvailableGenresChange,
     ref,
 }: AnimeListViewProps) {
@@ -325,6 +327,8 @@ export function AnimeListView({
                         ))}
                     </select>
                 </div>
+
+                {sidebar && <div className={styles.mobileSidebar}>{mobileSidebar || sidebar}</div>}
 
                 {isLoading ? (
                     <div className={styles.loading}>

@@ -27,6 +27,15 @@
     min-width: 0;
 }
 
+.mobileGenreFilter {
+    display: block;
+    margin-bottom: $spacing-lg;
+
+    @include md {
+        display: none;
+    }
+}
+
 .header {
     text-align: center;
     margin-bottom: $spacing-lg;

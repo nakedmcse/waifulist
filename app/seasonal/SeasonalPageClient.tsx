@@ -160,6 +160,16 @@ export function SeasonalPageClient() {
                     <SeasonSelector value={seasonYear} onChange={handleSeasonChange} />
                 </div>
 
+                <div className={styles.mobileGenreFilter}>
+                    <GenreFilter
+                        genres={allGenres}
+                        selected={selectedGenres}
+                        onChange={handleGenreChange}
+                        loading={genresLoading}
+                        defaultCollapsed
+                    />
+                </div>
+
                 {loading ? (
                     <div className={styles.loading}>
                         <Spinner text="Loading..." />

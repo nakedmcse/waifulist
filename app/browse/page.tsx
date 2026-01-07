@@ -337,6 +337,16 @@ function BrowseContent() {
                     )}
                 </div>
 
+                <div className={styles.mobileGenreFilter}>
+                    <GenreFilter
+                        genres={allGenres}
+                        selected={selectedGenres}
+                        onChange={handleGenreChange}
+                        loading={genresLoading}
+                        defaultCollapsed
+                    />
+                </div>
+
                 {showLoading ? (
                     <div className={styles.loading}>
                         <Spinner text="Searching..." />

@@ -77,6 +77,10 @@ export function PublicListClient({ uuid, initialUsername }: PublicListClientProp
         <GenreFilter genres={availableGenres} selected={selectedGenres} onChange={handleGenreChange} />
     );
 
+    const mobileGenreFilterSidebar = (
+        <GenreFilter genres={availableGenres} selected={selectedGenres} onChange={handleGenreChange} defaultCollapsed />
+    );
+
     return (
         <AnimeListView
             title={`${username}'s Anime List`}
@@ -88,6 +92,7 @@ export function PublicListClient({ uuid, initialUsername }: PublicListClientProp
             ratingLabel={`${username}'s rating`}
             genres={selectedGenres}
             sidebar={genreFilterSidebar}
+            mobileSidebar={mobileGenreFilterSidebar}
             onAvailableGenresChange={setAvailableGenres}
             headerActions={
                 <>

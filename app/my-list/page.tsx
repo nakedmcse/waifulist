@@ -315,6 +315,10 @@ export default function MyListPage() {
         <GenreFilter genres={availableGenres} selected={selectedGenres} onChange={handleGenreChange} />
     );
 
+    const mobileGenreFilterSidebar = (
+        <GenreFilter genres={availableGenres} selected={selectedGenres} onChange={handleGenreChange} defaultCollapsed />
+    );
+
     return (
         <>
             <AnimeListView
@@ -331,6 +335,7 @@ export default function MyListPage() {
                 ratingLabel="Your rating"
                 genres={selectedGenres}
                 sidebar={genreFilterSidebar}
+                mobileSidebar={mobileGenreFilterSidebar}
             />
 
             {showImportModal && (
