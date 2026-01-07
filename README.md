@@ -132,16 +132,23 @@ Redis is used as the primary cache and data store for anime data, enabling horiz
 
 ### Data Storage
 
-| Redis Key              | Data                          | TTL    | Purpose                            |
-|------------------------|-------------------------------|--------|------------------------------------|
-| `anime:list`           | Full anime array (JSON)       | 7 days | Fuse index building                |
-| `anime:id:{id}`        | Individual anime (JSON)       | 7d/24h | Single anime lookups               |
-| `anime:sorted:rating`  | Redis List (pre-sorted JSON)  | 7 days | Browse by rating (LRANGE)          |
-| `anime:sorted:newest`  | Redis List (pre-sorted JSON)  | 7 days | Browse by newest (LRANGE)          |
-| `anime:browse:count`   | Integer string                | -      | Total count for pagination         |
-| `anime:lastFetchTime`  | ISO timestamp                 | -      | Track last refresh                 |
-| `anime:refresh`        | Pub/sub channel               | -      | Notify instances to rebuild Fuse   |
-| `og:{uuid}:{hash}`     | PNG binary                    | 1 hour | Cached OpenGraph images            |
+| Redis Key                          | Data                          | TTL    | Purpose                            |
+|------------------------------------|-------------------------------|--------|------------------------------------|
+| `anime:list`                       | Full anime array (JSON)       | 7 days | Fuse index building                |
+| `anime:id:{id}`                    | Individual anime (JSON)       | 7d/24h | Single anime lookups               |
+| `anime:titles`                     | Hash (title → id)             | 7 days | Title-to-ID lookups                |
+| `anime:sorted:rating`              | Redis List (pre-sorted JSON)  | 7 days | Browse by rating (LRANGE)          |
+| `anime:sorted:newest`              | Redis List (pre-sorted JSON)  | 7 days | Browse by newest (LRANGE)          |
+| `anime:browse:count`               | Integer string                | -      | Total count for pagination         |
+| `anime:genres`                     | JSON array of genre names     | 7 days | Genre filter options               |
+| `anime:season:{year}:{season}`     | Redis List (pre-sorted JSON)  | 7 days | Seasonal anime listings            |
+| `anime:season:{year}:{season}:count` | Integer string              | 7 days | Seasonal count for pagination      |
+| `anime:sitemap:{id}`               | Sitemap entry data            | 24h    | Sitemap generation                 |
+| `anime:peopleIds`                  | JSON array of IDs             | 7 days | Valid people IDs for sitemap       |
+| `anime:characterIds`               | JSON array of IDs             | 7 days | Valid character IDs for sitemap    |
+| `anime:lastFetchTime`              | ISO timestamp                 | -      | Track last refresh                 |
+| `anime:refresh`                    | Pub/sub channel               | -      | Notify instances to rebuild Fuse   |
+| `og:{uuid}:{hash}`                 | PNG binary                    | 1 hour | Cached OpenGraph images            |
 
 ### Data Flow
 
@@ -164,11 +171,13 @@ Redis anime:id:123 → found → return
 
 Anime Detail Page
 ────────────────────────────────────────────────────
-Parallel fetch:
-  - getAnimeById(id, includeDetails=true)
+Parallel fetch (Promise.all):
+  - Related anime lookups (for each relation ID)
   - fetchAnimePictures(id) → Jikan /anime/{id}/pictures
   - fetchAnimeRecommendations(id) → Jikan /anime/{id}/recommendations
-  - Related anime lookups for each relation
+  - fetchAnimeEpisodes(id) → Jikan /anime/{id}/episodes
+  - fetchAnimeCharacters(id) → Jikan /anime/{id}/characters
+  - fetchAnimeStatistics(id) → Jikan /anime/{id}/statistics
 
 searchAnime("gosick")
 ────────────────────────────────────────────────────

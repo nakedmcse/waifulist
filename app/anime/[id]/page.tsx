@@ -86,12 +86,13 @@ export default async function AnimePage({ params }: PageProps) {
         fetchAnimeStatistics(animeId),
     ]);
 
-    relatedIds.forEach((id, index) => {
-        const result = relatedAnimeResults[index];
+    for (let i = 0; i < relatedIds.length; i++) {
+        const id = relatedIds[i];
+        const result = relatedAnimeResults[i];
         if (result) {
             relatedAnime[id] = result;
         }
-    });
+    }
 
     return (
         <AnimePageClient
