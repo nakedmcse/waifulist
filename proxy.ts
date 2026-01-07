@@ -68,6 +68,11 @@ export async function proxy(request: NextRequest) {
         return NextResponse.next();
     }
 
+    const purpose = request.headers.get("purpose") || request.headers.get("sec-purpose");
+    if (purpose === "prefetch") {
+        return NextResponse.next();
+    }
+
     const ip = getClientIP(request);
     const type: RateLimitType = pathname.startsWith("/api/") ? "api" : "page";
     const { allowed, remaining, resetIn, limit } = await checkRateLimit(ip, type);
