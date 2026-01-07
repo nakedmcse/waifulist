@@ -3,7 +3,7 @@ import { getRedis, REDIS_KEYS } from "@/lib/redis";
 import { RateLimitType } from "@/types/rateLimit";
 
 const RATE_LIMITS: Record<RateLimitType, Record<string, number>> = {
-    page: { requests: 30, window: 60 },
+    page: { requests: 60, window: 60 },
     api: { requests: 120, window: 60 },
 } as const;
 
@@ -64,12 +64,13 @@ async function checkRateLimit(
 
 export async function proxy(request: NextRequest) {
     const { pathname, searchParams } = request.nextUrl;
-    if (searchParams.has("_rsc")) {
-        return NextResponse.next();
-    }
+    const rscHeader = request.headers.get("rsc");
+    const hasRscParam = searchParams.has("_rsc");
 
-    const purpose = request.headers.get("purpose") || request.headers.get("sec-purpose");
-    if (purpose === "prefetch") {
+    const nextUrl = request.headers.get("next-url");
+    const isPrefetch = nextUrl !== null && nextUrl !== pathname;
+    const isAuthEndpoint = pathname.startsWith("/api/auth/");
+    if (hasRscParam || rscHeader === "1" || isPrefetch || isAuthEndpoint) {
         return NextResponse.next();
     }
 
@@ -78,7 +79,9 @@ export async function proxy(request: NextRequest) {
     const { allowed, remaining, resetIn, limit } = await checkRateLimit(ip, type);
 
     if (!allowed) {
-        console.warn(`[RateLimit] ${type} limit exceeded | IP: ${ip} | URL: ${pathname}`);
+        console.warn(
+            `[RateLimit] ${type} limit exceeded | IP: ${ip} | URL: ${pathname}${searchParams.toString() ? `?${searchParams.toString()}` : ""}`,
+        );
         return new NextResponse("Too Many Requests", {
             status: 429,
             headers: {
