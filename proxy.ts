@@ -73,6 +73,7 @@ export async function proxy(request: NextRequest) {
     const { allowed, remaining, resetIn, limit } = await checkRateLimit(ip, type);
 
     if (!allowed) {
+        console.warn(`[RateLimit] ${type} limit exceeded | IP: ${ip} | URL: ${pathname}`);
         return new NextResponse("Too Many Requests", {
             status: 429,
             headers: {
