@@ -65,8 +65,11 @@ class MalStreamingScraper implements ScraperEngine<StreamingLink> {
         for (const link of streamingLinks) {
             const href = link.getAttribute("href");
             const name = link.getAttribute("title");
+            const isDeep = href ? this.isDeepLink(href) : false;
 
-            if (href && name && this.isDeepLink(href)) {
+            console.log(`[Scraper] ${name}: ${href} -> isDeepLink: ${isDeep}`);
+
+            if (href && name && isDeep) {
                 links.push({ name, url: href });
             }
         }
