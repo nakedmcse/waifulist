@@ -1,6 +1,7 @@
 import { Anime } from "@/types/anime";
 import { fetchAnimeFromCdn } from "@/lib/cdn";
 import { getRedis, REDIS_KEYS, REDIS_TTL } from "@/lib/redis";
+import { isDeepLink } from "@/lib/urlUtils";
 import { scrapeStreaming } from "./scraper";
 
 type EnrichmentCheck = (anime: Anime) => boolean;
@@ -37,18 +38,22 @@ function needsJikanEnrichment(anime: Anime): boolean {
 
 /**
  * Check if anime needs streaming data
- * Note: null/undefined = not checked yet, empty array = checked but nothing found
  */
 function needsStreamingEnrichment(anime: Anime): boolean {
     return anime.streaming === null || anime.streaming === undefined;
 }
 
-/**
- * Enrich anime with full details from Jikan CDN
- */
 async function enrichFromJikan(anime: Anime): Promise<Anime> {
     const detailed = await fetchAnimeFromCdn(anime.mal_id);
-    return detailed ?? anime;
+    if (!detailed) {
+        return anime;
+    }
+
+    if (detailed.streaming) {
+        detailed.streaming = detailed.streaming.filter(s => isDeepLink(s.url));
+    }
+
+    return detailed;
 }
 
 /**

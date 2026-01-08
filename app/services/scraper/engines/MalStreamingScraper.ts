@@ -1,5 +1,6 @@
 import { JSDOM } from "jsdom";
 import { StreamingLink } from "@/types/anime";
+import { isDeepLink } from "@/lib/urlUtils";
 import { ScraperEngine, ScraperResult, ScraperType } from "../types";
 
 const SCRAPE_TIMEOUT = 10000;
@@ -65,25 +66,13 @@ class MalStreamingScraper implements ScraperEngine<StreamingLink> {
         for (const link of streamingLinks) {
             const href = link.getAttribute("href");
             const name = link.getAttribute("title");
-            const isDeep = href ? this.isDeepLink(href) : false;
 
-            console.log(`[Scraper] ${name}: ${href} -> isDeepLink: ${isDeep}`);
-
-            if (href && name && isDeep) {
+            if (href && name && isDeepLink(href)) {
                 links.push({ name, url: href });
             }
         }
 
         return links;
-    }
-
-    private isDeepLink(url: string): boolean {
-        try {
-            const parsed = new URL(url);
-            return parsed.pathname.length > 1 || parsed.search.length > 0;
-        } catch {
-            return false;
-        }
     }
 }
 
