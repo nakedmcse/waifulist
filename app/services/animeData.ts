@@ -1,6 +1,7 @@
 import { Anime, IdList, TopReviewWithAnime } from "@/types/anime";
 import { getRedis, getSubscriber, REDIS_KEYS, REDIS_TTL } from "@/lib/redis";
 import { fetchAnimeFromCdn, fetchTopReviews } from "@/lib/cdn";
+import { enrichAnime, needsEnrichment } from "./animeEnrichmentPipeline";
 import { getCurrentSeason, parseSeasonFromStartDate, Season } from "@/lib/seasonUtils";
 import {
     BrowseSortType,
@@ -574,20 +575,9 @@ export async function getAnimeById(
         return null;
     }
 
-    // Fetch full details from Jikan if needed
-    if (includeDetails && !anime.synopsis) {
-        const detailedAnime = await fetchAnimeFromCdn(id);
-        if (detailedAnime) {
-            const redis = getRedis();
-            try {
-                await redis.setex(
-                    REDIS_KEYS.ANIME_BY_ID(id),
-                    REDIS_TTL.JIKAN_ENRICHED_ANIME,
-                    JSON.stringify(detailedAnime),
-                );
-            } catch {}
-            return detailedAnime;
-        }
+    // Enrich anime if needed
+    if (includeDetails && needsEnrichment(anime)) {
+        return enrichAnime(anime);
     }
 
     return anime;

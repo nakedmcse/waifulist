@@ -66,7 +66,7 @@ function CompareCard({
     const imageUrl = anime.images?.jpg?.large_image_url || anime.images?.jpg?.image_url || "/placeholder.png";
 
     return (
-        <Link href={`/anime/${anime.mal_id}`} className={styles.compareCard}>
+        <Link href={`/anime/${anime.mal_id}`} className={styles.compareCard} prefetch={false}>
             <div className={styles.cardImage}>
                 <Image src={imageUrl} alt={anime.title} fill sizes="120px" loading="lazy" />
                 {anime.score && (

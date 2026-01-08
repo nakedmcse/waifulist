@@ -99,7 +99,7 @@ export function AnimeCard({
     };
 
     return (
-        <Link href={`/anime/${anime.mal_id}`} className={styles.card}>
+        <Link href={`/anime/${anime.mal_id}`} className={styles.card} prefetch={false}>
             <div onContextMenu={onContextMenu ? (e: React.MouseEvent) => onContextMenu(e, anime.mal_id) : undefined}>
                 <div className={styles.imageContainer}>
                     <Image

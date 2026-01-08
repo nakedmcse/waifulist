@@ -305,7 +305,7 @@ function ResultCard({ result, isTop }: ResultCardProps) {
 
                 <div className={styles.resultActions}>
                     {malId ? (
-                        <Link href={`/anime/${malId}`} className={styles.viewButton}>
+                        <Link href={`/anime/${malId}`} className={styles.viewButton} prefetch={false}>
                             <i className="bi bi-arrow-right" />
                             View in App
                         </Link>

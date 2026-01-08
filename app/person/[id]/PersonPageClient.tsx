@@ -88,7 +88,11 @@ function VoiceRolesContent({ voices }: { voices: PersonVoiceRole[] }) {
                             group.anime.images?.jpg?.large_image_url || group.anime.images?.jpg?.image_url;
                         return (
                             <div key={group.anime.mal_id} className={styles.animeGroup}>
-                                <Link href={`/anime/${group.anime.mal_id}`} className={styles.animeHeader}>
+                                <Link
+                                    href={`/anime/${group.anime.mal_id}`}
+                                    className={styles.animeHeader}
+                                    prefetch={false}
+                                >
                                     <div className={styles.animeImage}>
                                         {animeImageUrl ? (
                                             <Image src={animeImageUrl} alt={group.anime.title} fill sizes="60px" />

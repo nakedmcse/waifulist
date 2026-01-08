@@ -15,6 +15,11 @@ export interface AnimePicture {
     };
 }
 
+export interface StreamingLink {
+    name: string;
+    url: string;
+}
+
 export interface Anime {
     mal_id: number;
     title: string;
@@ -53,6 +58,7 @@ export interface Anime {
     favorites?: number;
     season?: string;
     year?: number;
+    streaming?: StreamingLink[] | null;
 }
 
 interface GenericMalReference {

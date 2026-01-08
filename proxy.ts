@@ -37,7 +37,7 @@ export async function proxy(request: NextRequest) {
     const rscHeader = request.headers.get("rsc");
     const hasRscParam = searchParams.has("_rsc");
 
-    const nextUrl = request.headers.get("next-url");
+    const nextUrl = request.headers.get("`next-url`");
     const isPrefetch = nextUrl !== null && nextUrl !== pathname;
     const isAuthEndpoint = pathname.startsWith("/api/auth/");
     const ip = getClientIP(request);

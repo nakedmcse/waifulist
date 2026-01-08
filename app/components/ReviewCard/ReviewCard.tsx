@@ -31,7 +31,7 @@ export function ReviewCard({ review }: ReviewCardProps) {
 
     return (
         <div className={styles.card}>
-            <Link href={`/anime/${review.entry.mal_id}`} className={styles.animeLink}>
+            <Link href={`/anime/${review.entry.mal_id}`} className={styles.animeLink} prefetch={false}>
                 <div className={styles.animeImage}>
                     <Image src={imageUrl} alt={animeTitle} fill sizes="80px" className={styles.image} loading="lazy" />
                 </div>

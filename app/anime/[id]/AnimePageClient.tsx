@@ -3,7 +3,6 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { Bar, Doughnut } from "react-chartjs-2";
 import { ArcElement, BarElement, CategoryScale, Chart as ChartJS, Legend, LinearScale, Tooltip } from "chart.js";
 import {
@@ -15,6 +14,7 @@ import {
     AnimeRecommendation,
     AnimeRelation,
     AnimeStatistics,
+    StreamingLink,
     WatchStatus,
 } from "@/types/anime";
 import { getEpisodeDetail, getEpisodes } from "@/services/animeService";
@@ -42,6 +42,7 @@ interface AnimePageClientProps {
     totalEpisodeCount?: number;
     characters?: AnimeCharacter[];
     statistics?: AnimeStatistics | null;
+    streaming?: StreamingLink[];
 }
 
 interface RelatedAnimeSectionProps {
@@ -59,7 +60,18 @@ interface ContentTabsProps {
     totalEpisodeCount?: number;
     characters?: AnimeCharacter[];
     statistics?: AnimeStatistics | null;
+    streaming?: StreamingLink[];
 }
+
+const STREAMING_ICONS: Record<string, string> = {
+    Crunchyroll: "https://www.crunchyroll.com/favicons/favicon-32x32.png",
+    Netflix: "https://assets.nflxext.com/us/ffe/siteui/common/icons/nficon2016.ico",
+    Funimation: "https://www.funimation.com/favicon.ico",
+    "Amazon Prime Video": "https://www.amazon.com/favicon.ico",
+    Hulu: "https://www.hulu.com/favicon.ico",
+    HIDIVE: "https://www.hidive.com/favicon.ico",
+    "Disney+": "https://www.disneyplus.com/favicon.ico",
+};
 
 const statusOptions: WatchStatus[] = ["watching", "plan_to_watch", "completed", "on_hold", "dropped"];
 const MAX_NOTE_LENGTH = 500;
@@ -111,7 +123,12 @@ function RelatedAnimeSection({ relations, relatedAnime }: RelatedAnimeSectionPro
                     const relatedData = relatedAnime?.[entry.mal_id];
                     const imageUrl = relatedData?.images?.jpg?.large_image_url || relatedData?.images?.jpg?.image_url;
                     return (
-                        <Link key={entry.mal_id} href={`/anime/${entry.mal_id}`} className={styles.relatedItem}>
+                        <Link
+                            key={entry.mal_id}
+                            href={`/anime/${entry.mal_id}`}
+                            className={styles.relatedItem}
+                            prefetch={false}
+                        >
                             <div className={styles.relatedThumb}>
                                 {imageUrl ? (
                                     <Image src={imageUrl} alt={entry.name} fill sizes="150px" />
@@ -156,6 +173,51 @@ function RecommendationsSection({ recommendations }: { recommendations: AnimeRec
                     );
                 })}
             </div>
+        </div>
+    );
+}
+
+function StreamingSection({ streaming }: { streaming: StreamingLink[] }) {
+    if (streaming.length === 0) {
+        return (
+            <div className={styles.streamingSection}>
+                <p className={styles.streamingEmpty}>No streaming platforms available for this anime.</p>
+            </div>
+        );
+    }
+
+    return (
+        <div className={styles.streamingSection}>
+            <div className={styles.streamingGrid}>
+                {streaming.map(link => (
+                    <a
+                        key={link.name}
+                        href={link.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={styles.streamingCard}
+                    >
+                        <div className={styles.streamingIcon}>
+                            {STREAMING_ICONS[link.name] ? (
+                                <Image
+                                    src={STREAMING_ICONS[link.name]}
+                                    alt={link.name}
+                                    width={32}
+                                    height={32}
+                                    unoptimized
+                                />
+                            ) : (
+                                <i className="bi bi-play-circle-fill" />
+                            )}
+                        </div>
+                        <span className={styles.streamingName}>{link.name}</span>
+                        <i className="bi bi-box-arrow-up-right" />
+                    </a>
+                ))}
+            </div>
+            <p className={styles.streamingDisclaimer}>
+                <i className="bi bi-info-circle" /> Availability may vary by region
+            </p>
         </div>
     );
 }
@@ -739,6 +801,7 @@ function ContentTabs({
     totalEpisodeCount,
     characters,
     statistics,
+    streaming,
 }: ContentTabsProps) {
     const [episodeDetailsCache, setEpisodeDetailsCache] = useState<Record<number, AnimeEpisodeDetail>>({});
 
@@ -751,6 +814,7 @@ function ContentTabs({
     const hasRecommendations = recommendations && recommendations.length > 0;
     const hasEpisodes = initialEpisodes && initialEpisodes.length > 0;
     const hasCharacters = characters && characters.length > 0;
+    const hasStreaming = streaming && streaming.length > 0;
 
     const tabs: Tab[] = [
         {
@@ -792,6 +856,14 @@ function ContentTabs({
         });
     }
 
+    if (hasStreaming) {
+        tabs.push({
+            id: "streaming",
+            label: "Streaming",
+            content: <StreamingSection streaming={streaming} />,
+        });
+    }
+
     if (hasRelated) {
         tabs.push({
             id: "related",
@@ -821,15 +893,13 @@ export function AnimePageClient({
     totalEpisodeCount,
     characters,
     statistics,
+    streaming,
 }: AnimePageClientProps) {
     const [showStatusMenu, setShowStatusMenu] = useState(false);
     const [localNoteText, setLocalNoteText] = useState<string | null>(null);
     const [noteSaved, setNoteSaved] = useState(false);
     const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     const savedIndicatorTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-    const router = useRouter();
-    const hasRefreshed = useRef(false);
 
     const { user } = useAuth();
     const { getWatchData, addToWatchList, updateWatchStatus, removeFromWatchList, isInWatchList, ensureLoaded } =
@@ -838,14 +908,6 @@ export function AnimePageClient({
     useEffect(() => {
         ensureLoaded();
     }, [ensureLoaded]);
-
-    useEffect(() => {
-        const hasMissingData = !pictures?.length && !characters?.length && !statistics;
-        if (hasMissingData && !hasRefreshed.current) {
-            hasRefreshed.current = true;
-            router.refresh();
-        }
-    }, [pictures, characters, statistics, router]);
 
     const watchData = user ? getWatchData(anime.mal_id) : undefined;
 
@@ -1151,6 +1213,7 @@ export function AnimePageClient({
                             totalEpisodeCount={totalEpisodeCount}
                             characters={characters}
                             statistics={statistics}
+                            streaming={streaming}
                         />
                     </div>
                 </div>

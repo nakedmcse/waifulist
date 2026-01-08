@@ -9,7 +9,7 @@ import type { WatchStatus } from "@/types/anime";
 const SALT_ROUNDS = 12;
 
 export class DatabaseError extends Error {
-    constructor(
+    public constructor(
         message: string,
         public readonly operation: string,
         public readonly cause?: unknown,

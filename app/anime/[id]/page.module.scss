@@ -32,7 +32,7 @@
 .container {
     position: relative;
     z-index: 1;
-    max-width: 1200px;
+    max-width: 1400px;
     margin: 0 auto;
     padding: $spacing-lg $spacing-sm;
     overflow-x: hidden;
@@ -1430,5 +1430,85 @@
 
     @include md {
         height: 200px;
+    }
+}
+
+// Streaming Section
+.streamingSection {
+    width: 100%;
+}
+
+.streamingEmpty {
+    text-align: center;
+    color: var(--text-muted);
+    padding: $spacing-xl;
+}
+
+.streamingGrid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: $spacing-md;
+}
+
+.streamingCard {
+    display: flex;
+    align-items: center;
+    gap: $spacing-md;
+    padding: $spacing-md $spacing-lg;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-primary);
+    border-radius: $radius-lg;
+    text-decoration: none;
+    color: var(--text-primary);
+    transition: all $transition-fast;
+    min-width: 200px;
+
+    &:hover {
+        border-color: var(--accent-primary);
+        background: var(--bg-hover, rgba(255, 255, 255, 0.05));
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    i.bi-box-arrow-up-right {
+        color: var(--text-muted);
+        font-size: 0.75rem;
+        margin-left: auto;
+    }
+}
+
+.streamingIcon {
+    @include flex-center;
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+
+    img {
+        border-radius: $radius-sm;
+    }
+
+    i {
+        font-size: 1.5rem;
+        color: var(--accent-primary);
+    }
+}
+
+.streamingName {
+    font-weight: 500;
+    font-size: 0.9375rem;
+}
+
+.streamingDisclaimer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: $spacing-xs;
+    margin-top: $spacing-lg;
+    font-size: 0.8rem;
+    color: #dc3545;
+
+    i {
+        font-size: 0.7rem;
     }
 }

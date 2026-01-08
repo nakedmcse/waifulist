@@ -16,6 +16,35 @@ const nextConfig: NextConfig = {
                 protocol: "https",
                 hostname: "api.trace.moe",
             },
+            // Streaming platform favicons
+            {
+                protocol: "https",
+                hostname: "www.crunchyroll.com",
+            },
+            {
+                protocol: "https",
+                hostname: "assets.nflxext.com",
+            },
+            {
+                protocol: "https",
+                hostname: "www.funimation.com",
+            },
+            {
+                protocol: "https",
+                hostname: "www.amazon.com",
+            },
+            {
+                protocol: "https",
+                hostname: "www.hulu.com",
+            },
+            {
+                protocol: "https",
+                hostname: "www.hidive.com",
+            },
+            {
+                protocol: "https",
+                hostname: "www.disneyplus.com",
+            },
         ],
     },
 };

@@ -111,6 +111,7 @@ export default async function AnimePage({ params }: PageProps) {
             totalEpisodeCount={totalEpisodeCount || episodesData.episodes.length}
             characters={characters}
             statistics={statistics}
+            streaming={anime.streaming ?? undefined}
         />
     );
 }

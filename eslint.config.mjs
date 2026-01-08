@@ -32,6 +32,7 @@ const eslintConfig = [
                     ignoreRestSiblings: true,
                 },
             ],
+            "@typescript-eslint/explicit-member-accessibility": "error",
         },
     },
 ];
