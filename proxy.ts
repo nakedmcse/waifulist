@@ -1,42 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getRedis, REDIS_KEYS } from "@/lib/redis";
 import { RateLimitType } from "@/types/rateLimit";
+import { getClientIP } from "@/lib/ipUtils";
 
 const RATE_LIMITS: Record<RateLimitType, Record<string, number>> = {
     page: { requests: 60, window: 60 },
     api: { requests: 120, window: 60 },
 } as const;
-
-function extractIp(ipString: string): string {
-    const ipSplit = ipString.split(":");
-    if (ipSplit.length === 1 || (ipSplit.length > 2 && !ipString.includes("]"))) {
-        return ipString;
-    }
-    if (ipSplit.length === 2) {
-        return ipSplit[0];
-    }
-    return ipSplit
-        .slice(0, ipSplit.length - 1)
-        .join(":")
-        .replace(/\[/, "")
-        .replace(/]/, "");
-}
-
-function getClientIP(request: NextRequest): string {
-    const cfIP = request.headers.get("cf-connecting-ip");
-    if (cfIP) {
-        return extractIp(cfIP);
-    }
-    const forwarded = request.headers.get("x-forwarded-for");
-    if (forwarded) {
-        return extractIp(forwarded.split(",")[0].trim());
-    }
-    const realIP = request.headers.get("x-real-ip");
-    if (realIP) {
-        return extractIp(realIP);
-    }
-    return "unknown";
-}
 
 async function checkRateLimit(
     ip: string,
@@ -70,11 +40,22 @@ export async function proxy(request: NextRequest) {
     const nextUrl = request.headers.get("next-url");
     const isPrefetch = nextUrl !== null && nextUrl !== pathname;
     const isAuthEndpoint = pathname.startsWith("/api/auth/");
-    if (hasRscParam || rscHeader === "1" || isPrefetch || isAuthEndpoint) {
-        return NextResponse.next();
+    const ip = getClientIP(request);
+
+    const requestHeaders = new Headers(request.headers);
+    requestHeaders.set("x-request-page", pathname);
+
+    const isRsc = hasRscParam || rscHeader === "1";
+    if (isRsc) {
+        requestHeaders.set("x-request-rsc", "1");
+    }
+    if (isPrefetch) {
+        requestHeaders.set("x-request-prefetch", "1");
     }
 
-    const ip = getClientIP(request);
+    if (isRsc || isPrefetch || isAuthEndpoint) {
+        return NextResponse.next({ request: { headers: requestHeaders } });
+    }
     const type: RateLimitType = pathname.startsWith("/api/") ? "api" : "page";
     const { allowed, remaining, resetIn, limit } = await checkRateLimit(ip, type);
 
@@ -92,7 +73,7 @@ export async function proxy(request: NextRequest) {
         });
     }
 
-    const response = NextResponse.next();
+    const response = NextResponse.next({ request: { headers: requestHeaders } });
     response.headers.set("X-RateLimit-Limit", String(limit));
     response.headers.set("X-RateLimit-Remaining", String(remaining));
     return response;

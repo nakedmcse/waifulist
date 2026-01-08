@@ -1,3 +1,4 @@
+import { cache } from "react";
 import {
     Anime,
     AnimeCharacter,
@@ -18,11 +19,26 @@ import {
 } from "@/types/anime";
 import { CharacterFull, CharacterFullResponse } from "@/types/character";
 import { PersonFull, PersonFullResponse } from "@/types/person";
+import { getRequestContext } from "@/lib/requestContext";
 
 const JIKAN_API_URL = process.env.JIKAN_API_URL || "http://jikan:8080/v4";
 const JIKAN_TIMEOUT = 10000;
 const JIKAN_MAX_RETRIES = 2;
 const JIKAN_RETRY_DELAY = 500;
+
+async function jikanLog(level: "warn" | "error", message: string): Promise<void> {
+    const ctx = await getRequestContext();
+    const timestamp = new Date().toISOString();
+    const rsc = ctx.isRsc ? "Y" : "N";
+    const prefetch = ctx.isPrefetch ? "Y" : "N";
+    const logMessage = `[${timestamp}] [Jikan] [IP: ${ctx.ip}] [Page: ${ctx.page}] [RSC: ${rsc}] [Prefetch: ${prefetch}] ${message}`;
+
+    if (level === "warn") {
+        console.warn(logMessage);
+    } else {
+        console.error(logMessage);
+    }
+}
 
 const RELATION_PRIORITY: Record<string, number> = {
     Sequel: 1,
@@ -41,7 +57,14 @@ function delay(ms: number): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-async function fetchFromJikan<T>(endpoint: string, fallback: T): Promise<T> {
+const fetchFromJikanInternal = async function <T>(endpoint: string, fallback: T): Promise<T> {
+    const ctx = await getRequestContext();
+
+    const isAnimeEndpoint = endpoint.startsWith("/anime/");
+    if (ctx.isPrefetch && isAnimeEndpoint) {
+        return fallback;
+    }
+
     for (let attempt = 0; attempt <= JIKAN_MAX_RETRIES; attempt++) {
         try {
             const controller = new AbortController();
@@ -52,22 +75,22 @@ async function fetchFromJikan<T>(endpoint: string, fallback: T): Promise<T> {
             clearTimeout(timeout);
 
             if (response.status >= 500 && attempt < JIKAN_MAX_RETRIES) {
-                console.warn(`[Jikan] 500 error for ${endpoint}, retrying (${attempt + 1}/${JIKAN_MAX_RETRIES})...`);
+                await jikanLog("warn", `500 error for ${endpoint}, retrying (${attempt + 1}/${JIKAN_MAX_RETRIES})...`);
                 await delay(JIKAN_RETRY_DELAY);
                 continue;
             }
 
             if (!response.ok) {
-                console.error(`[Jikan] Failed to fetch ${endpoint}: ${response.status}`);
+                await jikanLog("error", `Failed to fetch ${endpoint}: ${response.status}`);
                 return fallback;
             }
 
             return await response.json();
         } catch (error) {
             if (error instanceof Error && error.name === "AbortError") {
-                console.error(`[Jikan] Fetch ${endpoint} timed out`);
+                await jikanLog("error", `Fetch ${endpoint} timed out`);
             } else {
-                console.error(`[Jikan] Failed to fetch ${endpoint}:`, error);
+                await jikanLog("error", `Failed to fetch ${endpoint}: ${error}`);
             }
 
             if (attempt < JIKAN_MAX_RETRIES) {
@@ -78,7 +101,9 @@ async function fetchFromJikan<T>(endpoint: string, fallback: T): Promise<T> {
         }
     }
     return fallback;
-}
+};
+
+const fetchFromJikan = cache(fetchFromJikanInternal);
 
 interface JikanResponse {
     data: Anime;

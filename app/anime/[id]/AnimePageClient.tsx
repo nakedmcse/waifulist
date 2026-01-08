@@ -3,6 +3,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Bar, Doughnut } from "react-chartjs-2";
 import { ArcElement, BarElement, CategoryScale, Chart as ChartJS, Legend, LinearScale, Tooltip } from "chart.js";
 import {
@@ -827,6 +828,9 @@ export function AnimePageClient({
     const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     const savedIndicatorTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+    const router = useRouter();
+    const hasRefreshed = useRef(false);
+
     const { user } = useAuth();
     const { getWatchData, addToWatchList, updateWatchStatus, removeFromWatchList, isInWatchList, ensureLoaded } =
         useWatchList();
@@ -834,6 +838,14 @@ export function AnimePageClient({
     useEffect(() => {
         ensureLoaded();
     }, [ensureLoaded]);
+
+    useEffect(() => {
+        const hasMissingData = !pictures?.length && !characters?.length && !statistics;
+        if (hasMissingData && !hasRefreshed.current) {
+            hasRefreshed.current = true;
+            router.refresh();
+        }
+    }, [pictures, characters, statistics, router]);
 
     const watchData = user ? getWatchData(anime.mal_id) : undefined;
 
