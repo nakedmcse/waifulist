@@ -34,26 +34,36 @@ async function checkRateLimit(
 
 export async function proxy(request: NextRequest) {
     const { pathname, searchParams } = request.nextUrl;
+    const fullUrl = request.url;
     const rscHeader = request.headers.get("rsc") || request.headers.get("Rsc") || request.headers.get("RSC");
-    const hasRscParam = searchParams.has("_rsc") || request.nextUrl.search.includes("_rsc=");
+    const stateTreeHeader =
+        request.headers.get("Next-Router-State-Tree") || request.headers.get("next-router-state-tree");
+    const hasRscParam =
+        searchParams.has("_rsc") || request.nextUrl.search.includes("_rsc=") || fullUrl.includes("_rsc=");
 
-    const nextUrl = request.headers.get("next-url");
-    const isPrefetch = nextUrl !== null && nextUrl !== pathname;
+    const prefetchHeader = request.headers.get("Next-Router-Prefetch") || request.headers.get("next-router-prefetch");
+    const secFetchDest = request.headers.get("sec-fetch-dest");
+    const isPrefetch = prefetchHeader === "1";
+    const isRscRequest = hasRscParam || rscHeader !== null || stateTreeHeader !== null;
+    const isBrowserNavigation = secFetchDest === "document";
+
     const isAuthEndpoint = pathname.startsWith("/api/auth/");
     const ip = getClientIP(request);
 
     const requestHeaders = new Headers(request.headers);
     requestHeaders.set("x-request-page", pathname);
 
-    const isRsc = hasRscParam || rscHeader === "1";
-    if (isRsc) {
+    if (isRscRequest) {
         requestHeaders.set("x-request-rsc", "1");
     }
     if (isPrefetch) {
         requestHeaders.set("x-request-prefetch", "1");
     }
 
-    if (isRsc || isPrefetch || isAuthEndpoint) {
+    const isApi = pathname.startsWith("/api/");
+    const shouldRateLimit = isApi || isBrowserNavigation;
+
+    if (!shouldRateLimit || isAuthEndpoint) {
         return NextResponse.next({ request: { headers: requestHeaders } });
     }
     const type: RateLimitType = pathname.startsWith("/api/") ? "api" : "page";

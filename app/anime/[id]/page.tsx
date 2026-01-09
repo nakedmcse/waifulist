@@ -11,6 +11,8 @@ import {
 import { AnimePageClient } from "./AnimePageClient";
 import { Anime } from "@/types/anime";
 
+export const dynamic = "force-dynamic";
+
 interface PageProps {
     params: Promise<{ id: string }>;
 }
