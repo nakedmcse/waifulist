@@ -4,6 +4,7 @@ import { REDIS_KEYS } from "@/lib/redis";
 import { getPreviewCharacterIds, parseTierListData } from "@/services/tierListService";
 import { generateOGImage, OG_SIZE, OG_THEMES } from "@/services/opengraphService";
 
+export const dynamic = "force-dynamic";
 export const size = OG_SIZE;
 
 export default async function OGImage() {
