@@ -1,4 +1,4 @@
-import { TierListRow, WatchedAnimeRow, BookmarkRow } from "@/lib/db";
+import { BookmarkRow, TierListRow, WatchedAnimeRow } from "@/lib/db";
 
 export interface BackupData {
     Anime: WatchedAnimeRow[];

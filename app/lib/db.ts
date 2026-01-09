@@ -894,7 +894,7 @@ export function getCommentsByTierListId(tierListId: number): TierListCommentRow[
         FROM tier_list_comments c
         JOIN users u ON c.user_id = u.id
         WHERE c.tier_list_id = ?
-        ORDER BY c.created_at ASC
+        ORDER BY c.created_at DESC
     `);
     return stmt.all(tierListId) as TierListCommentRow[];
 }

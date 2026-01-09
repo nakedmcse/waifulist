@@ -38,7 +38,7 @@ export function useComments(publicId: string) {
         async (content: string, turnstileToken: string): Promise<TierListComment | null> => {
             try {
                 const comment = await postComment(publicId, content.trim(), turnstileToken);
-                setComments(prev => [...prev, comment]);
+                setComments(prev => [comment, ...prev]);
                 return comment;
             } catch (err) {
                 throw err;

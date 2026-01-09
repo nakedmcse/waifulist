@@ -1,5 +1,5 @@
 import { getCurrentUser } from "@/lib/auth";
-import { getAllWatched, getAllBookmarks, getTierListsByUserId } from "@/lib/db";
+import { getAllBookmarks, getAllWatched, getTierListsByUserId } from "@/lib/db";
 import { BackupData } from "@/types/backup";
 import { NextResponse } from "next/server";
 

@@ -8,6 +8,57 @@ import { Turnstile } from "@/components/Turnstile/Turnstile";
 import { REACTION_EMOJIS } from "@/types/tierlist";
 import styles from "./CommentsSection.module.scss";
 
+const IMAGE_EXTENSIONS = /\.(gif|png|jpe?g|webp)$/i;
+
+function EmbeddedImage({ src }: { src: string }) {
+    const [failed, setFailed] = useState(false);
+
+    if (failed) {
+        return (
+            <a href={src} target="_blank" rel="noopener noreferrer" className={styles.link}>
+                {src}
+            </a>
+        );
+    }
+
+    return (
+        <a href={src} target="_blank" rel="noopener noreferrer" className={styles.imageLink}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={src} alt="" className={styles.embeddedImage} loading="lazy" onError={() => setFailed(true)} />
+        </a>
+    );
+}
+
+function CommentContent({ content }: { content: string }) {
+    const urlRegex = /(https?:\/\/[^\s<]+)/g;
+    const parts = content.split(urlRegex);
+    const result: React.ReactNode[] = [];
+
+    for (let i = 0; i < parts.length; i++) {
+        const part = parts[i];
+        if (!part) {
+            continue;
+        }
+
+        if (urlRegex.test(part)) {
+            urlRegex.lastIndex = 0;
+            if (IMAGE_EXTENSIONS.test(part)) {
+                result.push(<EmbeddedImage key={i} src={part} />);
+            } else {
+                result.push(
+                    <a key={i} href={part} target="_blank" rel="noopener noreferrer" className={styles.link}>
+                        {part}
+                    </a>,
+                );
+            }
+        } else {
+            result.push(part);
+        }
+    }
+
+    return <>{result}</>;
+}
+
 interface CommentsSectionProps {
     publicId: string;
     isOwner: boolean;
@@ -145,6 +196,12 @@ export function CommentsSection({ publicId, isOwner }: CommentsSectionProps) {
                     <textarea
                         value={content}
                         onChange={e => setContent(e.target.value)}
+                        onKeyDown={e => {
+                            if (e.key === "Enter" && (e.ctrlKey || e.metaKey) && content.trim() && !submitting) {
+                                e.preventDefault();
+                                formRef.current?.requestSubmit();
+                            }
+                        }}
                         placeholder="Write a comment..."
                         className={styles.textarea}
                         maxLength={1000}
@@ -187,7 +244,9 @@ export function CommentsSection({ publicId, isOwner }: CommentsSectionProps) {
                                         </button>
                                     )}
                                 </div>
-                                <p className={styles.commentContent}>{comment.content}</p>
+                                <div className={styles.commentContent}>
+                                    <CommentContent content={comment.content} />
+                                </div>
                                 <div className={styles.reactions}>
                                     {comment.reactions.map(reaction => (
                                         <button
