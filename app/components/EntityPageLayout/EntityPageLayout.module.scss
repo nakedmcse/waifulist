@@ -142,6 +142,21 @@
     }
 }
 
+.mobileStats {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-sm;
+    width: 100%;
+    background: var(--bg-secondary);
+    border-radius: $radius-lg;
+    padding: $spacing-md;
+    margin-bottom: $spacing-lg;
+
+    @include md {
+        display: none;
+    }
+}
+
 .sidebarStatRow {
     display: flex;
     justify-content: space-between;

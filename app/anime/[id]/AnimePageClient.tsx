@@ -22,6 +22,7 @@ import {
     ContentTabsWrapper,
     EntityPageLayout,
     MetaRow,
+    MobileStats,
     PageHeader,
     SidebarItem,
     SidebarLink,
@@ -938,6 +939,19 @@ export function AnimePageClient({
                     </div>
                 </div>
             )}
+
+            <MobileStats>
+                {anime.type && <SidebarStatRow label="Type" value={anime.type} />}
+                {anime.status && <SidebarStatRow label="Status" value={anime.status} />}
+                {anime.episodes && <SidebarStatRow label="Episodes" value={anime.episodes} />}
+                {anime.duration && <SidebarStatRow label="Duration" value={anime.duration} />}
+                {anime.aired?.string && <SidebarStatRow label="Aired" value={anime.aired.string} />}
+                {anime.source && <SidebarStatRow label="Source" value={anime.source} />}
+                {anime.rating && <SidebarStatRow label="Rating" value={anime.rating} />}
+                {anime.rank && <SidebarStatRow label="Rank" value={`#${anime.rank}`} />}
+                {anime.popularity && <SidebarStatRow label="Popularity" value={`#${anime.popularity}`} />}
+                {anime.members && <SidebarStatRow label="Members" value={anime.members.toLocaleString()} />}
+            </MobileStats>
 
             {statistics && (
                 <StatisticsSection

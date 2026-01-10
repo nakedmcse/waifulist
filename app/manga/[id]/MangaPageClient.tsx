@@ -10,6 +10,7 @@ import {
     ContentTabsWrapper,
     EntityPageLayout,
     MetaRow,
+    MobileStats,
     PageHeader,
     SidebarItem,
     SidebarLink,
@@ -245,6 +246,17 @@ export function MangaPageClient({ manga, characters, pictures, statistics, recom
             {manga.serializations.length > 0 && (
                 <MetaRow label="Serialization:">{manga.serializations.map(s => s.name).join(", ")}</MetaRow>
             )}
+
+            <MobileStats>
+                {manga.type && <SidebarStatRow label="Type" value={manga.type} />}
+                {manga.status && <SidebarStatRow label="Status" value={manga.status} />}
+                {manga.volumes && <SidebarStatRow label="Volumes" value={manga.volumes} />}
+                {manga.chapters && <SidebarStatRow label="Chapters" value={manga.chapters} />}
+                {manga.published?.string && <SidebarStatRow label="Published" value={manga.published.string} />}
+                {manga.rank && <SidebarStatRow label="Rank" value={`#${manga.rank}`} />}
+                {manga.popularity && <SidebarStatRow label="Popularity" value={`#${manga.popularity}`} />}
+                {manga.members && <SidebarStatRow label="Members" value={manga.members.toLocaleString()} />}
+            </MobileStats>
 
             {statistics && (
                 <StatisticsSection

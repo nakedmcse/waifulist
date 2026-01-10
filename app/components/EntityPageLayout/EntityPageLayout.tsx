@@ -83,6 +83,10 @@ export function SidebarStats({ children }: SidebarStatsProps) {
     return <div className={styles.sidebarStats}>{children}</div>;
 }
 
+export function MobileStats({ children }: SidebarStatsProps) {
+    return <div className={styles.mobileStats}>{children}</div>;
+}
+
 interface SidebarStatRowProps {
     label: string;
     value: ReactNode;
