@@ -33,54 +33,75 @@ export function GenreFilter({ genres, selected, onChange, loading, defaultCollap
 
     const handleClearAll = () => {
         onChange([]);
+        setSearch("");
     };
 
     return (
         <div className={styles.container}>
             <div className={styles.header} onClick={() => setCollapsed(!collapsed)}>
-                <div className={styles.headerTitle}>
-                    <i className="bi bi-funnel"></i>
-                    <span>Genres</span>
+                <div className={styles.headerLeft}>
+                    <i className="bi bi-funnel" />
+                    <span>Filter by Genre</span>
                     {selected.length > 0 && <span className={styles.badge}>{selected.length}</span>}
                 </div>
-                <i className={`bi bi-chevron-${collapsed ? "down" : "up"}`}></i>
+                <div className={styles.headerRight}>
+                    {selected.length > 0 && !collapsed && (
+                        <button
+                            className={styles.clearButton}
+                            onClick={e => {
+                                e.stopPropagation();
+                                handleClearAll();
+                            }}
+                        >
+                            Clear
+                        </button>
+                    )}
+                    <i className={`bi bi-chevron-${collapsed ? "down" : "up"}`} />
+                </div>
             </div>
 
             {!collapsed && (
                 <div className={styles.content}>
-                    {selected.length > 0 && (
-                        <button className={styles.clearButton} onClick={handleClearAll}>
-                            <i className="bi bi-x-circle"></i>
-                            Clear all
-                        </button>
-                    )}
-
                     {loading ? (
                         <div className={styles.loading}>Loading genres...</div>
                     ) : (
                         <>
                             <div className={styles.searchWrapper}>
-                                <i className="bi bi-search"></i>
+                                <i className="bi bi-search" />
                                 <input
                                     type="text"
                                     placeholder="Search genres..."
                                     value={search}
                                     onChange={e => setSearch(e.target.value)}
                                     className={styles.searchInput}
+                                    onClick={e => e.stopPropagation()}
                                 />
+                                {search && (
+                                    <button
+                                        className={styles.clearSearch}
+                                        onClick={e => {
+                                            e.stopPropagation();
+                                            setSearch("");
+                                        }}
+                                    >
+                                        <i className="bi bi-x" />
+                                    </button>
+                                )}
                             </div>
-                            <div className={styles.genreList}>
+                            <div className={styles.chipList}>
                                 {filteredGenres.map(genre => (
-                                    <label key={genre} className={styles.genreItem}>
-                                        <input
-                                            type="checkbox"
-                                            checked={selected.includes(genre)}
-                                            onChange={() => handleToggle(genre)}
-                                        />
-                                        <span className={styles.checkmark}></span>
-                                        <span className={styles.genreName}>{genre}</span>
-                                    </label>
+                                    <button
+                                        key={genre}
+                                        className={`${styles.chip} ${selected.includes(genre) ? styles.selected : ""}`}
+                                        onClick={() => handleToggle(genre)}
+                                    >
+                                        {genre}
+                                        {selected.includes(genre) && <i className="bi bi-check" />}
+                                    </button>
                                 ))}
+                                {filteredGenres.length === 0 && (
+                                    <span className={styles.noResults}>No genres match &quot;{search}&quot;</span>
+                                )}
                             </div>
                         </>
                     )}

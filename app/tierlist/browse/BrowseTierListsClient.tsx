@@ -1,13 +1,11 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useCharacterPreviews, usePublicTierLists } from "@/hooks/useTierList";
-import { TierListSummaryPublic } from "@/services/tierListClientService";
+import { usePublicTierLists } from "@/hooks/useTierList";
 import { Spinner } from "@/components/Spinner/Spinner";
 import { Button } from "@/components/Button/Button";
+import { TierListCard } from "@/components/TierListCard";
 import styles from "./page.module.scss";
 
 export function BrowseTierListsClient() {
@@ -110,7 +108,15 @@ export function BrowseTierListsClient() {
                     <>
                         <div className={styles.grid}>
                             {tierLists.map(tierList => (
-                                <TierListCard key={tierList.publicId} tierList={tierList} />
+                                <TierListCard
+                                    key={tierList.publicId}
+                                    publicId={tierList.publicId}
+                                    name={tierList.name}
+                                    characterCount={tierList.characterCount}
+                                    previewCharacterIds={tierList.previewCharacterIds}
+                                    updatedAt={tierList.updatedAt}
+                                    username={tierList.username}
+                                />
                             ))}
                         </div>
 
@@ -132,49 +138,4 @@ export function BrowseTierListsClient() {
             </div>
         </div>
     );
-}
-
-function TierListCard({ tierList }: { tierList: TierListSummaryPublic }) {
-    const { previews, loading: loadingPreviews } = useCharacterPreviews(tierList.previewCharacterIds);
-
-    return (
-        <Link href={`/tierlist/${tierList.publicId}`} className={styles.card}>
-            <div className={styles.cardPreviews}>
-                {loadingPreviews ? (
-                    <div className={styles.previewPlaceholder} />
-                ) : previews.length > 0 ? (
-                    previews.map(char => (
-                        <Image
-                            key={char.id}
-                            src={char.image}
-                            alt={char.name}
-                            width={80}
-                            height={80}
-                            className={styles.previewImage}
-                            unoptimized
-                        />
-                    ))
-                ) : (
-                    <div className={styles.previewEmpty}>
-                        <i className="bi bi-image" />
-                    </div>
-                )}
-            </div>
-            <div className={styles.cardContent}>
-                <h3>{tierList.name}</h3>
-                <div className={styles.cardMeta}>
-                    <span className={styles.username}>
-                        <i className="bi bi-person" /> {tierList.username}
-                    </span>
-                    <span className={styles.count}>{tierList.characterCount} characters</span>
-                </div>
-                <div className={styles.cardDate}>Updated {formatDate(tierList.updatedAt)}</div>
-            </div>
-        </Link>
-    );
-}
-
-function formatDate(dateString: string): string {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
 }

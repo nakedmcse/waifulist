@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { ThemeSelector } from "@/components/ThemeSelector/ThemeSelector";
+import { UserDropdown } from "@/components/UserDropdown";
 import styles from "./Header.module.scss";
 
 export function Header() {
@@ -71,11 +72,11 @@ export function Header() {
                             <span>Browse</span>
                         </Link>
                         <Link
-                            href="/seasonal"
-                            className={`${styles.navLink} ${isActive("/seasonal") ? styles.active : ""}`}
+                            href="/calendar"
+                            className={`${styles.navLink} ${isActive("/calendar") ? styles.active : ""}`}
                         >
                             <i className="bi bi-calendar3" />
-                            <span>Seasonal</span>
+                            <span>Calendar</span>
                         </Link>
                         <Link href="/trace" className={`${styles.navLink} ${isActive("/trace") ? styles.active : ""}`}>
                             <i className="bi bi-search-heart" />
@@ -88,24 +89,6 @@ export function Header() {
                             <i className="bi bi-trophy" />
                             <span>Tier Lists</span>
                         </Link>
-                        {user && (
-                            <>
-                                <Link
-                                    href="/tierlist"
-                                    className={`${styles.navLink} ${styles.hideMobile} ${isActive("/tierlist") ? styles.active : ""}`}
-                                >
-                                    <i className="bi bi-list-ol" />
-                                    <span>My Tier List</span>
-                                </Link>
-                                <Link
-                                    href="/my-list"
-                                    className={`${styles.navLink} ${isActive("/my-list") ? styles.active : ""}`}
-                                >
-                                    <i className="bi bi-bookmark" />
-                                    <span>My List</span>
-                                </Link>
-                            </>
-                        )}
                     </nav>
 
                     <div className={styles.actions}>
@@ -126,17 +109,7 @@ export function Header() {
                         {!loading && (
                             <div className={styles.desktopOnly}>
                                 {user ? (
-                                    <div className={styles.userMenu}>
-                                        <Link href="/profile" className={styles.username}>
-                                            <i className="bi bi-person-circle" /> {user.username}
-                                        </Link>
-                                        <Link href="/settings" className={styles.settingsLink} title="Settings">
-                                            <i className="bi bi-gear" />
-                                        </Link>
-                                        <button onClick={logout} className={styles.logoutButton}>
-                                            <i className="bi bi-box-arrow-right" />
-                                        </button>
-                                    </div>
+                                    <UserDropdown />
                                 ) : (
                                     <Link href="/login" className={styles.loginLink}>
                                         <i className="bi bi-person" />
@@ -174,6 +147,10 @@ export function Header() {
                             <span>{user.username}</span>
                         </Link>
                         <nav className={styles.mobileNav}>
+                            <Link href="/my-list" className={styles.mobileNavLink} onClick={closeMenu}>
+                                <i className="bi bi-bookmark" />
+                                <span>My List</span>
+                            </Link>
                             <Link href="/tierlist/browse" className={styles.mobileNavLink} onClick={closeMenu}>
                                 <i className="bi bi-trophy" />
                                 <span>Browse Tier Lists</span>

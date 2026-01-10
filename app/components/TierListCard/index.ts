@@ -1,0 +1,1 @@
+export { TierListCard } from "./TierListCard";

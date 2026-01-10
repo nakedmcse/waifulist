@@ -173,7 +173,6 @@ function BrowseContent() {
 
     const handleGenreChange = useCallback(
         (genres: string[]) => {
-            window.scrollTo({ top: 0 });
             setSelectedGenres(genres);
             setPage(1);
             lastFetchedSettingsRef.current = `${sort}-${hideSpecials}-${genres.join(",")}`;
@@ -286,91 +285,81 @@ function BrowseContent() {
 
     return (
         <div className={styles.page}>
-            <aside className={styles.sidebar}>
+            <div className={styles.header}>
+                <h1>Browse Anime</h1>
+                <p className={styles.subtitle}>
+                    {query ? `Search results for "${query}"` : "Discover top rated anime"}
+                </p>
+            </div>
+
+            <div className={styles.controls}>
+                <div className={styles.searchWrapper}>
+                    <SearchBar
+                        initialValue={query}
+                        onLiveSearch={handleLiveSearch}
+                        placeholder="Search anime by title..."
+                        debounceMs={250}
+                    />
+                </div>
+                <div className={styles.filterWrapper}>
+                    <label className={styles.checkbox}>
+                        <input
+                            type="checkbox"
+                            checked={hideSpecials}
+                            onChange={e => handleHideSpecialsChange(e.target.checked)}
+                        />
+                        <span>Hide Specials</span>
+                    </label>
+                </div>
+                {!isSearching && (
+                    <div className={styles.sortWrapper}>
+                        <label htmlFor="sort-select">Sort by:</label>
+                        <select
+                            id="sort-select"
+                            value={sort}
+                            onChange={e => handleSortChange(e.target.value as BrowseSortType)}
+                            className={styles.sortSelect}
+                        >
+                            <option value="rating">Top Rated</option>
+                            <option value="newest">Newest</option>
+                        </select>
+                    </div>
+                )}
+            </div>
+
+            <div className={styles.genreFilterWrapper}>
                 <GenreFilter
                     genres={allGenres}
                     selected={selectedGenres}
                     onChange={handleGenreChange}
                     loading={genresLoading}
+                    defaultCollapsed
                 />
-            </aside>
-            <div className={styles.main}>
-                <div className={styles.header}>
-                    <h1>Browse Anime</h1>
-                    <p className={styles.subtitle}>
-                        {query ? `Search results for "${query}"` : "Discover top rated anime"}
-                    </p>
-                </div>
-
-                <div className={styles.controls}>
-                    <div className={styles.searchWrapper}>
-                        <SearchBar
-                            initialValue={query}
-                            onLiveSearch={handleLiveSearch}
-                            placeholder="Search anime by title..."
-                            debounceMs={250}
-                        />
-                    </div>
-                    <div className={styles.filterWrapper}>
-                        <label className={styles.checkbox}>
-                            <input
-                                type="checkbox"
-                                checked={hideSpecials}
-                                onChange={e => handleHideSpecialsChange(e.target.checked)}
-                            />
-                            <span>Hide Specials</span>
-                        </label>
-                    </div>
-                    {!isSearching && (
-                        <div className={styles.sortWrapper}>
-                            <label htmlFor="sort-select">Sort by:</label>
-                            <select
-                                id="sort-select"
-                                value={sort}
-                                onChange={e => handleSortChange(e.target.value as BrowseSortType)}
-                                className={styles.sortSelect}
-                            >
-                                <option value="rating">Top Rated</option>
-                                <option value="newest">Newest</option>
-                            </select>
-                        </div>
-                    )}
-                </div>
-
-                <div className={styles.mobileGenreFilter}>
-                    <GenreFilter
-                        genres={allGenres}
-                        selected={selectedGenres}
-                        onChange={handleGenreChange}
-                        loading={genresLoading}
-                        defaultCollapsed
-                    />
-                </div>
-
-                {showLoading ? (
-                    <div className={styles.loading}>
-                        <Spinner text="Searching..." />
-                    </div>
-                ) : anime.length > 0 ? (
-                    <>
-                        <div className={styles.grid}>
-                            {anime.map(item => (
-                                <AnimeCard key={item.mal_id} anime={item} onContextMenu={handleContextMenu} />
-                            ))}
-                        </div>
-
-                        {!isSearching && (
-                            <Pagination currentPage={page} totalPages={totalPages} onPageChange={handlePageChange} />
-                        )}
-                    </>
-                ) : (
-                    <div className={styles.empty}>
-                        <i className="bi bi-search" />
-                        <h3>No results found</h3>
-                        <p>Try searching with different keywords</p>
-                    </div>
-                )}
             </div>
+
+            {showLoading ? (
+                <div className={styles.loading}>
+                    <Spinner text="Searching..." />
+                </div>
+            ) : anime.length > 0 ? (
+                <>
+                    <div className={styles.grid}>
+                        {anime.map(item => (
+                            <AnimeCard key={item.mal_id} anime={item} onContextMenu={handleContextMenu} />
+                        ))}
+                    </div>
+
+                    {!isSearching && (
+                        <Pagination currentPage={page} totalPages={totalPages} onPageChange={handlePageChange} />
+                    )}
+                </>
+            ) : (
+                <div className={styles.empty}>
+                    <i className="bi bi-search" />
+                    <h3>No results found</h3>
+                    <p>Try searching with different keywords</p>
+                </div>
+            )}
             <ContextMenu
                 visible={contextMenu.visible}
                 x={contextMenu.x}
@@ -387,11 +376,8 @@ export default function BrowsePage() {
         <Suspense
             fallback={
                 <div className={styles.page}>
-                    <aside className={styles.sidebar}></aside>
-                    <div className={styles.main}>
-                        <div className={styles.loading}>
-                            <Spinner text="Loading..." />
-                        </div>
+                    <div className={styles.loading}>
+                        <Spinner text="Loading..." />
                     </div>
                 </div>
             }

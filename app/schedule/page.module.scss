@@ -1,0 +1,168 @@
+@use "../styles/variables" as *;
+
+.page {
+    min-height: calc(100vh - 80px);
+    padding: $spacing-xl $spacing-lg;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.header {
+    text-align: center;
+    margin-bottom: $spacing-lg;
+
+    h1 {
+        font-size: 2rem;
+        margin-bottom: $spacing-sm;
+    }
+}
+
+.subtitle {
+    color: var(--text-secondary);
+    margin-bottom: $spacing-xs;
+}
+
+.lastUpdated {
+    color: var(--text-muted);
+    font-size: 0.75rem;
+}
+
+.tabBar {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: $spacing-sm;
+    margin-bottom: $spacing-xl;
+    padding: $spacing-sm;
+    background: var(--bg-secondary);
+    border-radius: $radius-lg;
+}
+
+.tab {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: $spacing-xs;
+    padding: $spacing-sm $spacing-md;
+    background: transparent;
+    border: none;
+    border-radius: $radius-md;
+    cursor: pointer;
+    transition: all $transition-fast;
+    color: var(--text-secondary);
+    min-width: 70px;
+
+    @include sm {
+        min-width: 80px;
+    }
+
+    &:hover {
+        background: var(--bg-tertiary);
+        color: var(--text-primary);
+    }
+
+    &.active {
+        background: var(--accent-primary);
+        color: white;
+
+        .count {
+            opacity: 0.9;
+        }
+    }
+
+    &.today:not(.active) {
+        border: 1px solid var(--accent-primary);
+    }
+}
+
+.dayName {
+    font-weight: 500;
+    font-size: 0.75rem;
+
+    @include sm {
+        font-size: 0.875rem;
+    }
+}
+
+.count {
+    font-size: 0.7rem;
+    opacity: 0.8;
+
+    @include sm {
+        font-size: 0.75rem;
+    }
+}
+
+.resultInfo {
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    margin-bottom: $spacing-lg;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: $spacing-md;
+
+    @include sm {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    @include md {
+        grid-template-columns: repeat(4, 1fr);
+    }
+
+    @include lg {
+        grid-template-columns: repeat(5, 1fr);
+    }
+
+    @include xl {
+        grid-template-columns: repeat(6, 1fr);
+        gap: $spacing-lg;
+    }
+}
+
+.loading {
+    @include flex-center;
+    flex-direction: column;
+    gap: $spacing-md;
+    padding: $spacing-2xl;
+    color: var(--text-secondary);
+}
+
+.error {
+    @include flex-center;
+    flex-direction: column;
+    gap: $spacing-md;
+    padding: $spacing-2xl;
+    text-align: center;
+    color: var(--text-secondary);
+
+    i {
+        font-size: 3rem;
+        color: var(--status-dropped);
+    }
+
+    h3 {
+        color: var(--text-primary);
+    }
+}
+
+.empty {
+    @include flex-center;
+    flex-direction: column;
+    gap: $spacing-md;
+    padding: $spacing-2xl;
+    text-align: center;
+    color: var(--text-secondary);
+
+    i {
+        font-size: 3rem;
+        color: var(--text-muted);
+    }
+
+    h3 {
+        color: var(--text-primary);
+    }
+}

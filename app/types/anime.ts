@@ -298,6 +298,14 @@ export interface IdList {
     ids: number[];
 }
 
+export type JikanPaginatedResponse<T> = {
+    pagination?: {
+        last_visible_page: number;
+        has_next_page: boolean;
+    };
+    data?: T[];
+};
+
 export interface MangaIdList {
     sfw: number[];
     nsfw: number[];

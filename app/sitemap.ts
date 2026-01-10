@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { getAllAnimeFromRedis, getCharacterIds, getPeopleIds, getMangaIds } from "@/services/animeData";
+import { getAllAnimeFromRedis, getCharacterIds, getMangaIds, getPeopleIds } from "@/services/animeData";
 import { getRedis, REDIS_KEYS, REDIS_TTL } from "@/lib/redis";
 
 export const dynamic = "force-dynamic";

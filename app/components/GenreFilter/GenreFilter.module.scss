@@ -9,7 +9,7 @@
 
 .header {
     @include flex-between;
-    padding: $spacing-md;
+    padding: $spacing-sm $spacing-md;
     cursor: pointer;
     user-select: none;
     transition: background $transition-fast;
@@ -19,11 +19,11 @@
     }
 }
 
-.headerTitle {
+.headerLeft {
     display: flex;
     align-items: center;
     gap: $spacing-sm;
-    font-weight: 600;
+    font-weight: 500;
     font-size: 0.875rem;
 
     i {
@@ -31,26 +31,24 @@
     }
 }
 
+.headerRight {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+}
+
 .badge {
     background: var(--accent-primary);
-    color: var(--bg-primary);
-    font-size: 0.75rem;
+    color: white;
+    font-size: 0.7rem;
     font-weight: 600;
     padding: 2px 6px;
     border-radius: $radius-full;
-    min-width: 20px;
+    min-width: 18px;
     text-align: center;
 }
 
-.content {
-    border-top: 1px solid var(--border-primary);
-    padding: $spacing-md;
-}
-
 .clearButton {
-    display: flex;
-    align-items: center;
-    gap: $spacing-xs;
     background: none;
     border: none;
     color: var(--text-secondary);
@@ -58,23 +56,22 @@
     cursor: pointer;
     padding: $spacing-xs $spacing-sm;
     border-radius: $radius-sm;
-    margin-bottom: $spacing-sm;
     transition: all $transition-fast;
 
     &:hover {
         color: var(--accent-primary);
         background: var(--bg-tertiary);
     }
+}
 
-    i {
-        font-size: 0.875rem;
-    }
+.content {
+    border-top: 1px solid var(--border-primary);
+    padding: $spacing-md;
 }
 
 .loading {
     color: var(--text-secondary);
     font-size: 0.875rem;
-    padding: $spacing-md;
     text-align: center;
 }
 
@@ -82,16 +79,15 @@
     display: flex;
     align-items: center;
     gap: $spacing-sm;
-    margin-bottom: $spacing-sm;
+    margin-bottom: $spacing-md;
     padding: $spacing-xs $spacing-sm;
     background: var(--bg-tertiary);
     border: 1px solid var(--border-primary);
-    border-radius: $radius-sm;
-    min-width: 0;
+    border-radius: $radius-md;
 
     i {
         color: var(--text-secondary);
-        font-size: 0.75rem;
+        font-size: 0.8rem;
         flex-shrink: 0;
     }
 }
@@ -99,7 +95,6 @@
 .searchInput {
     flex: 1;
     min-width: 0;
-    width: 100%;
     background: none;
     border: none;
     outline: none;
@@ -111,11 +106,33 @@
     }
 }
 
-.genreList {
+.clearSearch {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 2px;
     display: flex;
-    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: $radius-sm;
+    transition: all $transition-fast;
+
+    &:hover {
+        color: var(--text-primary);
+        background: var(--bg-primary);
+    }
+
+    i {
+        font-size: 0.9rem;
+    }
+}
+
+.chipList {
+    display: flex;
+    flex-wrap: wrap;
     gap: $spacing-xs;
-    max-height: 400px;
+    max-height: 200px;
     overflow-y: auto;
 
     &::-webkit-scrollbar {
@@ -137,61 +154,38 @@
     }
 }
 
-.genreItem {
-    display: flex;
+.chip {
+    display: inline-flex;
     align-items: center;
-    gap: $spacing-sm;
+    gap: $spacing-xs;
     padding: $spacing-xs $spacing-sm;
-    border-radius: $radius-sm;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-primary);
+    border-radius: $radius-full;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
     cursor: pointer;
-    transition: background $transition-fast;
+    transition: all $transition-fast;
+    white-space: nowrap;
 
     &:hover {
-        background: var(--bg-tertiary);
-    }
-
-    input {
-        position: absolute;
-        opacity: 0;
-        cursor: pointer;
-        height: 0;
-        width: 0;
-    }
-}
-
-.checkmark {
-    width: 16px;
-    height: 16px;
-    border: 2px solid var(--border-primary);
-    border-radius: $radius-sm;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all $transition-fast;
-    flex-shrink: 0;
-
-    &::after {
-        content: "";
-        width: 8px;
-        height: 8px;
-        background: var(--accent-primary);
-        border-radius: 2px;
-        opacity: 0;
-        transform: scale(0);
-        transition: all $transition-fast;
-    }
-
-    input:checked + & {
         border-color: var(--accent-primary);
+        color: var(--text-primary);
+    }
 
-        &::after {
-            opacity: 1;
-            transform: scale(1);
+    &.selected {
+        background: var(--accent-primary);
+        border-color: var(--accent-primary);
+        color: white;
+
+        i {
+            font-size: 0.75rem;
         }
     }
 }
 
-.genreName {
-    font-size: 0.875rem;
-    color: var(--text-primary);
+.noResults {
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    font-style: italic;
 }

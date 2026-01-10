@@ -1,8 +1,25 @@
 import { AsyncTask, CronJob, ToadScheduler } from "toad-scheduler";
 import { refreshAnimeData } from "./animeData";
+import { refreshSchedule } from "./scheduleService";
 
 const scheduler = new ToadScheduler();
 let isSchedulerStarted = false;
+
+function createTask(name: string, action: () => Promise<unknown>): AsyncTask {
+    return new AsyncTask(
+        name,
+        async () => {
+            console.log(`[Scheduler] Starting ${name} at ${new Date().toISOString()}`);
+            try {
+                await action();
+                console.log(`[Scheduler] Completed ${name}`);
+            } catch (error) {
+                console.error(`[Scheduler] Failed ${name}:`, error);
+            }
+        },
+        err => console.error(`[Scheduler] Error in ${name}:`, err),
+    );
+}
 
 export function startScheduler() {
     if (isSchedulerStarted) {
@@ -10,27 +27,29 @@ export function startScheduler() {
         return;
     }
 
-    const task = new AsyncTask(
-        "refresh-anime",
-        async () => {
-            console.log(`[Scheduler] Starting anime data refresh at ${new Date().toISOString()}`);
-            const result = await refreshAnimeData();
-            if (result.success) {
-                console.log(`[Scheduler] Successfully refreshed ${result.count} anime entries`);
-            } else {
-                console.error("[Scheduler] Failed to refresh anime data");
-            }
+    const jobs: { cron: string; task: AsyncTask }[] = [
+        {
+            cron: "0 0 * * *",
+            task: createTask("refresh-anime", async () => {
+                const result = await refreshAnimeData();
+                if (!result.success) {
+                    throw new Error("Failed to refresh anime data");
+                }
+                console.log(`[Scheduler] Refreshed ${result.count} anime entries`);
+            }),
         },
-        err => {
-            console.error("[Scheduler] Error during refresh:", err);
+        {
+            cron: "0 */6 * * *",
+            task: createTask("refresh-schedule", refreshSchedule),
         },
-    );
+    ];
 
-    const job = new CronJob({ cronExpression: "0 0 * * *" }, task, { preventOverrun: true });
+    for (const { cron, task } of jobs) {
+        scheduler.addCronJob(new CronJob({ cronExpression: cron }, task, { preventOverrun: true }));
+    }
 
-    scheduler.addCronJob(job);
     isSchedulerStarted = true;
-    console.log("[Scheduler] Started. Anime data will refresh daily at midnight");
+    console.log("[Scheduler] Started");
 }
 
 export function stopScheduler() {

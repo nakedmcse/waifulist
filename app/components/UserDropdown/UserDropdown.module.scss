@@ -1,0 +1,85 @@
+@use "../../styles/variables" as *;
+
+.dropdown {
+    position: relative;
+}
+
+.trigger {
+    display: flex;
+    align-items: center;
+    gap: $spacing-xs;
+    padding: $spacing-sm $spacing-md;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-primary);
+    border-radius: $radius-md;
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all $transition-fast;
+
+    &:hover {
+        color: var(--text-primary);
+        border-color: var(--accent-primary);
+    }
+
+    i:first-child {
+        font-size: 1.125rem;
+    }
+}
+
+.username {
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.chevron {
+    font-size: 0.75rem;
+    opacity: 0.7;
+}
+
+.menu {
+    position: absolute;
+    top: calc(100% + $spacing-xs);
+    right: 0;
+    min-width: 180px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-primary);
+    border-radius: $radius-md;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: $z-dropdown;
+    overflow: hidden;
+}
+
+.menuItem {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+    width: 100%;
+    padding: $spacing-sm $spacing-md;
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all $transition-fast;
+    text-align: left;
+
+    &:hover {
+        background: var(--bg-tertiary);
+        color: var(--text-primary);
+    }
+
+    i {
+        font-size: 1rem;
+        width: 20px;
+    }
+}
+
+.divider {
+    height: 1px;
+    background: var(--border-primary);
+    margin: $spacing-xs 0;
+}

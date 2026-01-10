@@ -82,3 +82,23 @@ export async function updateUserUsername(newUsername: string, password: string):
         return { error: "Failed to update username" };
     }
 }
+
+export async function updateUserPassword(currentPassword: string, newPassword: string): Promise<AuthResponse> {
+    try {
+        const response = await fetch("/api/auth/password", {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ currentPassword, newPassword }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            return { error: data.error || "Failed to update password" };
+        }
+
+        return { user: data.user };
+    } catch {
+        return { error: "Failed to update password" };
+    }
+}

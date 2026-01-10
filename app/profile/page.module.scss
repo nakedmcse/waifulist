@@ -11,9 +11,177 @@
 }
 
 .container {
-    max-width: 1000px;
+    max-width: 1200px;
     margin: 0 auto;
     overflow: hidden;
+}
+
+.section {
+    margin-bottom: $spacing-2xl;
+}
+
+.sectionHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: $spacing-lg;
+
+    h2 {
+        display: flex;
+        align-items: center;
+        gap: $spacing-sm;
+        font-size: 1.25rem;
+        color: var(--text-primary);
+
+        i {
+            color: var(--accent-primary);
+        }
+    }
+}
+
+.viewAllLink {
+    display: flex;
+    align-items: center;
+    gap: $spacing-xs;
+    color: var(--accent-primary);
+    font-size: 0.875rem;
+    text-decoration: none;
+    transition: opacity $transition-fast;
+
+    &:hover {
+        opacity: 0.8;
+    }
+}
+
+.sectionLoading {
+    @include flex-center;
+    padding: $spacing-xl;
+}
+
+.animeGrid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: $spacing-md;
+
+    @include sm {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    @include md {
+        grid-template-columns: repeat(4, 1fr);
+    }
+
+    @include lg {
+        grid-template-columns: repeat(6, 1fr);
+    }
+}
+
+.tierListGrid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: $spacing-md;
+
+    @include sm {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    @include md {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+.emptySection {
+    @include flex-center;
+    flex-direction: column;
+    gap: $spacing-sm;
+    padding: $spacing-xl;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-primary);
+    border-radius: $radius-lg;
+    color: var(--text-secondary);
+    text-align: center;
+}
+
+.emptyLink {
+    color: var(--accent-primary);
+    text-decoration: none;
+
+    &:hover {
+        text-decoration: underline;
+    }
+}
+
+.listPreview {
+    @include card-base;
+    padding: $spacing-lg;
+}
+
+.listStats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: $spacing-sm $spacing-lg;
+    margin-bottom: $spacing-lg;
+
+    @include sm {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    @include md {
+        grid-template-columns: repeat(5, 1fr);
+    }
+}
+
+.listStatItem {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+}
+
+.statusDot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+
+    &.watching {
+        background: var(--status-watching);
+    }
+
+    &.completed {
+        background: var(--status-completed);
+    }
+
+    &.plan_to_watch {
+        background: var(--status-plan);
+    }
+
+    &.on_hold {
+        background: var(--status-hold);
+    }
+
+    &.dropped {
+        background: var(--status-dropped);
+    }
+}
+
+.statusLabel {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+}
+
+.statusCount {
+    color: var(--text-primary);
+    font-weight: 600;
+    margin-left: auto;
+}
+
+.listTotal {
+    display: flex;
+    justify-content: space-between;
+    padding-top: $spacing-md;
+    border-top: 1px solid var(--border-primary);
+    color: var(--text-secondary);
+    font-size: 0.875rem;
 }
 
 .header {

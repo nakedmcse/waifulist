@@ -6,6 +6,7 @@ import {
     loginUser,
     logoutUser,
     registerUser,
+    updateUserPassword,
     updateUserUsername,
     User,
 } from "@/services/authClientService";
@@ -17,6 +18,7 @@ interface AuthContextType {
     register: (username: string, password: string, turnstileToken: string) => Promise<{ error?: string }>;
     logout: () => Promise<void>;
     updateUsername: (newUsername: string, password: string) => Promise<{ error?: string }>;
+    updatePassword: (currentPassword: string, newPassword: string) => Promise<{ error?: string }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -73,8 +75,20 @@ export function AuthProvider({ children }: React.PropsWithChildren) {
         return { error: result.error };
     }, []);
 
+    const updatePassword = useCallback(
+        async (currentPassword: string, newPassword: string): Promise<{ error?: string }> => {
+            const result = await updateUserPassword(currentPassword, newPassword);
+            if (result.user) {
+                setUser(result.user);
+                return {};
+            }
+            return { error: result.error };
+        },
+        [],
+    );
+
     return (
-        <AuthContext.Provider value={{ user, loading, login, register, logout, updateUsername }}>
+        <AuthContext.Provider value={{ user, loading, login, register, logout, updateUsername, updatePassword }}>
             {children}
         </AuthContext.Provider>
     );

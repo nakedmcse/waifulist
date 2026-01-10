@@ -1,14 +1,11 @@
 import { JSDOM } from "jsdom";
 import { StreamingLink } from "@/types/anime";
 import { isDeepLink } from "@/lib/urlUtils";
-import { ScraperEngine, ScraperResult, ScraperType } from "../types";
+import { ScraperEngine, ScraperResult, ScraperType, StreamingScraperArgs } from "../types";
 
 const SCRAPE_TIMEOUT = 10000;
 
-/**
- * Scrapes streaming links from MyAnimeList pages
- */
-class MalStreamingScraper implements ScraperEngine<StreamingLink> {
+class MalStreamingScraper implements ScraperEngine<StreamingLink, StreamingScraperArgs> {
     public readonly name = "mal";
     public readonly type = ScraperType.STREAMING;
     public readonly priority = 10;
@@ -17,7 +14,7 @@ class MalStreamingScraper implements ScraperEngine<StreamingLink> {
         return true;
     }
 
-    public async scrape(malId: number): Promise<ScraperResult<StreamingLink>> {
+    public async scrape({ malId }: StreamingScraperArgs): Promise<ScraperResult<StreamingLink>> {
         try {
             const controller = new AbortController();
             const timeout = setTimeout(() => controller.abort(), SCRAPE_TIMEOUT);

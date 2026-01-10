@@ -248,6 +248,23 @@ export function updateUsername(userId: number, newUsername: string): User {
     }
 }
 
+export async function updatePassword(userId: number, newPassword: string): Promise<User> {
+    const passwordHash = await hashPassword(newPassword);
+
+    const stmt = db.prepare("UPDATE users SET password_hash = ? WHERE id = ?");
+    const result = stmt.run(passwordHash, userId);
+
+    if (result.changes === 0) {
+        throw new DatabaseError(`User with id ${userId} not found`, "updatePassword");
+    }
+
+    const user = getUserById(userId);
+    if (!user) {
+        throw new DatabaseError("User updated but could not be retrieved", "updatePassword");
+    }
+    return user;
+}
+
 export interface WatchedAnimeRow {
     id: number;
     user_id: number;

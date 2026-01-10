@@ -6,9 +6,6 @@ const DEFAULT_RATE_LIMIT: RateLimitConfig = {
     windowMs: 60000,
 };
 
-/**
- * Generic scraper manager that orchestrates engines via the factory
- */
 class ScraperManager {
     private static instance: ScraperManager | null = null;
 
@@ -23,27 +20,24 @@ class ScraperManager {
         return (ScraperManager.instance ??= new ScraperManager());
     }
 
-    /**
-     * Scrape data of a specific type for an anime
-     */
-    public async scrape<T>(type: ScraperType, malId: number): Promise<T[]> {
+    public async scrape<T, Args>(type: ScraperType, args: Args): Promise<T[]> {
         if (!this.canMakeRequest()) {
-            console.warn(`[ScraperManager] Rate limit exceeded, skipping scrape for ${malId}`);
+            console.warn(`[ScraperManager] Rate limit exceeded, skipping scrape`);
             return [];
         }
 
         this.recordRequest();
 
-        const engines = scraperEngineFactory.getEngines<T>(type);
+        const engines = scraperEngineFactory.getEngines<T, Args>(type);
         if (engines.length === 0) {
             return [];
         }
 
-        const results = await Promise.all(engines.map(engine => engine.scrape(malId)));
+        const results = await Promise.all(engines.map(engine => engine.scrape(args)));
 
         for (const result of results) {
             if (result.error) {
-                console.warn(`[ScraperManager] ${result.source} error for ${malId}: ${result.error}`);
+                console.warn(`[ScraperManager] ${result.source} error: ${result.error}`);
             }
         }
 

@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import {
     ArcElement,
     BarElement,
@@ -16,9 +17,11 @@ import {
 import { Bar, Doughnut, Line } from "react-chartjs-2";
 import { watchStatusLabels } from "@/types/anime";
 import { useStats } from "@/hooks/useStats";
+import { useTierLists } from "@/hooks/useTierList";
 import { BookmarkedUsersSection } from "@/components/BookmarkedUsersSection/BookmarkedUsersSection";
 import { useBookmarks } from "@/hooks/useBookmarks";
 import { Spinner } from "@/components/Spinner/Spinner";
+import { TierListCard } from "@/components/TierListCard";
 import styles from "./page.module.scss";
 
 ChartJS.register(ArcElement, CategoryScale, LinearScale, BarElement, LineElement, PointElement, Title, Tooltip, Legend);
@@ -55,6 +58,7 @@ function formatMonthLabel(monthKey: string): string {
 export function ProfilePageClient() {
     const { stats, loading, error } = useStats();
     const { bookmarks, removeBookmark } = useBookmarks();
+    const { tierLists, loading: tierListsLoading } = useTierLists();
 
     if (loading) {
         return (
@@ -189,8 +193,6 @@ export function ProfilePageClient() {
     return (
         <div className={styles.page}>
             <div className={styles.container}>
-                <BookmarkedUsersSection bookmarks={bookmarks} onRemove={removeBookmark} />
-
                 <div className={styles.header}>
                     <h1>
                         <i className="bi bi-person-circle" />
@@ -199,59 +201,149 @@ export function ProfilePageClient() {
                     <p className={styles.subtitle}>Member since {formatDate(stats.memberSince)}</p>
                 </div>
 
-                <div className={styles.summaryCards}>
-                    <div className={styles.summaryCard}>
-                        <i className="bi bi-collection-play" />
-                        <div className={styles.summaryValue}>{stats.totalAnime}</div>
-                        <div className={styles.summaryLabel}>Total Anime</div>
+                {/* My List Section */}
+                <section className={styles.section}>
+                    <div className={styles.sectionHeader}>
+                        <h2>
+                            <i className="bi bi-bookmark" />
+                            My List
+                        </h2>
+                        <Link href="/my-list" className={styles.viewAllLink}>
+                            View All <i className="bi bi-arrow-right" />
+                        </Link>
                     </div>
-                    <div className={styles.summaryCard}>
-                        <i className="bi bi-play-circle" />
-                        <div className={styles.summaryValue}>{stats.totalEpisodes.toLocaleString()}</div>
-                        <div className={styles.summaryLabel}>Episodes</div>
-                    </div>
-                    <div className={styles.summaryCard}>
-                        <i className="bi bi-star" />
-                        <div className={styles.summaryValue}>{stats.avgRating ?? "-"}</div>
-                        <div className={styles.summaryLabel}>Avg Rating</div>
-                    </div>
-                </div>
+                    {stats.totalAnime > 0 ? (
+                        <div className={styles.listPreview}>
+                            <div className={styles.listStats}>
+                                {Object.entries(stats.statusCounts).map(([status, count]) => (
+                                    <div key={status} className={styles.listStatItem}>
+                                        <span className={`${styles.statusDot} ${styles[status]}`} />
+                                        <span className={styles.statusLabel}>
+                                            {watchStatusLabels[status as keyof typeof watchStatusLabels]}
+                                        </span>
+                                        <span className={styles.statusCount}>{count}</span>
+                                    </div>
+                                ))}
+                            </div>
+                            <div className={styles.listTotal}>
+                                <span>{stats.totalAnime} anime</span>
+                                <span>{stats.totalEpisodes.toLocaleString()} episodes</span>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className={styles.emptySection}>
+                            <p>No anime in your list yet</p>
+                            <Link href="/browse" className={styles.emptyLink}>
+                                Browse anime to add some
+                            </Link>
+                        </div>
+                    )}
+                </section>
 
-                <div className={styles.chartsGrid}>
-                    <div className={styles.chartCard}>
-                        <h3>Status Breakdown</h3>
-                        <div className={styles.chartContainer}>
-                            <Doughnut data={statusChartData} options={doughnutOptions} />
+                {/* My Tier Lists Section */}
+                <section className={styles.section}>
+                    <div className={styles.sectionHeader}>
+                        <h2>
+                            <i className="bi bi-list-ol" />
+                            My Tier Lists
+                        </h2>
+                        <Link href="/tierlist" className={styles.viewAllLink}>
+                            View All <i className="bi bi-arrow-right" />
+                        </Link>
+                    </div>
+                    {tierListsLoading ? (
+                        <div className={styles.sectionLoading}>
+                            <Spinner text="Loading..." />
+                        </div>
+                    ) : tierLists.length > 0 ? (
+                        <div className={styles.tierListGrid}>
+                            {tierLists.slice(0, 3).map(tierList => (
+                                <TierListCard
+                                    key={tierList.publicId}
+                                    publicId={tierList.publicId}
+                                    name={tierList.name}
+                                    characterCount={tierList.characterCount}
+                                    updatedAt={tierList.updatedAt}
+                                    isPublic={tierList.isPublic}
+                                />
+                            ))}
+                        </div>
+                    ) : (
+                        <div className={styles.emptySection}>
+                            <p>No tier lists yet</p>
+                            <Link href="/tierlist/create" className={styles.emptyLink}>
+                                Create your first tier list
+                            </Link>
+                        </div>
+                    )}
+                </section>
+
+                {/* Bookmarks Section */}
+                <BookmarkedUsersSection bookmarks={bookmarks} onRemove={removeBookmark} />
+
+                {/* Stats Section */}
+                <section className={styles.section}>
+                    <div className={styles.sectionHeader}>
+                        <h2>
+                            <i className="bi bi-bar-chart" />
+                            Stats
+                        </h2>
+                    </div>
+
+                    <div className={styles.summaryCards}>
+                        <div className={styles.summaryCard}>
+                            <i className="bi bi-collection-play" />
+                            <div className={styles.summaryValue}>{stats.totalAnime}</div>
+                            <div className={styles.summaryLabel}>Total Anime</div>
+                        </div>
+                        <div className={styles.summaryCard}>
+                            <i className="bi bi-play-circle" />
+                            <div className={styles.summaryValue}>{stats.totalEpisodes.toLocaleString()}</div>
+                            <div className={styles.summaryLabel}>Episodes</div>
+                        </div>
+                        <div className={styles.summaryCard}>
+                            <i className="bi bi-star" />
+                            <div className={styles.summaryValue}>{stats.avgRating ?? "-"}</div>
+                            <div className={styles.summaryLabel}>Avg Rating</div>
                         </div>
                     </div>
 
-                    <div className={styles.chartCard}>
-                        <h3>Your Ratings</h3>
-                        <div className={styles.chartContainer}>
-                            <Bar data={ratingChartData} options={chartOptions} />
+                    <div className={styles.chartsGrid}>
+                        <div className={styles.chartCard}>
+                            <h3>Status Breakdown</h3>
+                            <div className={styles.chartContainer}>
+                                <Doughnut data={statusChartData} options={doughnutOptions} />
+                            </div>
+                        </div>
+
+                        <div className={styles.chartCard}>
+                            <h3>Your Ratings</h3>
+                            <div className={styles.chartContainer}>
+                                <Bar data={ratingChartData} options={chartOptions} />
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <div className={styles.chartCardWide}>
-                    <h3>Top Genres</h3>
-                    <div className={styles.chartContainerWide}>
-                        <Bar
-                            data={genreChartData}
-                            options={{
-                                ...chartOptions,
-                                indexAxis: "y" as const,
-                            }}
-                        />
+                    <div className={styles.chartCardWide}>
+                        <h3>Top Genres</h3>
+                        <div className={styles.chartContainerWide}>
+                            <Bar
+                                data={genreChartData}
+                                options={{
+                                    ...chartOptions,
+                                    indexAxis: "y" as const,
+                                }}
+                            />
+                        </div>
                     </div>
-                </div>
 
-                <div className={styles.chartCardWide}>
-                    <h3>Activity Timeline</h3>
-                    <div className={styles.chartContainerWide}>
-                        <Line data={activityChartData} options={chartOptions} />
+                    <div className={styles.chartCardWide}>
+                        <h3>Activity Timeline</h3>
+                        <div className={styles.chartContainerWide}>
+                            <Line data={activityChartData} options={chartOptions} />
+                        </div>
                     </div>
-                </div>
+                </section>
             </div>
         </div>
     );

@@ -1,14 +1,13 @@
 import { ScraperEngine, ScraperType } from "./types";
 import * as engines from "./engines";
 
-const allEngines: ScraperEngine<unknown>[] = Object.values(engines);
+type AnyScraperEngine = ScraperEngine<unknown, unknown>;
 
-/**
- * Internal factory that manages and retrieves scraper engines by type
- */
+const allEngines: AnyScraperEngine[] = Object.values(engines);
+
 class ScraperEngineFactory {
     private static instance: ScraperEngineFactory | null = null;
-    private readonly enginesByType: Map<string, ScraperEngine<unknown>[]>;
+    private readonly enginesByType: Map<string, AnyScraperEngine[]>;
 
     private constructor() {
         this.enginesByType = new Map();
@@ -31,12 +30,9 @@ class ScraperEngineFactory {
         return (ScraperEngineFactory.instance ??= new ScraperEngineFactory());
     }
 
-    /**
-     * Get all enabled engines for a specific type
-     */
-    public getEngines<T>(type: ScraperType): ScraperEngine<T>[] {
+    public getEngines<T, Args>(type: ScraperType): ScraperEngine<T, Args>[] {
         const typeEngines = this.enginesByType.get(type) ?? [];
-        return typeEngines.filter(e => e.isEnabled()) as ScraperEngine<T>[];
+        return typeEngines.filter(e => e.isEnabled()) as ScraperEngine<T, Args>[];
     }
 }
 

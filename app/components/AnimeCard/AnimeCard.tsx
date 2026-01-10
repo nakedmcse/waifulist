@@ -146,11 +146,25 @@ export function AnimeCard({
                             {watchData.status === "completed" ? "Watched" : watchStatusLabels[watchData.status]}
                         </span>
                     )}
-                    <div className={styles.episodes}>{anime.episodes ? `${anime.episodes} eps` : "N/A"}</div>
+                    <div className={styles.episodes}>
+                        {anime.episodes
+                            ? `${anime.episodes} eps`
+                            : anime.status?.toLowerCase().includes("currently")
+                              ? "Airing"
+                              : anime.status?.toLowerCase().includes("not_yet") || anime.status === "Not yet aired"
+                                ? showStartDate
+                                    ? "Not aired"
+                                    : anime.aired?.from
+                                      ? `Airs ${formatStartDate(anime.aired.from)}`
+                                      : "Not aired"
+                                : "N/A"}
+                    </div>
                     {showStartDate && anime.aired?.from && (
                         <div className={styles.dateAdded} title={anime.aired.from}>
                             <i className="bi bi-calendar-event" />
-                            <span className={styles.dateLabel}>Aires:</span>
+                            <span className={styles.dateLabel}>
+                                {new Date(anime.aired.from) > new Date() ? "Airs:" : "Aired:"}
+                            </span>
                             {formatStartDate(anime.aired.from)}
                         </div>
                     )}

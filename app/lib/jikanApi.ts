@@ -11,6 +11,7 @@ import {
     CharactersResponse,
     EpisodeDetailResponse,
     EpisodesResponse,
+    JikanPaginatedResponse,
     PicturesResponse,
     RecommendationsResponse,
     StatisticsResponse,
@@ -29,6 +30,7 @@ import {
     MangaStatistics,
     MangaStatisticsResponse,
 } from "@/types/manga";
+import { DayFilter } from "@/types/schedule";
 import { getRequestContext } from "@/lib/requestContext";
 
 const JIKAN_API_URL = process.env.JIKAN_API_URL || "http://jikan:8080/v4";
@@ -249,4 +251,27 @@ export async function fetchMangaStatistics(id: number): Promise<MangaStatistics 
 export async function fetchMangaRecommendations(id: number): Promise<MangaRecommendation[]> {
     const response = await fetchFromJikan<MangaRecommendationsResponse | null>(`/manga/${id}/recommendations`, null);
     return response?.data || [];
+}
+
+export async function fetchScheduleFromJikan(day: DayFilter): Promise<Anime[]> {
+    const allAnime: Anime[] = [];
+    let page = 1;
+    let hasNextPage = true;
+
+    while (hasNextPage) {
+        const response = await fetchFromJikan<JikanPaginatedResponse<Anime> | null>(
+            `/schedules?filter=${day}&page=${page}`,
+            null,
+        );
+
+        if (!response?.data) {
+            break;
+        }
+
+        allAnime.push(...response.data);
+        hasNextPage = response.pagination?.has_next_page ?? false;
+        page++;
+    }
+
+    return allAnime;
 }
