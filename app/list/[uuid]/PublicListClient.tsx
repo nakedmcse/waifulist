@@ -73,11 +73,7 @@ export function PublicListClient({ uuid, initialUsername }: PublicListClientProp
         window.history.replaceState({}, "", url.toString());
     }, []);
 
-    const genreFilterSidebar = (
-        <GenreFilter genres={availableGenres} selected={selectedGenres} onChange={handleGenreChange} />
-    );
-
-    const mobileGenreFilterSidebar = (
+    const genreFilterElement = (
         <GenreFilter genres={availableGenres} selected={selectedGenres} onChange={handleGenreChange} defaultCollapsed />
     );
 
@@ -91,8 +87,7 @@ export function PublicListClient({ uuid, initialUsername }: PublicListClientProp
             onSortChange={handleSortChange}
             ratingLabel={`${username}'s rating`}
             genres={selectedGenres}
-            sidebar={genreFilterSidebar}
-            mobileSidebar={mobileGenreFilterSidebar}
+            genreFilter={genreFilterElement}
             onAvailableGenresChange={setAvailableGenres}
             headerActions={
                 <>

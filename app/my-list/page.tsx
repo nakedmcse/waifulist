@@ -237,11 +237,7 @@ export default function MyListPage() {
         </>
     );
 
-    const genreFilterSidebar = (
-        <GenreFilter genres={availableGenres} selected={selectedGenres} onChange={handleGenreChange} />
-    );
-
-    const mobileGenreFilterSidebar = (
+    const genreFilterElement = (
         <GenreFilter genres={availableGenres} selected={selectedGenres} onChange={handleGenreChange} defaultCollapsed />
     );
 
@@ -260,8 +256,7 @@ export default function MyListPage() {
                 onAvailableGenresChange={setAvailableGenres}
                 ratingLabel="Your rating"
                 genres={selectedGenres}
-                sidebar={genreFilterSidebar}
-                mobileSidebar={mobileGenreFilterSidebar}
+                genreFilter={genreFilterElement}
             />
 
             {showImportModal && (

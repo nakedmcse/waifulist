@@ -29,8 +29,7 @@ interface AnimeListViewProps {
     onSortChange?: (sort: SortType) => void;
     ratingLabel?: string;
     genres?: string[];
-    sidebar?: React.ReactNode;
-    mobileSidebar?: React.ReactNode;
+    genreFilter?: React.ReactNode;
     onAvailableGenresChange?: (genres: string[]) => void;
     ref?: React.Ref<AnimeListViewHandle>;
 }
@@ -56,8 +55,7 @@ export function AnimeListView({
     onSortChange,
     ratingLabel,
     genres = [],
-    sidebar,
-    mobileSidebar,
+    genreFilter,
     onAvailableGenresChange,
     ref,
 }: AnimeListViewProps) {
@@ -186,9 +184,8 @@ export function AnimeListView({
     const isLoading = loading || externalLoading;
 
     return (
-        <div className={sidebar ? styles.pageWithSidebar : styles.page}>
-            {sidebar && <aside className={styles.sidebar}>{sidebar}</aside>}
-            <div className={sidebar ? styles.main : styles.container}>
+        <div className={styles.page}>
+            <div className={styles.container}>
                 <div className={styles.header}>
                     <h1>{title}</h1>
                     <p className={styles.subtitle}>{subtitle}</p>
@@ -256,7 +253,7 @@ export function AnimeListView({
                     </select>
                 </div>
 
-                {sidebar && <div className={styles.mobileSidebar}>{mobileSidebar || sidebar}</div>}
+                {genreFilter && <div className={styles.genreFilterWrapper}>{genreFilter}</div>}
 
                 {isLoading ? (
                     <div className={styles.loading}>
@@ -264,7 +261,7 @@ export function AnimeListView({
                     </div>
                 ) : filtered > 0 ? (
                     <>
-                        <div className={sidebar ? styles.gridWithSidebar : styles.grid}>
+                        <div className={styles.grid}>
                             {pagedItems.map(({ anime, watchData }) => (
                                 <AnimeCard
                                     key={anime.mal_id}
