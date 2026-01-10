@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { getAllSeasons, getCurrentSeason, Season, SeasonYear } from "@/lib/seasonUtils";
+import { getCurrentSeason, parseSeasonParam, parseYearParam, SeasonYear } from "@/lib/seasonUtils";
 import { useSeasonalAnime } from "@/hooks/useSeasonalAnime";
 import { SeasonSelector } from "@/components/SeasonSelector/SeasonSelector";
 import { AnimeCard } from "@/components/AnimeCard/AnimeCard";
@@ -11,28 +11,8 @@ import { GenreFilter } from "@/components/GenreFilter/GenreFilter";
 import { useWatchList } from "@/contexts/WatchListContext";
 import { useGenreFilter } from "@/hooks";
 import { Spinner } from "@/components/Spinner/Spinner";
+import { PAGE_SIZE } from "@/constants/pagination";
 import styles from "./page.module.scss";
-
-const PAGE_SIZE = 24;
-const VALID_SEASONS = new Set<string>(getAllSeasons());
-
-function parseSeasonParam(param: string | null): Season | null {
-    if (!param) {
-        return null;
-    }
-    return VALID_SEASONS.has(param) ? (param as Season) : null;
-}
-
-function parseYearParam(param: string | null): number | null {
-    if (!param) {
-        return null;
-    }
-    const year = parseInt(param, 10);
-    if (isNaN(year) || year < 1970 || year > new Date().getFullYear() + 1) {
-        return null;
-    }
-    return year;
-}
 
 export function SeasonalPageClient() {
     const router = useRouter();

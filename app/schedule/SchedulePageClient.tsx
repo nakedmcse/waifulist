@@ -2,36 +2,11 @@
 
 import React, { useCallback, useEffect, useState } from "react";
 import { useSchedule } from "@/hooks/useSchedule";
-import { DAY_LABELS, DayOfWeek, DAYS_OF_WEEK, ScheduleAnime } from "@/types/schedule";
+import { DAY_LABELS, DayOfWeek, DAYS_OF_WEEK, getCurrentDayOfWeek, mapScheduleAnimeToAnime } from "@/types/schedule";
 import { AnimeCard } from "@/components/AnimeCard/AnimeCard";
 import { useWatchList } from "@/contexts/WatchListContext";
 import { Spinner } from "@/components/Spinner/Spinner";
-import { Anime } from "@/types/anime";
 import styles from "./page.module.scss";
-
-function getCurrentDayOfWeek(): DayOfWeek {
-    const days: DayOfWeek[] = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
-    const today = new Date().getDay();
-    return days[today];
-}
-
-function mapScheduleAnimeToAnime(scheduleAnime: ScheduleAnime): Anime {
-    return {
-        mal_id: scheduleAnime.mal_id,
-        title: scheduleAnime.title,
-        title_english: scheduleAnime.title_english,
-        title_japanese: scheduleAnime.title_japanese,
-        images: scheduleAnime.images,
-        score: scheduleAnime.score,
-        episodes: scheduleAnime.episodes,
-        type: scheduleAnime.type,
-        source: scheduleAnime.source,
-        status: scheduleAnime.status,
-        synopsis: scheduleAnime.synopsis,
-        genres: scheduleAnime.genres,
-        studios: scheduleAnime.studios,
-    };
-}
 
 export function SchedulePageClient() {
     const { loading, error, getAnimeForDay, lastUpdated } = useSchedule();

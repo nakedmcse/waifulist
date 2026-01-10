@@ -118,16 +118,13 @@
 
 .listStats {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: $spacing-sm $spacing-lg;
+    grid-template-columns: 1fr;
+    gap: $spacing-sm;
     margin-bottom: $spacing-lg;
 
     @include sm {
         grid-template-columns: repeat(3, 1fr);
-    }
-
-    @include md {
-        grid-template-columns: repeat(5, 1fr);
+        gap: $spacing-sm $spacing-lg;
     }
 }
 

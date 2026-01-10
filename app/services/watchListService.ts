@@ -9,8 +9,7 @@ import {
 import { getAllWatched } from "@/lib/db";
 import { getAnimeFromRedisByIds } from "@/services/animeData";
 import { filterAnime } from "@/services/animeFilter";
-
-const PAGE_SIZE = 24;
+import { PAGE_SIZE } from "@/constants/pagination";
 
 export async function getFilteredWatchList(userId: number, url: URL): Promise<WatchListResponse> {
     const { searchParams } = url;

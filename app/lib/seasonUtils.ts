@@ -131,3 +131,23 @@ export function getAvailableYears(): number[] {
 export function getAllSeasons(): Season[] {
     return [...SEASON_ORDER];
 }
+
+const VALID_SEASONS = new Set<string>(SEASON_ORDER);
+
+export function parseSeasonParam(param: string | null): Season | null {
+    if (!param) {
+        return null;
+    }
+    return VALID_SEASONS.has(param) ? (param as Season) : null;
+}
+
+export function parseYearParam(param: string | null): number | null {
+    if (!param) {
+        return null;
+    }
+    const year = parseInt(param, 10);
+    if (isNaN(year) || year < 1970 || year > new Date().getFullYear() + 1) {
+        return null;
+    }
+    return year;
+}

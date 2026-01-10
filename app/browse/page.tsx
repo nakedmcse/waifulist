@@ -15,9 +15,8 @@ import { useContextMenu } from "@/hooks/useContextMenu";
 import { useAuth } from "@/contexts/AuthContext";
 import { Spinner } from "@/components/Spinner/Spinner";
 import { GenreFilter } from "@/components/GenreFilter/GenreFilter";
+import { PAGE_SIZE } from "@/constants/pagination";
 import styles from "./page.module.scss";
-
-const PAGE_SIZE = 24;
 
 function BrowseContent() {
     const searchParams = useSearchParams();

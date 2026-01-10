@@ -1,13 +1,14 @@
-"use client";
-
-import React, { Suspense } from "react";
+import type { Metadata } from "next";
+import { Suspense } from "react";
+import { createMetadata } from "@/lib/metadata";
 import { CalendarPageClient } from "./CalendarPageClient";
 import { Spinner } from "@/components/Spinner/Spinner";
 import styles from "./page.module.scss";
 
-function CalendarContent() {
-    return <CalendarPageClient />;
-}
+export const metadata: Metadata = createMetadata(
+    "Anime Calendar - WaifuList",
+    "Browse seasonal anime and weekly airing schedules",
+);
 
 export default function CalendarPage() {
     return (
@@ -20,7 +21,7 @@ export default function CalendarPage() {
                 </div>
             }
         >
-            <CalendarContent />
+            <CalendarPageClient />
         </Suspense>
     );
 }

@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { getAllSeasons, getCurrentSeason, Season, SeasonYear } from "@/lib/seasonUtils";
+import { getCurrentSeason, parseSeasonParam, parseYearParam, SeasonYear } from "@/lib/seasonUtils";
 import { useSeasonalAnime } from "@/hooks/useSeasonalAnime";
 import { useSchedule } from "@/hooks/useSchedule";
 import { useGenreFilter } from "@/hooks";
@@ -12,56 +12,11 @@ import { GenreFilter } from "@/components/GenreFilter/GenreFilter";
 import { AnimeCard } from "@/components/AnimeCard/AnimeCard";
 import { Pagination } from "@/components/Pagination/Pagination";
 import { Spinner } from "@/components/Spinner/Spinner";
-import { DAY_LABELS, DayOfWeek, DAYS_OF_WEEK, ScheduleAnime } from "@/types/schedule";
-import { Anime } from "@/types/anime";
+import { DAY_LABELS, DayOfWeek, DAYS_OF_WEEK, getCurrentDayOfWeek, mapScheduleAnimeToAnime } from "@/types/schedule";
+import { PAGE_SIZE } from "@/constants/pagination";
 import styles from "./page.module.scss";
 
 type CalendarView = "seasonal" | "schedule";
-
-const PAGE_SIZE = 24;
-const VALID_SEASONS = new Set<string>(getAllSeasons());
-
-function parseSeasonParam(param: string | null): Season | null {
-    if (!param) {
-        return null;
-    }
-    return VALID_SEASONS.has(param) ? (param as Season) : null;
-}
-
-function parseYearParam(param: string | null): number | null {
-    if (!param) {
-        return null;
-    }
-    const year = parseInt(param, 10);
-    if (isNaN(year) || year < 1970 || year > new Date().getFullYear() + 1) {
-        return null;
-    }
-    return year;
-}
-
-function getCurrentDayOfWeek(): DayOfWeek {
-    const days: DayOfWeek[] = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
-    const today = new Date().getDay();
-    return days[today];
-}
-
-function mapScheduleAnimeToAnime(scheduleAnime: ScheduleAnime): Anime {
-    return {
-        mal_id: scheduleAnime.mal_id,
-        title: scheduleAnime.title,
-        title_english: scheduleAnime.title_english,
-        title_japanese: scheduleAnime.title_japanese,
-        images: scheduleAnime.images,
-        score: scheduleAnime.score,
-        episodes: scheduleAnime.episodes,
-        type: scheduleAnime.type,
-        source: scheduleAnime.source,
-        status: scheduleAnime.status,
-        synopsis: scheduleAnime.synopsis,
-        genres: scheduleAnime.genres,
-        studios: scheduleAnime.studios,
-    };
-}
 
 export function CalendarPageClient() {
     const router = useRouter();

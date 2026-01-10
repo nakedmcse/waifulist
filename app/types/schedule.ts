@@ -54,3 +54,27 @@ export interface ScheduleResponse {
 }
 
 export type DayFilter = "monday" | "tuesday" | "wednesday" | "thursday" | "friday" | "saturday" | "sunday";
+
+export function getCurrentDayOfWeek(): DayOfWeek {
+    const days: DayOfWeek[] = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
+    const today = new Date().getDay();
+    return days[today];
+}
+
+export function mapScheduleAnimeToAnime(scheduleAnime: ScheduleAnime): Anime {
+    return {
+        mal_id: scheduleAnime.mal_id,
+        title: scheduleAnime.title,
+        title_english: scheduleAnime.title_english,
+        title_japanese: scheduleAnime.title_japanese,
+        images: scheduleAnime.images,
+        score: scheduleAnime.score,
+        episodes: scheduleAnime.episodes,
+        type: scheduleAnime.type,
+        source: scheduleAnime.source,
+        status: scheduleAnime.status,
+        synopsis: scheduleAnime.synopsis,
+        genres: scheduleAnime.genres,
+        studios: scheduleAnime.studios,
+    };
+}

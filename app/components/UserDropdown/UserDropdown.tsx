@@ -46,6 +46,10 @@ export function UserDropdown() {
                         <i className="bi bi-bookmark" />
                         <span>My List</span>
                     </Link>
+                    <Link href="/tierlist" className={styles.menuItem} onClick={() => setIsOpen(false)}>
+                        <i className="bi bi-list-ol" />
+                        <span>My Tier Lists</span>
+                    </Link>
                     <Link href="/profile" className={styles.menuItem} onClick={() => setIsOpen(false)}>
                         <i className="bi bi-person" />
                         <span>Profile</span>

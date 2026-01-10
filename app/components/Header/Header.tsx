@@ -89,6 +89,15 @@ export function Header() {
                             <i className="bi bi-trophy" />
                             <span>Tier Lists</span>
                         </Link>
+                        {user && (
+                            <Link
+                                href="/my-list"
+                                className={`${styles.navLink} ${styles.hideMobile} ${isActive("/my-list") ? styles.active : ""}`}
+                            >
+                                <i className="bi bi-bookmark-heart" />
+                                <span>My List</span>
+                            </Link>
+                        )}
                     </nav>
 
                     <div className={styles.actions}>
