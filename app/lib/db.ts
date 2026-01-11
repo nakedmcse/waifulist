@@ -538,6 +538,15 @@ export function getRecentAnime(userId: number, limit: number = 5, excludeIds: nu
     return stmt.all(userId, ...excludeIds, limit) as WatchedAnimeRow[];
 }
 
+export function getWatchedAnimeForUsers(userIds: number[], animeId: number): WatchedAnimeRow[] {
+    if (userIds.length === 0) {
+        return [];
+    }
+    const placeholders = userIds.map(() => "?").join(",");
+    const stmt = db.prepare(`SELECT * FROM watched_anime WHERE user_id IN (${placeholders}) AND anime_id = ?`);
+    return stmt.all(...userIds, animeId) as WatchedAnimeRow[];
+}
+
 const DEFAULT_SETTINGS: UserSettings = {};
 
 export function getUserSettings(userId: number): UserSettings {

@@ -2,6 +2,15 @@ export type WatchStatus = "watching" | "completed" | "plan_to_watch" | "on_hold"
 
 export type SortType = "added" | "name" | "rating" | "rating (personal)";
 
+export interface FriendRating {
+    username: string;
+    publicId: string;
+    rating: number | null;
+    notes: string | null;
+    status: WatchStatus;
+    episodesWatched: number;
+}
+
 export interface AnimePicture {
     jpg?: {
         image_url: string;

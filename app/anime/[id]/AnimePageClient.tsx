@@ -36,6 +36,7 @@ import { PictureGallery } from "@/components/PictureGallery/PictureGallery";
 import { RecommendationsSection } from "@/components/RecommendationsSection/RecommendationsSection";
 import { RoleTabs } from "@/components/RoleTabs/RoleTabs";
 import { StatisticsSection } from "@/components/StatisticsSection/StatisticsSection";
+import { FriendsRatings } from "@/components/FriendsRatings/FriendsRatings";
 import { StatusBadge } from "@/components/StatusBadge/StatusBadge";
 import { Spinner } from "@/components/Spinner/Spinner";
 import { Tab, Tabs } from "@/components/Tabs/Tabs";
@@ -952,6 +953,8 @@ export function AnimePageClient({
                 {anime.popularity && <SidebarStatRow label="Popularity" value={`#${anime.popularity}`} />}
                 {anime.members && <SidebarStatRow label="Members" value={anime.members.toLocaleString()} />}
             </MobileStats>
+
+            <FriendsRatings animeId={anime.mal_id} />
 
             {statistics && (
                 <StatisticsSection

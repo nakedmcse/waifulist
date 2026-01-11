@@ -1,0 +1,171 @@
+@use "../../styles/variables" as *;
+
+.section {
+    margin-top: $spacing-lg;
+    margin-bottom: $spacing-lg;
+}
+
+.title {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+    font-size: 1.1rem;
+    margin-bottom: $spacing-md;
+    color: var(--text-primary);
+
+    i {
+        color: var(--accent-primary);
+    }
+}
+
+.count {
+    font-size: 0.875rem;
+    font-weight: 400;
+    color: var(--text-secondary);
+    background: var(--bg-tertiary);
+    padding: 2px 8px;
+    border-radius: $radius-full;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: $spacing-md;
+}
+
+.card {
+    @include card-base;
+    padding: $spacing-md;
+    transition:
+        transform 0.15s ease,
+        box-shadow 0.15s ease;
+
+    &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+}
+
+.cardLink {
+    display: flex;
+    align-items: flex-start;
+    gap: $spacing-md;
+    text-decoration: none;
+    color: inherit;
+}
+
+.avatar {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--bg-tertiary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    i {
+        font-size: 1.5rem;
+        color: var(--text-secondary);
+    }
+}
+
+.info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+}
+
+.username {
+    font-weight: 600;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.meta {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+    flex-wrap: wrap;
+}
+
+.stars {
+    display: flex;
+    gap: 2px;
+
+    i {
+        font-size: 0.875rem;
+        color: #fbbf24;
+    }
+}
+
+.noRating {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.dogshit {
+    font-size: 1rem;
+}
+
+.masterpiece {
+    font-size: 0.75rem;
+    font-weight: 600;
+    background: linear-gradient(135deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #9400d3);
+    background-size: 200% 200%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: rainbow 3s ease infinite;
+}
+
+@keyframes rainbow {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+.notesSection {
+    margin-top: $spacing-sm;
+    padding-top: $spacing-sm;
+    border-top: 1px solid var(--border-color);
+}
+
+.notesToggle {
+    display: flex;
+    align-items: center;
+    gap: $spacing-xs;
+    padding: 0;
+    border: none;
+    background: none;
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: color 0.15s ease;
+
+    &:hover {
+        color: var(--accent-primary);
+    }
+
+    i {
+        font-size: 0.875rem;
+    }
+}
+
+.notes {
+    margin-top: $spacing-sm;
+    font-size: 0.8125rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    white-space: pre-wrap;
+    word-break: break-word;
+}

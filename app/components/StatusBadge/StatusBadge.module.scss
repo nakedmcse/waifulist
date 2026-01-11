@@ -16,11 +16,13 @@
 }
 
 .compact {
-    padding: $spacing-xs;
+    padding: 2px 6px;
     border-radius: $radius-sm;
+    font-size: 0.7rem;
+    gap: 4px;
 
     i {
-        font-size: 1rem;
+        font-size: 0.75rem;
     }
 }
 

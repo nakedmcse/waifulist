@@ -21,7 +21,7 @@ export function StatusBadge({ status, compact = false }: StatusBadgeProps) {
     return (
         <span className={`${styles.badge} ${styles[status]} ${compact ? styles.compact : ""}`}>
             <i className={`bi ${statusIcons[status]}`} />
-            {!compact && <span>{watchStatusLabels[status]}</span>}
+            <span>{watchStatusLabels[status]}</span>
         </span>
     );
 }
