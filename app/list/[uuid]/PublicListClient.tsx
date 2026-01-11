@@ -74,7 +74,12 @@ export function PublicListClient({ uuid, initialUsername }: PublicListClientProp
     }, []);
 
     const genreFilterElement = (
-        <GenreFilter genres={availableGenres} selected={selectedGenres} onChange={handleGenreChange} defaultCollapsed />
+        <GenreFilter
+            genres={availableGenres}
+            selected={selectedGenres}
+            onChangeAction={handleGenreChange}
+            defaultCollapsed
+        />
     );
 
     return (

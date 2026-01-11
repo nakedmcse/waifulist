@@ -1,9 +1,10 @@
 "use client";
 
-import React from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { CharacterAnimeAppearance, CharacterFull, CharacterVoiceActor } from "@/types/character";
+import { PowerEntry, VSBattlesStats } from "@/types/vsbattles";
 import { formatLongText } from "@/lib/textUtils";
 import {
     ContentTabsWrapper,
@@ -16,6 +17,7 @@ import {
 } from "@/components/EntityPageLayout/EntityPageLayout";
 import { Pill } from "@/components/Pill/Pill";
 import { PillTab, PillTabs } from "@/components/PillTabs/PillTabs";
+import { Modal } from "@/components/Modal/Modal";
 import { RoleTabs } from "@/components/RoleTabs/RoleTabs";
 import { Tab, Tabs } from "@/components/Tabs/Tabs";
 import styles from "./page.module.scss";
@@ -176,6 +178,220 @@ function MangaAppearancesContent({ manga }: { manga: CharacterFull["manga"] }) {
     );
 }
 
+interface PowerLevelContentProps {
+    characterId: number;
+}
+
+function PowerLevelContent({ characterId }: PowerLevelContentProps) {
+    const [loading, setLoading] = useState(true);
+    const [stats, setStats] = useState<VSBattlesStats | null>(null);
+    const [notFound, setNotFound] = useState(false);
+    const [selectedPower, setSelectedPower] = useState<PowerEntry | null>(null);
+
+    const handleClosePowerModal = useCallback(() => {
+        setSelectedPower(null);
+    }, []);
+
+    useEffect(() => {
+        async function fetchStats() {
+            try {
+                const res = await fetch(`/api/vsbattles/${characterId}`);
+                if (!res.ok) {
+                    setNotFound(true);
+                    return;
+                }
+                const data = await res.json();
+                if (!data.found) {
+                    setNotFound(true);
+                    return;
+                }
+                setStats(data.stats);
+            } catch {
+                setNotFound(true);
+            } finally {
+                setLoading(false);
+            }
+        }
+        fetchStats();
+    }, [characterId]);
+
+    if (loading) {
+        return (
+            <div className={styles.powerLevelLoading}>
+                <div className={styles.powerLevelSpinner} />
+                <span>Searching VS Battles Wiki...</span>
+            </div>
+        );
+    }
+
+    if (notFound || !stats) {
+        return (
+            <div className={styles.powerLevelNotFound}>
+                <i className="bi bi-question-circle" />
+                <p>No VS Battles Wiki entry found for this character.</p>
+            </div>
+        );
+    }
+
+    const infoFields = [
+        { label: "Name", value: stats.name },
+        { label: "Origin", value: stats.origin },
+        { label: "Classification", value: stats.classification },
+        { label: "Gender", value: stats.gender },
+        { label: "Age", value: stats.age },
+    ];
+
+    const statFields = [
+        { label: "Tier", value: stats.tier, icon: "trophy", wikiPage: "Tiering_System" },
+        { label: "Attack Potency", value: stats.attackPotency, icon: "lightning", wikiPage: "Attack_Potency" },
+        { label: "Speed", value: stats.speed, icon: "speedometer2", wikiPage: "Speed" },
+        { label: "Durability", value: stats.durability, icon: "shield", wikiPage: "Durability" },
+        {
+            label: "Striking Strength",
+            value: stats.strikingStrength,
+            icon: "hand-index-thumb",
+            wikiPage: "Striking_Strength",
+        },
+        {
+            label: "Lifting Strength",
+            value: stats.liftingStrength,
+            icon: "arrow-up-circle",
+            wikiPage: "Lifting_Strength",
+        },
+        { label: "Stamina", value: stats.stamina, icon: "battery-full", wikiPage: "Stamina" },
+        { label: "Range", value: stats.range, icon: "arrows-expand", wikiPage: "Range" },
+        { label: "Standard Equipment", value: stats.standardEquipment, icon: "box", wikiPage: "Standard_Equipment" },
+        { label: "Intelligence", value: stats.intelligence, icon: "lightbulb", wikiPage: "Intelligence" },
+    ];
+
+    const formatStatText = (text: string) => {
+        const parts = text.split(" | ");
+        if (parts.length > 1) {
+            return parts.map((part, i) => (
+                <div key={i} className={styles.powerLevelStatPart}>
+                    {stats.keys && stats.keys[i] && <span className={styles.powerLevelStatKey}>{stats.keys[i]}:</span>}
+                    {formatLongText(part.trim()).map((para, j) => (
+                        <p key={j}>{para.text}</p>
+                    ))}
+                </div>
+            ));
+        }
+        return formatLongText(text).map((para, i) => <p key={i}>{para.text}</p>);
+    };
+
+    return (
+        <div className={styles.tabContentSection}>
+            <div className={styles.powerLevelHeader}>
+                <h3>{stats.pageTitle}</h3>
+                <a href={stats.pageUrl} target="_blank" rel="noopener noreferrer" className={styles.powerLevelLink}>
+                    View on VS Battles Wiki <i className="bi bi-box-arrow-up-right" />
+                </a>
+            </div>
+
+            <div className={styles.powerLevelInfo}>
+                {infoFields.map(
+                    field =>
+                        field.value && (
+                            <div key={field.label} className={styles.powerLevelInfoItem}>
+                                <span className={styles.powerLevelInfoLabel}>{field.label}:</span>
+                                <span className={styles.powerLevelInfoValue}>{field.value}</span>
+                            </div>
+                        ),
+                )}
+            </div>
+
+            {stats.keys && stats.keys.length > 0 && (
+                <div className={styles.powerLevelKeys}>
+                    <span className={styles.powerLevelKeysLabel}>Forms:</span>
+                    {stats.keys.map((key, i) => (
+                        <Pill key={i}>{key}</Pill>
+                    ))}
+                </div>
+            )}
+
+            {statFields.map(
+                field =>
+                    field.value && (
+                        <div key={field.label} className={styles.powerLevelLongStat}>
+                            <h4>
+                                <i className={`bi bi-${field.icon}`} />
+                                {field.label}
+                                <a
+                                    href={`https://vsbattles.fandom.com/wiki/${field.wikiPage}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className={styles.statWikiLink}
+                                    title={`Learn about ${field.label}`}
+                                >
+                                    <i className="bi bi-info-circle" />
+                                </a>
+                            </h4>
+                            <div className={styles.powerLevelLongStatContent}>{formatStatText(field.value)}</div>
+                        </div>
+                    ),
+            )}
+
+            {stats.powers && stats.powers.length > 0 && (
+                <div className={styles.powerLevelPowers}>
+                    <h4>Powers and Abilities</h4>
+                    <div className={styles.powerLevelPowersList}>
+                        {stats.powers.map((power, i) => (
+                            <button key={i} className={styles.powerPillButton} onClick={() => setSelectedPower(power)}>
+                                <Pill>{power.name}</Pill>
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {selectedPower && (
+                <Modal
+                    title={selectedPower.name}
+                    onClose={handleClosePowerModal}
+                    footer={
+                        <a
+                            href={`https://vsbattles.fandom.com/wiki/${encodeURIComponent(selectedPower.name.replace(/ /g, "_"))}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={styles.powerModalLink}
+                        >
+                            Learn more about {selectedPower.name} <i className="bi bi-box-arrow-up-right" />
+                        </a>
+                    }
+                >
+                    {selectedPower.description ? (
+                        formatLongText(selectedPower.description).map((para, i) => <p key={i}>{para.text}</p>)
+                    ) : (
+                        <p className={styles.powerModalNotFound}>No specific description for this character.</p>
+                    )}
+                </Modal>
+            )}
+
+            {stats.notableAttacks && (
+                <div className={styles.powerLevelSection}>
+                    <h4>Notable Attacks/Techniques</h4>
+                    <div className={styles.powerLevelLongStatContent}>
+                        {formatLongText(stats.notableAttacks).map((para, i) => (
+                            <p key={i}>{para.text}</p>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {stats.weaknesses && (
+                <div className={styles.powerLevelSection}>
+                    <h4>Weaknesses</h4>
+                    <div className={styles.powerLevelLongStatContent}>
+                        {formatLongText(stats.weaknesses).map((para, i) => (
+                            <p key={i}>{para.text}</p>
+                        ))}
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+}
+
 export function CharacterPageClient({ character }: CharacterPageClientProps) {
     const imageUrl = character.images?.webp?.image_url || character.images?.jpg?.image_url;
     const aboutParagraphs = character.about ? formatLongText(character.about) : [];
@@ -205,6 +421,12 @@ export function CharacterPageClient({ character }: CharacterPageClientProps) {
             content: <VoiceActorsContent voices={character.voices} />,
         });
     }
+
+    tabs.push({
+        id: "power-level",
+        label: "Power Level",
+        content: <PowerLevelContent characterId={character.mal_id} />,
+    });
 
     const sidebarContent = (
         <>

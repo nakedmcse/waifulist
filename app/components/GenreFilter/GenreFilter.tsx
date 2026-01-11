@@ -6,12 +6,12 @@ import styles from "./GenreFilter.module.scss";
 type GenreFilterProps = {
     genres: string[];
     selected: string[];
-    onChange: (genres: string[]) => void;
+    onChangeAction: (genres: string[]) => void;
     loading?: boolean;
     defaultCollapsed?: boolean;
 };
 
-export function GenreFilter({ genres, selected, onChange, loading, defaultCollapsed = false }: GenreFilterProps) {
+export function GenreFilter({ genres, selected, onChangeAction, loading, defaultCollapsed = false }: GenreFilterProps) {
     const [collapsed, setCollapsed] = useState(defaultCollapsed);
     const [search, setSearch] = useState("");
 
@@ -25,14 +25,14 @@ export function GenreFilter({ genres, selected, onChange, loading, defaultCollap
 
     const handleToggle = (genre: string) => {
         if (selected.includes(genre)) {
-            onChange(selected.filter(g => g !== genre));
+            onChangeAction(selected.filter(g => g !== genre));
         } else {
-            onChange([...selected, genre]);
+            onChangeAction([...selected, genre]);
         }
     };
 
     const handleClearAll = () => {
-        onChange([]);
+        onChangeAction([]);
         setSearch("");
     };
 

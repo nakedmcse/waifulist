@@ -1,0 +1,93 @@
+@use "../../styles/variables" as *;
+
+.overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: $spacing-md;
+    animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.modal {
+    position: relative;
+    background: var(--bg-secondary);
+    border-radius: $radius-lg;
+    padding: $spacing-xl;
+    max-width: 600px;
+    width: 100%;
+    max-height: 80vh;
+    overflow-y: auto;
+    animation: slideUp 0.2s ease-out;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.close {
+    position: absolute;
+    top: $spacing-md;
+    right: $spacing-md;
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: $spacing-xs;
+    border-radius: $radius-sm;
+    transition: all $transition-fast;
+
+    &:hover {
+        color: var(--text-primary);
+        background: var(--bg-tertiary);
+    }
+
+    i {
+        font-size: 1.25rem;
+    }
+}
+
+.title {
+    margin: 0 0 $spacing-lg;
+    font-size: 1.5rem;
+    color: var(--text-primary);
+    padding-right: $spacing-xl;
+}
+
+.content {
+    color: var(--text-secondary);
+    font-size: 0.9375rem;
+    line-height: 1.7;
+
+    p {
+        margin: 0 0 $spacing-md;
+
+        &:last-child {
+            margin-bottom: 0;
+        }
+    }
+}
+
+.footer {
+    margin-top: $spacing-lg;
+}

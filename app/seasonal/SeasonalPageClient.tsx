@@ -94,7 +94,7 @@ export function SeasonalPageClient() {
                 <GenreFilter
                     genres={allGenres}
                     selected={selectedGenres}
-                    onChange={handleGenreChange}
+                    onChangeAction={handleGenreChange}
                     loading={genresLoading}
                 />
             </aside>
@@ -112,7 +112,7 @@ export function SeasonalPageClient() {
                     <GenreFilter
                         genres={allGenres}
                         selected={selectedGenres}
-                        onChange={handleGenreChange}
+                        onChangeAction={handleGenreChange}
                         loading={genresLoading}
                         defaultCollapsed
                     />

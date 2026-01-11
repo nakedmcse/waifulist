@@ -238,7 +238,12 @@ export default function MyListPage() {
     );
 
     const genreFilterElement = (
-        <GenreFilter genres={availableGenres} selected={selectedGenres} onChange={handleGenreChange} defaultCollapsed />
+        <GenreFilter
+            genres={availableGenres}
+            selected={selectedGenres}
+            onChangeAction={handleGenreChange}
+            defaultCollapsed
+        />
     );
 
     return (

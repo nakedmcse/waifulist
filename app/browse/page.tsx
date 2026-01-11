@@ -330,7 +330,7 @@ function BrowseContent() {
                 <GenreFilter
                     genres={allGenres}
                     selected={selectedGenres}
-                    onChange={handleGenreChange}
+                    onChangeAction={handleGenreChange}
                     loading={genresLoading}
                     defaultCollapsed
                 />
