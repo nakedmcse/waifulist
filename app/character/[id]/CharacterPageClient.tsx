@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { CharacterAnimeAppearance, CharacterFull, CharacterVoiceActor } from "@/types/character";
 import { PowerEntry, VSBattlesStats } from "@/types/vsbattles";
-import { formatLongText } from "@/lib/textUtils";
+import { formatLongText } from "@/lib/utils/textUtils";
 import {
     ContentTabsWrapper,
     EntityPageLayout,

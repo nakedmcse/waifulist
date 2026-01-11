@@ -5,6 +5,7 @@ import crypto from "crypto";
 import bcrypt from "bcrypt";
 import type { UserSettings } from "@/types/settings";
 import type { WatchStatus } from "@/types/anime";
+import { isBuildPhase } from "@/lib/utils/runtimeUtils";
 
 const SALT_ROUNDS = 12;
 
@@ -18,8 +19,6 @@ export class DatabaseError extends Error {
         this.name = "DatabaseError";
     }
 }
-
-const isBuildPhase = process.env.NEXT_PHASE === "phase-production-build";
 
 const dataDir = path.join(process.cwd(), "data");
 if (!isBuildPhase && !fs.existsSync(dataDir)) {

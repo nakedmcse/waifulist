@@ -4,7 +4,7 @@ import React, { useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { PersonAnimePosition, PersonFull, PersonVoiceRole } from "@/types/person";
-import { formatLongText } from "@/lib/textUtils";
+import { formatLongText } from "@/lib/utils/textUtils";
 import {
     ContentTabsWrapper,
     EntityPageLayout,

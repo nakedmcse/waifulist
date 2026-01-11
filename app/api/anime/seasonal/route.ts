@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ensureSearchIndex, getAnimeBySeason } from "@/services/animeData";
-import { getAllSeasons, Season } from "@/lib/seasonUtils";
+import { getAllSeasons, Season } from "@/lib/utils/seasonUtils";
 
 const VALID_SEASONS = new Set<string>(getAllSeasons());
 

@@ -4,7 +4,7 @@ import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { TopReviewWithAnime } from "@/types/anime";
-import { formatLongText } from "@/lib/textUtils";
+import { formatLongText } from "@/lib/utils/textUtils";
 import styles from "./ReviewCard.module.scss";
 
 interface ReviewCardProps {

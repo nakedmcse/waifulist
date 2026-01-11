@@ -39,7 +39,7 @@ import { StatisticsSection } from "@/components/StatisticsSection/StatisticsSect
 import { StatusBadge } from "@/components/StatusBadge/StatusBadge";
 import { Spinner } from "@/components/Spinner/Spinner";
 import { Tab, Tabs } from "@/components/Tabs/Tabs";
-import { formatLongText } from "@/lib/textUtils";
+import { formatLongText } from "@/lib/utils/textUtils";
 import styles from "./page.module.scss";
 
 interface AnimePageClientProps {

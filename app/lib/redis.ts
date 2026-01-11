@@ -1,5 +1,6 @@
 import Redis from "ioredis";
 import { RateLimitType } from "@/types/rateLimit";
+import { isBuildPhase } from "@/lib/utils/runtimeUtils";
 
 const REDIS_URL = process.env.REDIS_URL || "redis://localhost:6379";
 
@@ -17,13 +18,15 @@ export function getRedis(): Redis {
             },
         });
 
-        globalThis.redis.on("error", err => {
-            console.error("[Redis] Connection error:", err.message);
-        });
+        if (!isBuildPhase) {
+            globalThis.redis.on("error", err => {
+                console.error("[Redis] Connection error:", err.message);
+            });
 
-        globalThis.redis.on("connect", () => {
-            console.log("[Redis] Connected");
-        });
+            globalThis.redis.on("connect", () => {
+                console.log("[Redis] Connected");
+            });
+        }
     }
     return globalThis.redis;
 }

@@ -1,7 +1,7 @@
 import { Anime } from "@/types/anime";
 import { fetchAnimeFromCdn } from "@/lib/jikanApi";
 import { getRedis, REDIS_KEYS, REDIS_TTL } from "@/lib/redis";
-import { isDeepLink } from "@/lib/urlUtils";
+import { isDeepLink } from "@/lib/utils/urlUtils";
 import { scrapeStreaming } from "./scraper";
 
 type EnrichmentCheck = (anime: Anime) => boolean;

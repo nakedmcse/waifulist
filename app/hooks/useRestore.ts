@@ -3,7 +3,7 @@
 import { useCallback } from "react";
 import { dispatchRestore } from "@/services/backupService";
 import { WatchedAnimeRow } from "@/lib/db";
-import { BackupData, BackupChoices } from "@/types/backup";
+import { BackupChoices, BackupData } from "@/types/backup";
 
 export function useRestore() {
     const restoreList = useCallback(async (selectedFile: File, choices: BackupChoices): Promise<void> => {

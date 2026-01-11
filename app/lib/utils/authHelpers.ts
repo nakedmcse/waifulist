@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { User } from "@/lib/db";
 import { setSessionCookie, signToken } from "@/lib/auth";
-import { verifyTurnstileToken } from "@/lib/turnstile";
+import { verifyTurnstileToken } from "@/lib/utils/turnstile";
 
 interface AuthRequest {
     username?: string;

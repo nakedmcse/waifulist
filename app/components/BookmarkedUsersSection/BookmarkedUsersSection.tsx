@@ -3,7 +3,7 @@
 import Link from "next/link";
 import type { BookmarkedUser } from "@/lib/db";
 import styles from "./BookmarkedUsersSection.module.scss";
-import { formatDate } from "@/lib/dateUtils";
+import { formatDate } from "@/lib/utils/dateUtils";
 
 interface BookmarkedUsersSectionProps {
     bookmarks: BookmarkedUser[];

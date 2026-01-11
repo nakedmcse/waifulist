@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { MangaCharacter, MangaFull, MangaRecommendation, MangaRelation, MangaStatistics } from "@/types/manga";
 import { AnimePicture } from "@/types/anime";
-import { formatLongText } from "@/lib/textUtils";
+import { formatLongText } from "@/lib/utils/textUtils";
 import {
     ContentTabsWrapper,
     EntityPageLayout,

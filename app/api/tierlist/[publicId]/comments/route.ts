@@ -7,7 +7,7 @@ import {
     getReactionsForComments,
     getTierListByPublicId,
 } from "@/lib/db";
-import { verifyTurnstileToken } from "@/lib/turnstile";
+import { verifyTurnstileToken } from "@/lib/utils/turnstile";
 
 interface RouteParams {
     params: Promise<{ publicId: string }>;

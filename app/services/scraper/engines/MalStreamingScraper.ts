@@ -1,6 +1,6 @@
 import { JSDOM } from "jsdom";
 import { StreamingLink } from "@/types/anime";
-import { isDeepLink } from "@/lib/urlUtils";
+import { isDeepLink } from "@/lib/utils/urlUtils";
 import { ScraperEngine, ScraperResult, ScraperType, StreamingScraperArgs } from "../types";
 
 const SCRAPE_TIMEOUT = 10000;

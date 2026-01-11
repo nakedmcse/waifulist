@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getUserByUsername, verifyPassword } from "@/lib/db";
-import { createAuthResponse, validateAuthRequest } from "@/lib/authHelpers";
+import { createAuthResponse, validateAuthRequest } from "@/lib/utils/authHelpers";
 
 export async function POST(request: NextRequest) {
     try {

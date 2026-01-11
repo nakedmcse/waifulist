@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { getCurrentSeason, parseSeasonParam, parseYearParam, SeasonYear } from "@/lib/seasonUtils";
+import { getCurrentSeason, parseSeasonParam, parseYearParam, SeasonYear } from "@/lib/utils/seasonUtils";
 import { useSeasonalAnime } from "@/hooks/useSeasonalAnime";
 import { useSchedule } from "@/hooks/useSchedule";
 import { useGenreFilter } from "@/hooks";

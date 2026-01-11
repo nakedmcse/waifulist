@@ -6,7 +6,7 @@ import Link from "next/link";
 import { Anime, WatchStatus, watchStatusLabels } from "@/types/anime";
 import { useWatchList } from "@/contexts/WatchListContext";
 import styles from "./AnimeCard.module.scss";
-import { formatDate, parseUtcDate } from "@/lib/dateUtils";
+import { formatDate, parseUtcDate } from "@/lib/utils/dateUtils";
 
 export interface AnimeCardWatchData {
     status: WatchStatus;

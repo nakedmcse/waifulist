@@ -10,7 +10,7 @@ import {
     isCurrentSeason,
     Season,
     SeasonYear,
-} from "@/lib/seasonUtils";
+} from "@/lib/utils/seasonUtils";
 import styles from "./SeasonSelector.module.scss";
 
 interface SeasonSelectorProps {
