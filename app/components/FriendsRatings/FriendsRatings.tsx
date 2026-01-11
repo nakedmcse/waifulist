@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
 import { StatusBadge } from "@/components/StatusBadge/StatusBadge";
-import type { FriendRating } from "@/types/anime";
+import { useFriendsRatings } from "@/hooks/useFriendsRatings";
 import styles from "./FriendsRatings.module.scss";
 
 interface FriendsRatingsProps {
@@ -35,32 +35,8 @@ function RatingDisplay({ rating }: { rating: number | null }) {
 
 export function FriendsRatings({ animeId }: FriendsRatingsProps) {
     const { user } = useAuth();
-    const [ratings, setRatings] = useState<FriendRating[]>([]);
-    const [loading, setLoading] = useState(true);
+    const { ratings, loading } = useFriendsRatings(animeId);
     const [expandedNotes, setExpandedNotes] = useState<Set<string>>(new Set());
-
-    useEffect(() => {
-        if (!user) {
-            setLoading(false);
-            return;
-        }
-
-        const fetchRatings = async () => {
-            try {
-                const response = await fetch(`/api/anime/${animeId}/friends-ratings`);
-                if (response.ok) {
-                    const data = await response.json();
-                    setRatings(data.friendsRatings);
-                }
-            } catch (error) {
-                console.error("Failed to fetch friends ratings:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchRatings();
-    }, [animeId, user]);
 
     const toggleNotes = (publicId: string) => {
         setExpandedNotes(prev => {
