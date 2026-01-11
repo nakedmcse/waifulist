@@ -173,6 +173,7 @@ export async function getTierListWithCharacters(publicId: string): Promise<TierL
             userId: row.user_id,
             username: row.username,
             tiers,
+            tierNames: data.tierNames,
             createdAt: row.created_at,
             updatedAt: row.updated_at,
         };
@@ -185,6 +186,7 @@ export async function getTierListWithCharacters(publicId: string): Promise<TierL
         userId: null,
         username: "Anonymous",
         tiers,
+        tierNames: data.tierNames,
         createdAt: anonymousRow!.created_at,
         updatedAt: anonymousRow!.created_at,
     };

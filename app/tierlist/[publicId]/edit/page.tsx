@@ -70,6 +70,7 @@ export default function EditTierListPage() {
                     publicId={publicId}
                     initialName={tierList.name}
                     initialTiers={tierList.tiers}
+                    initialTierNames={tierList.tierNames}
                     onSave={handleSave}
                     shareUrl={`${typeof window !== "undefined" ? window.location.origin : ""}/tierlist/${publicId}`}
                 />

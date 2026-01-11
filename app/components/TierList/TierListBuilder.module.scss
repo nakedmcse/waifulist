@@ -65,11 +65,40 @@
 
 .tierLabel {
     @include flex-center;
-    width: 60px;
     min-width: 60px;
-    font-size: 1.5rem;
+    max-width: 120px;
+    font-size: 0.875rem;
     font-weight: 700;
     color: #000;
+    cursor: pointer;
+    transition: filter $transition-fast;
+    padding: 8px;
+    box-sizing: border-box;
+    text-align: center;
+    word-break: break-word;
+
+    &:hover {
+        filter: brightness(0.95);
+    }
+}
+
+.tierNameInput {
+    width: 100%;
+    min-height: 40px;
+    padding: 4px;
+    border: none;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+    text-align: center;
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: #000;
+    resize: none;
+
+    &:focus {
+        outline: none;
+        background: rgba(255, 255, 255, 0.5);
+    }
 }
 
 .tierCharacters {

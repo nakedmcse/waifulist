@@ -31,6 +31,7 @@ export interface TierListData {
     C: number[];
     D: number[];
     F: number[];
+    tierNames?: Partial<Record<TierRank, string>>;
 }
 
 export interface TierList {
@@ -50,6 +51,7 @@ export interface TierListWithCharacters {
     userId: number | null;
     username: string;
     tiers: Record<TierRank, TierListCharacter[]>;
+    tierNames?: Partial<Record<TierRank, string>>;
     createdAt: string;
     updatedAt: string;
 }

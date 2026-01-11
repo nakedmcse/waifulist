@@ -14,6 +14,7 @@ interface TierListBuilderProps {
     publicId?: string;
     initialName: string;
     initialTiers: Record<TierRank, TierListCharacter[]>;
+    initialTierNames?: Partial<Record<TierRank, string>>;
     onSave: (name: string, data: TierListData) => Promise<void>;
     shareUrl?: string;
     saveLabel?: string;
@@ -24,6 +25,7 @@ export function TierListBuilder({
     publicId: _publicId,
     initialName,
     initialTiers,
+    initialTierNames = {},
     onSave,
     shareUrl,
     saveLabel = "Save",
@@ -31,12 +33,15 @@ export function TierListBuilder({
 }: TierListBuilderProps) {
     const [name, setName] = useState(initialName);
     const [tiers, setTiers] = useState<Record<TierRank, TierListCharacter[]>>(initialTiers);
+    const [tierNames, setTierNames] = useState<Partial<Record<TierRank, string>>>(initialTierNames);
+    const [editingTier, setEditingTier] = useState<TierRank | null>(null);
     const [isSaving, setIsSaving] = useState(false);
     const [draggedCharacter, setDraggedCharacter] = useState<{
         character: TierListCharacter;
         fromTier: TierRank | "search";
     } | null>(null);
     const [dropTarget, setDropTarget] = useState<{ tier: TierRank; index: number } | null>(null);
+    const tierInputRef = useRef<HTMLTextAreaElement>(null);
 
     const {
         query,
@@ -111,6 +116,13 @@ export function TierListBuilder({
         document.addEventListener("mousedown", handleClickOutside);
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
+
+    useEffect(() => {
+        if (editingTier && tierInputRef.current) {
+            tierInputRef.current.focus();
+            tierInputRef.current.select();
+        }
+    }, [editingTier]);
 
     const handleSelectMedia = (malId: number, title: string) => {
         setMediaFilter({ malId, title, type: filterType });
@@ -271,9 +283,33 @@ export function TierListBuilder({
         setDraggedCharacter(null);
     };
 
+    const handleTierNameChange = (rank: TierRank, newName: string) => {
+        setTierNames(prev => ({
+            ...prev,
+            [rank]: newName,
+        }));
+    };
+
+    const handleTierNameBlur = () => {
+        setEditingTier(null);
+    };
+
+    const handleTierNameKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === "Enter" || e.key === "Escape") {
+            setEditingTier(null);
+        }
+    };
+
     const handleSave = async () => {
         setIsSaving(true);
         try {
+            const cleanTierNames: Partial<Record<TierRank, string>> = {};
+            for (const rank of TIER_RANKS) {
+                if (tierNames[rank] && tierNames[rank]!.trim() !== "" && tierNames[rank] !== rank) {
+                    cleanTierNames[rank] = tierNames[rank]!.trim();
+                }
+            }
+
             const data: TierListData = {
                 S: tiers.S.map(c => c.anilistId),
                 A: tiers.A.map(c => c.anilistId),
@@ -281,6 +317,7 @@ export function TierListBuilder({
                 C: tiers.C.map(c => c.anilistId),
                 D: tiers.D.map(c => c.anilistId),
                 F: tiers.F.map(c => c.anilistId),
+                tierNames: Object.keys(cleanTierNames).length > 0 ? cleanTierNames : undefined,
             };
             await onSave(name, data);
         } finally {
@@ -317,8 +354,26 @@ export function TierListBuilder({
                                 onDragOver={handleDragOver}
                                 onDrop={e => handleDrop(e, rank)}
                             >
-                                <div className={styles.tierLabel} style={{ backgroundColor: TIER_COLORS[rank] }}>
-                                    {rank}
+                                <div
+                                    className={styles.tierLabel}
+                                    style={{ backgroundColor: TIER_COLORS[rank] }}
+                                    onClick={() => setEditingTier(rank)}
+                                    title="Click to rename tier"
+                                >
+                                    {editingTier === rank ? (
+                                        <textarea
+                                            ref={tierInputRef}
+                                            value={tierNames[rank] ?? rank}
+                                            onChange={e => handleTierNameChange(rank, e.target.value)}
+                                            onBlur={handleTierNameBlur}
+                                            onKeyDown={handleTierNameKeyDown}
+                                            className={styles.tierNameInput}
+                                            maxLength={30}
+                                            rows={2}
+                                        />
+                                    ) : (
+                                        tierNames[rank] || rank
+                                    )}
                                 </div>
                                 <div className={styles.tierCharacters}>
                                     {tiers[rank].map((character, index) => (

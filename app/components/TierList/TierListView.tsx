@@ -26,7 +26,12 @@ export function TierListView({ tierList }: TierListViewProps) {
 
             <div className={styles.tierList}>
                 {TIER_RANKS.map(rank => (
-                    <TierRow key={rank} rank={rank} characters={tierList.tiers[rank]} />
+                    <TierRow
+                        key={rank}
+                        rank={rank}
+                        characters={tierList.tiers[rank]}
+                        customName={tierList.tierNames?.[rank]}
+                    />
                 ))}
             </div>
         </div>
@@ -36,14 +41,21 @@ export function TierListView({ tierList }: TierListViewProps) {
 interface TierRowProps {
     rank: TierRank;
     characters: TierListWithCharacters["tiers"][TierRank];
+    customName?: string;
 }
 
-function TierRow({ rank, characters }: TierRowProps) {
+function TierRow({ rank, characters, customName }: TierRowProps) {
+    const displayName = customName || rank;
+
     if (characters.length === 0) {
         return (
             <div className={styles.tierRow}>
-                <div className={styles.tierLabel} style={{ backgroundColor: TIER_COLORS[rank] }}>
-                    {rank}
+                <div
+                    className={styles.tierLabel}
+                    style={{ backgroundColor: TIER_COLORS[rank] }}
+                    title={customName ? `${rank}: ${customName}` : rank}
+                >
+                    {displayName}
                 </div>
                 <div className={styles.tierCharacters}>
                     <div className={styles.emptyTier}>No characters</div>
@@ -54,8 +66,12 @@ function TierRow({ rank, characters }: TierRowProps) {
 
     return (
         <div className={styles.tierRow}>
-            <div className={styles.tierLabel} style={{ backgroundColor: TIER_COLORS[rank] }}>
-                {rank}
+            <div
+                className={styles.tierLabel}
+                style={{ backgroundColor: TIER_COLORS[rank] }}
+                title={customName ? `${rank}: ${customName}` : rank}
+            >
+                {displayName}
             </div>
             <div className={styles.tierCharacters}>
                 {characters.map(character => (
