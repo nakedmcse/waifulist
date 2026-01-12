@@ -8,16 +8,7 @@ import { BackupChoices, BackupData } from "@/types/backup";
 export function useRestore() {
     const restoreList = useCallback(async (selectedFile: File, choices: BackupChoices): Promise<void> => {
         const checkBackupFile = (text: string): boolean => {
-            const fields: string[] = [
-                "id",
-                "user_id",
-                "anime_id",
-                "status",
-                "episodes_watched",
-                "rating",
-                "date_added",
-                "date_updated",
-            ];
+            const fields: string[] = ["anime_id", "status", "episodes_watched", "rating", "date_added", "date_updated"];
             for (const field of fields) {
                 if (!text.includes(field)) {
                     return false;
@@ -48,15 +39,20 @@ export function useRestore() {
                     Anime: choices.Anime ? [...anime] : [],
                     Bookmarks: [],
                     TierLists: [],
+                    AiringSubscriptions: [],
                 };
                 response = await dispatchRestore(JSON.stringify(restoreData));
                 break;
             case 2:
-                const allData = JSON.parse(content) as BackupData;
+                const allData = JSON.parse(content) as Partial<BackupData>;
                 const toRestore: BackupData = {
-                    Anime: choices.Anime ? [...allData.Anime] : [],
-                    Bookmarks: choices.Bookmarks ? [...allData.Bookmarks] : [],
-                    TierLists: choices.TierLists ? [...allData.TierLists] : [],
+                    Anime: choices.Anime && allData.Anime ? [...allData.Anime] : [],
+                    Bookmarks: choices.Bookmarks && allData.Bookmarks ? [...allData.Bookmarks] : [],
+                    TierLists: choices.TierLists && allData.TierLists ? [...allData.TierLists] : [],
+                    AiringSubscriptions:
+                        choices.AiringSubscriptions && allData.AiringSubscriptions
+                            ? [...allData.AiringSubscriptions]
+                            : [],
                 };
                 response = await dispatchRestore(JSON.stringify(toRestore));
                 break;
