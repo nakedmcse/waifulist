@@ -135,7 +135,6 @@
     font-size: 0.75rem;
     color: var(--text-muted);
     @include truncate(1);
-    margin-bottom: $spacing-xs;
 }
 
 .meta {

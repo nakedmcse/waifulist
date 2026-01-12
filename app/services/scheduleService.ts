@@ -2,6 +2,7 @@ import { getRedis, REDIS_KEYS, REDIS_TTL } from "@/lib/redis";
 import { fetchScheduleFromJikan } from "@/lib/jikanApi";
 import { DayFilter, DayOfWeek, DAYS_OF_WEEK, ScheduleAnime, ScheduleByDay, ScheduleResponse } from "@/types/schedule";
 import { scrapeSchedule } from "./scraper";
+import { getAnimeFromRedisByIds } from "./animeData";
 
 const WEEKDAYS: DayFilter[] = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];
 
@@ -20,6 +21,36 @@ function hasData(schedule: ScheduleByDay): boolean {
         }
     }
     return false;
+}
+
+async function enrichWithEnglishTitles(schedule: ScheduleByDay): Promise<void> {
+    const allIds: number[] = [];
+    for (const day of DAYS_OF_WEEK) {
+        for (const anime of schedule[day]) {
+            allIds.push(anime.mal_id);
+        }
+    }
+
+    if (allIds.length === 0) {
+        return;
+    }
+
+    const animeMap = await getAnimeFromRedisByIds(allIds);
+    let enrichedCount = 0;
+
+    for (const day of DAYS_OF_WEEK) {
+        for (const anime of schedule[day]) {
+            const cached = animeMap.get(anime.mal_id);
+            if (cached?.title_english && !anime.title_english) {
+                anime.title_english = cached.title_english;
+                enrichedCount++;
+            }
+        }
+    }
+
+    if (enrichedCount > 0) {
+        console.log(`[ScheduleService] Enriched ${enrichedCount} anime with English titles`);
+    }
 }
 
 async function fetchFromJikan(): Promise<ScheduleByDay> {
@@ -56,6 +87,7 @@ export async function getSchedule(): Promise<ScheduleResponse> {
     if (scraped && hasData(scraped)) {
         console.log("[ScheduleService] Using scraped MAL data");
         schedule = scraped;
+        await enrichWithEnglishTitles(schedule);
     } else {
         console.log("[ScheduleService] Scraper returned empty, falling back to Jikan");
         schedule = await fetchFromJikan();

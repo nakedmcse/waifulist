@@ -138,6 +138,9 @@ class MalScheduleScraper implements ScraperEngine<ScheduleByDay, ScheduleScraper
         const mal_id = parseInt(malIdMatch[1], 10);
         const title = titleLink.textContent?.trim() || "";
 
+        const subtitleEl = card.querySelector("h3.h3_anime_subtitle, .title-text h3, .h3_anime_subtitle");
+        const title_english = subtitleEl?.textContent?.trim() || undefined;
+
         const imageEl = card.querySelector(".image img, .lazyload, img.lazyloaded");
         const imageUrl =
             imageEl?.getAttribute("data-src") ||
@@ -189,6 +192,7 @@ class MalScheduleScraper implements ScraperEngine<ScheduleByDay, ScheduleScraper
         return {
             mal_id,
             title,
+            title_english,
             images: imageUrl
                 ? {
                       jpg: {

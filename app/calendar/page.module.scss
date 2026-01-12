@@ -406,6 +406,7 @@
 
 .cardWrapper {
     position: relative;
+    display: grid;
 
     :global(.subscribeButton) {
         position: absolute;
