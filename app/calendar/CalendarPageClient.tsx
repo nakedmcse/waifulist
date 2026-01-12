@@ -434,8 +434,18 @@ export function CalendarPageClient() {
                                                                     </div>
                                                                     <div className={styles.timelineItemInfo}>
                                                                         <span className={styles.timelineItemTitle}>
-                                                                            {item.titleEnglish || item.title}
+                                                                            {item.title}
                                                                         </span>
+                                                                        {item.titleEnglish &&
+                                                                            item.titleEnglish !== item.title && (
+                                                                                <span
+                                                                                    className={
+                                                                                        styles.timelineItemTitleEnglish
+                                                                                    }
+                                                                                >
+                                                                                    {item.titleEnglish}
+                                                                                </span>
+                                                                            )}
                                                                         <span className={styles.timelineItemMeta}>
                                                                             Episode {item.episode}
                                                                         </span>

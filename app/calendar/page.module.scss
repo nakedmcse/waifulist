@@ -325,6 +325,18 @@
     }
 }
 
+.timelineItemTitleEnglish {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    @include sm {
+        font-size: 0.75rem;
+    }
+}
+
 .timelineItemMeta {
     font-size: 0.75rem;
     color: var(--text-secondary);

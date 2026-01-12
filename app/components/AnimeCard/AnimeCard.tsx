@@ -130,6 +130,11 @@ export function AnimeCard({
                 </div>
                 <div className={styles.info}>
                     <h3 className={styles.title}>{anime.title}</h3>
+                    {anime.title_english && anime.title_english !== anime.title && (
+                        <p className={styles.titleEnglish} title={anime.title_english}>
+                            {anime.title_english}
+                        </p>
+                    )}
                     <div className={styles.meta}>
                         {anime.type && <span className={styles.type}>{anime.type.toUpperCase()}</span>}
                         {anime.source && <span className={styles.type}>{anime.source.toUpperCase()}</span>}
