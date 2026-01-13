@@ -1,4 +1,4 @@
-import type { BrowseSettings, CalendarSettings, MyListSettings, UserSettings } from "@/types/settings";
+import type { BrowseSettings, CalendarSettings, DisplaySettings, MyListSettings, UserSettings } from "@/types/settings";
 
 export async function fetchUserSettings(): Promise<UserSettings | null> {
     try {
@@ -31,5 +31,13 @@ export async function updateCalendarSettingsApi(updates: Partial<CalendarSetting
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ calendar: updates }),
+    });
+}
+
+export async function updateDisplaySettingsApi(updates: Partial<DisplaySettings>): Promise<void> {
+    await fetch("/api/settings", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ display: updates }),
     });
 }

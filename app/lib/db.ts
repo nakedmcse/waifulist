@@ -594,6 +594,8 @@ export function updateUserSettings(userId: number, updates: Partial<UserSettings
             ...updates,
             browse: updates.browse ? { ...current.browse, ...updates.browse } : current.browse,
             myList: updates.myList ? { ...current.myList, ...updates.myList } : current.myList,
+            calendar: updates.calendar ? { ...current.calendar, ...updates.calendar } : current.calendar,
+            display: updates.display ? { ...current.display, ...updates.display } : current.display,
         };
 
         const settingsJson = JSON.stringify(merged);

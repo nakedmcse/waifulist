@@ -3,12 +3,14 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
+import { useSettings } from "@/contexts/SettingsContext";
 import { Button } from "@/components/Button/Button";
 import styles from "./page.module.scss";
 
 export default function SettingsPage() {
     const router = useRouter();
     const { user, loading, updateUsername, updatePassword } = useAuth();
+    const { settings, updateDisplaySettings } = useSettings();
 
     const [newUsername, setNewUsername] = useState("");
     const [usernamePassword, setUsernamePassword] = useState("");
@@ -209,6 +211,24 @@ export default function SettingsPage() {
                                 {passwordSubmitting ? "Updating..." : "Update Password"}
                             </Button>
                         </form>
+                    </div>
+
+                    <div className={styles.card}>
+                        <div className={styles.form}>
+                            <h2>Display Preferences</h2>
+
+                            <label className={styles.toggleLabel}>
+                                <input
+                                    type="checkbox"
+                                    checked={settings.display.preferEnglishTitles}
+                                    onChange={e => updateDisplaySettings({ preferEnglishTitles: e.target.checked })}
+                                />
+                                <span>Prefer English titles</span>
+                            </label>
+                            <p className={styles.hint}>
+                                When enabled, English titles will be shown as the main title where available.
+                            </p>
+                        </div>
                     </div>
                 </div>
             </div>

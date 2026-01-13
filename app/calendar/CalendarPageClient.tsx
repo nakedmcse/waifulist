@@ -9,7 +9,7 @@ import { useSeasonalAnime } from "@/hooks/useSeasonalAnime";
 import { useSchedule } from "@/hooks/useSchedule";
 import { formatTimeUntilAiring, useAiringSchedule } from "@/hooks/useAiringSchedule";
 import { useAiringSubscriptions } from "@/hooks/useAiringSubscriptions";
-import { useGenreFilter } from "@/hooks";
+import { useGenreFilter, useTitlePreference } from "@/hooks";
 import { useWatchList } from "@/contexts/WatchListContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSettings } from "@/contexts/SettingsContext";
@@ -74,6 +74,7 @@ export function CalendarPageClient() {
     const { user } = useAuth();
     const { isSubscribed, subscribe, unsubscribe, subscribedIds } = useAiringSubscriptions();
     const { settings, updateCalendarSettings } = useSettings();
+    const { resolveTitles } = useTitlePreference();
     const showSubscribedOnly = settings.calendar.showSubscribedOnly;
 
     const totalPages = Math.ceil(filteredCount / PAGE_SIZE);
@@ -414,6 +415,10 @@ export function CalendarPageClient() {
                                                     {group.items.map(item => {
                                                         const isAiringNow = item.timeUntilAiring <= 0;
                                                         const airingDate = new Date(item.airingAt * 1000);
+                                                        const { mainTitle, subtitle } = resolveTitles({
+                                                            title: item.title,
+                                                            titleEnglish: item.titleEnglish,
+                                                        });
                                                         return (
                                                             <div
                                                                 key={`${item.malId}-${item.episode}`}
@@ -426,7 +431,7 @@ export function CalendarPageClient() {
                                                                     <div className={styles.timelineItemImage}>
                                                                         <Image
                                                                             src={item.coverImage}
-                                                                            alt={item.titleEnglish || item.title}
+                                                                            alt={mainTitle}
                                                                             width={56}
                                                                             height={80}
                                                                             unoptimized
@@ -434,18 +439,17 @@ export function CalendarPageClient() {
                                                                     </div>
                                                                     <div className={styles.timelineItemInfo}>
                                                                         <span className={styles.timelineItemTitle}>
-                                                                            {item.title}
+                                                                            {mainTitle}
                                                                         </span>
-                                                                        {item.titleEnglish &&
-                                                                            item.titleEnglish !== item.title && (
-                                                                                <span
-                                                                                    className={
-                                                                                        styles.timelineItemTitleEnglish
-                                                                                    }
-                                                                                >
-                                                                                    {item.titleEnglish}
-                                                                                </span>
-                                                                            )}
+                                                                        {subtitle && (
+                                                                            <span
+                                                                                className={
+                                                                                    styles.timelineItemTitleEnglish
+                                                                                }
+                                                                            >
+                                                                                {subtitle}
+                                                                            </span>
+                                                                        )}
                                                                         <span className={styles.timelineItemMeta}>
                                                                             Episode {item.episode}
                                                                         </span>
