@@ -10,15 +10,14 @@ async function storeAiredEpisodes(episodes: AiringInfo[]): Promise<void> {
     if (airedEpisodes.length === 0) {
         return;
     }
-
+    debugger;
     try {
+        const pipeline = redis.pipeline();
         for (const ep of airedEpisodes) {
             const key = REDIS_KEYS.AIRED_RECENTLY(ep.malId, ep.episode);
-            const exists = await redis.exists(key);
-            if (!exists) {
-                await redis.setex(key, REDIS_TTL.AIRED_RECENTLY, JSON.stringify(ep));
-            }
+            pipeline.set(key, JSON.stringify(ep), "EX", REDIS_TTL.AIRED_RECENTLY, "NX");
         }
+        await pipeline.exec();
     } catch {}
 }
 
