@@ -12,37 +12,44 @@ async function storeAiredEpisodes(episodes: AiringInfo[]): Promise<void> {
     }
 
     try {
-        const existing = await redis.get(REDIS_KEYS.AIRED_RECENTLY);
-        const existingMap = new Map<string, AiringInfo>();
-
-        if (existing) {
-            const parsed = JSON.parse(existing) as AiringInfo[];
-            for (const ep of parsed) {
-                existingMap.set(`${ep.malId}-${ep.episode}`, ep);
+        for (const ep of airedEpisodes) {
+            const key = REDIS_KEYS.AIRED_RECENTLY(ep.malId, ep.episode);
+            const exists = await redis.exists(key);
+            if (!exists) {
+                await redis.setex(key, REDIS_TTL.AIRED_RECENTLY, JSON.stringify(ep));
             }
         }
-
-        for (const ep of airedEpisodes) {
-            existingMap.set(`${ep.malId}-${ep.episode}`, ep);
-        }
-
-        const merged = Array.from(existingMap.values());
-
-        await redis.setex(REDIS_KEYS.AIRED_RECENTLY, REDIS_TTL.AIRED_RECENTLY, JSON.stringify(merged));
     } catch {}
 }
 
-async function getAiredToday(): Promise<AiringInfo[]> {
+async function getAiredRecently(): Promise<AiringInfo[]> {
     const redis = getRedis();
+    const results: AiringInfo[] = [];
 
     try {
-        const cached = await redis.get(REDIS_KEYS.AIRED_RECENTLY);
-        if (cached) {
-            return JSON.parse(cached) as AiringInfo[];
-        }
+        let cursor = "0";
+        do {
+            const [nextCursor, keys] = await redis.scan(
+                cursor,
+                "MATCH",
+                REDIS_KEYS.AIRED_RECENTLY_PATTERN,
+                "COUNT",
+                100,
+            );
+            cursor = nextCursor;
+
+            if (keys.length > 0) {
+                const values = await redis.mget(...keys);
+                for (const value of values) {
+                    if (value) {
+                        results.push(JSON.parse(value) as AiringInfo);
+                    }
+                }
+            }
+        } while (cursor !== "0");
     } catch {}
 
-    return [];
+    return results;
 }
 
 export async function getAiringSchedule(): Promise<AiringScheduleResponse> {
@@ -80,7 +87,7 @@ export async function getAiringSchedule(): Promise<AiringScheduleResponse> {
         }
     }
 
-    const airedToday = await getAiredToday();
+    const airedToday = await getAiredRecently();
 
     return {
         airing,

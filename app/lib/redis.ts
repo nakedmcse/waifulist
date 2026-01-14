@@ -83,7 +83,8 @@ export const REDIS_KEYS = {
     VSBATTLES: (characterName: string) => `vsbattles:${characterName.toLowerCase()}`,
     SCHEDULE: "anime:schedule",
     AIRING_SCHEDULE: "anime:airing",
-    AIRED_RECENTLY: "anime:aired:recently",
+    AIRED_RECENTLY: (malId: number, episode: number) => `anime:aired:recently:${malId}:${episode}`,
+    AIRED_RECENTLY_PATTERN: "anime:aired:recently:*",
 } as const;
 
 export const REDIS_TTL = {

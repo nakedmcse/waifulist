@@ -158,7 +158,7 @@ Redis is used as the primary cache and data store for anime data, enabling horiz
 | `vsbattles:{name}`                        | VS Battles stats (JSON) or "not_found" | 24h     | Character power level data       |
 | `anime:schedule`                          | Weekly schedule by day (JSON)          | 12h     | Schedule tab airing times        |
 | `anime:airing`                            | Airing timeline data (JSON)            | 1 hour  | Timeline tab episode countdowns  |
-| `anime:aired:recently`                    | Recently aired episodes (JSON)         | 24h     | Shows episodes aired in last 24h |
+| `anime:aired:recently:{malId}:{episode}`  | Single aired episode (JSON)            | 24h     | Each episode has own TTL         |
 
 ### Data Flow
 
