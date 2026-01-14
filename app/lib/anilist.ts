@@ -143,6 +143,7 @@ query ($page: Int, $perPage: Int) {
                 large
                 medium
             }
+            duration
             nextAiringEpisode {
                 airingAt
                 timeUntilAiring
@@ -181,6 +182,7 @@ interface AiringScheduleMedia {
         large: string | null;
         medium: string | null;
     };
+    duration: number | null;
     nextAiringEpisode: {
         airingAt: number;
         timeUntilAiring: number;
@@ -411,6 +413,7 @@ const fetchAiringScheduleFromAniListInternal = async function (maxPages: number 
                     title: media.title.romaji,
                     titleEnglish: media.title.english,
                     coverImage: media.coverImage.large || media.coverImage.medium || "",
+                    duration: media.duration,
                     episode: media.nextAiringEpisode.episode,
                     airingAt: media.nextAiringEpisode.airingAt,
                     timeUntilAiring: media.nextAiringEpisode.timeUntilAiring,

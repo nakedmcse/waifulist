@@ -4,9 +4,17 @@ import { useCallback, useEffect, useState } from "react";
 import { AiringBucket, AiringInfo, GroupedAiring } from "@/types/airing";
 import { fetchAiringSchedule } from "@/services/airingClientService";
 
-function getBucket(timeUntilAiring: number): AiringBucket {
+function getBucket(timeUntilAiring: number, duration: number | null): AiringBucket | null {
     if (timeUntilAiring <= 0) {
-        return "airing_now";
+        const minutesAgo = Math.abs(timeUntilAiring) / 60;
+        const episodeDuration = duration ?? 24;
+        if (minutesAgo <= episodeDuration) {
+            return "airing_now";
+        }
+        if (minutesAgo <= 60) {
+            return "recently_aired";
+        }
+        return null;
     }
 
     const hours = timeUntilAiring / 3600;
@@ -48,9 +56,11 @@ function getBucket(timeUntilAiring: number): AiringBucket {
     return "later";
 }
 
-function groupAiringByBucket(airing: AiringInfo[]): GroupedAiring[] {
+function groupAiringByBucket(airing: AiringInfo[], airedToday: AiringInfo[]): GroupedAiring[] {
     const buckets: Record<AiringBucket, AiringInfo[]> = {
         airing_now: [],
+        recently_aired: [],
+        aired_today: [],
         next_hour: [],
         today: [],
         tomorrow: [],
@@ -59,17 +69,46 @@ function groupAiringByBucket(airing: AiringInfo[]): GroupedAiring[] {
     };
 
     const now = Math.floor(Date.now() / 1000);
+    const activeEpisodeKeys = new Set<string>();
 
     for (const item of airing) {
         const timeUntilAiring = item.airingAt - now;
-        const bucket = getBucket(timeUntilAiring);
+        const bucket = getBucket(timeUntilAiring, item.duration);
+        if (bucket === null) {
+            continue;
+        }
+        const key = `${item.malId}-${item.episode}`;
+        activeEpisodeKeys.add(key);
         buckets[bucket].push({
             ...item,
             timeUntilAiring,
         });
     }
 
-    const bucketOrder: AiringBucket[] = ["airing_now", "next_hour", "today", "tomorrow", "this_week", "later"];
+    for (const item of airedToday) {
+        const key = `${item.malId}-${item.episode}`;
+        if (activeEpisodeKeys.has(key)) {
+            continue;
+        }
+        const timeUntilAiring = item.airingAt - now;
+        buckets.aired_today.push({
+            ...item,
+            timeUntilAiring,
+        });
+    }
+
+    buckets.aired_today.sort((a, b) => b.airingAt - a.airingAt);
+
+    const bucketOrder: AiringBucket[] = [
+        "airing_now",
+        "recently_aired",
+        "aired_today",
+        "next_hour",
+        "today",
+        "tomorrow",
+        "this_week",
+        "later",
+    ];
     const result: GroupedAiring[] = [];
 
     for (const bucket of bucketOrder) {
@@ -113,16 +152,17 @@ export function formatTimeUntilAiring(seconds: number): string {
 
 export function useAiringSchedule() {
     const [airing, setAiring] = useState<AiringInfo[]>([]);
+    const [airedToday, setAiredToday] = useState<AiringInfo[]>([]);
     const [grouped, setGrouped] = useState<GroupedAiring[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [fetchedAt, setFetchedAt] = useState<string | null>(null);
 
     const recalculateGroups = useCallback(() => {
-        if (airing.length > 0) {
-            setGrouped(groupAiringByBucket(airing));
+        if (airing.length > 0 || airedToday.length > 0) {
+            setGrouped(groupAiringByBucket(airing, airedToday));
         }
-    }, [airing]);
+    }, [airing, airedToday]);
 
     useEffect(() => {
         let cancelled = false;
@@ -137,8 +177,9 @@ export function useAiringSchedule() {
                     return;
                 }
                 setAiring(data.airing);
+                setAiredToday(data.airedToday);
                 setFetchedAt(data.fetchedAt);
-                setGrouped(groupAiringByBucket(data.airing));
+                setGrouped(groupAiringByBucket(data.airing, data.airedToday));
             } catch (err) {
                 if (cancelled) {
                     return;
@@ -159,7 +200,7 @@ export function useAiringSchedule() {
     }, []);
 
     useEffect(() => {
-        if (airing.length === 0) {
+        if (airing.length === 0 && airedToday.length === 0) {
             return;
         }
 
@@ -170,7 +211,7 @@ export function useAiringSchedule() {
         return () => {
             clearInterval(interval);
         };
-    }, [airing, recalculateGroups]);
+    }, [airing, airedToday, recalculateGroups]);
 
     return {
         airing,

@@ -253,6 +253,14 @@
     &.airingNow {
         color: var(--status-watching);
     }
+
+    &.recentlyAired {
+        color: var(--status-completed);
+    }
+
+    &.airedToday {
+        color: var(--text-muted);
+    }
 }
 
 .timelineItems {
