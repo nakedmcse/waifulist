@@ -4,17 +4,14 @@ import { useCallback, useEffect, useState } from "react";
 import { AiringBucket, AiringInfo, GroupedAiring } from "@/types/airing";
 import { fetchAiringSchedule } from "@/services/airingClientService";
 
-function getBucket(timeUntilAiring: number, duration: number | null): AiringBucket | null {
+function getBucket(timeUntilAiring: number, duration: number | null): AiringBucket {
     if (timeUntilAiring <= 0) {
         const minutesAgo = Math.abs(timeUntilAiring) / 60;
         const episodeDuration = duration ?? 24;
         if (minutesAgo <= episodeDuration) {
             return "airing_now";
         }
-        if (minutesAgo <= 60) {
-            return "recently_aired";
-        }
-        return null;
+        return "recently_aired";
     }
 
     const hours = timeUntilAiring / 3600;
@@ -74,9 +71,6 @@ function groupAiringByBucket(airing: AiringInfo[], airedToday: AiringInfo[]): Gr
     for (const item of airing) {
         const timeUntilAiring = item.airingAt - now;
         const bucket = getBucket(timeUntilAiring, item.duration);
-        if (bucket === null) {
-            continue;
-        }
         const key = `${item.malId}-${item.episode}`;
         activeEpisodeKeys.add(key);
         buckets[bucket].push({
