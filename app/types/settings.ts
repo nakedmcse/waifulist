@@ -12,8 +12,13 @@ export interface CalendarSettings {
     showSubscribedOnly?: boolean;
 }
 
+export interface DisplaySettings {
+    preferEnglishTitles?: boolean;
+}
+
 export interface UserSettings {
     browse?: BrowseSettings;
     myList?: MyListSettings;
     calendar?: CalendarSettings;
+    display?: DisplaySettings;
 }

@@ -15,6 +15,7 @@ export { useSeasonalAnime } from "./useSeasonalAnime";
 export { useSpinner } from "./useSpinner";
 export { useStats } from "./useStats";
 export { useTierLists, useTierList, useCreateTierList } from "./useTierList";
+export { useTitlePreference } from "./useTitlePreference";
 export { useTrace } from "./useTrace";
 export type { BrowseSortType } from "./useAnime";
 export type { PublicListItem, PublicListData } from "./usePublicList";

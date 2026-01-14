@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Anime, WatchStatus, watchStatusLabels } from "@/types/anime";
 import { useWatchList } from "@/contexts/WatchListContext";
+import { useTitlePreference } from "@/hooks/useTitlePreference";
 import styles from "./AnimeCard.module.scss";
 import { formatDate, parseUtcDate } from "@/lib/utils/dateUtils";
 
@@ -69,10 +70,16 @@ export function AnimeCard({
     onContextMenu,
 }: AnimeCardProps) {
     const { getWatchData } = useWatchList();
+    const { resolveTitles } = useTitlePreference();
     const contextWatchData = getWatchData(anime.mal_id);
     const watchData = watchDataProp !== undefined ? watchDataProp : contextWatchData;
     const [showNotePopover, setShowNotePopover] = useState(false);
     const popoverRef = useRef<HTMLDivElement>(null);
+
+    const { mainTitle, subtitle } = resolveTitles({
+        title: anime.title,
+        titleEnglish: anime.title_english,
+    });
 
     const imageUrl = anime.images?.jpg?.large_image_url || anime.images?.jpg?.image_url || "/placeholder.png";
     const hasNote = watchData?.notes && watchData.notes.trim().length > 0;
@@ -130,10 +137,10 @@ export function AnimeCard({
                 </div>
                 <div className={styles.info}>
                     <div className={styles.titleBlock}>
-                        <h3 className={styles.title}>{anime.title}</h3>
-                        {anime.title_english && anime.title_english !== anime.title && (
-                            <p className={styles.titleEnglish} title={anime.title_english}>
-                                {anime.title_english}
+                        <h3 className={styles.title}>{mainTitle}</h3>
+                        {subtitle && (
+                            <p className={styles.titleEnglish} title={subtitle}>
+                                {subtitle}
                             </p>
                         )}
                     </div>
