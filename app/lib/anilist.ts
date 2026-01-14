@@ -132,7 +132,7 @@ query ($page: Int, $perPage: Int) {
             hasNextPage
             currentPage
         }
-        media(status: RELEASING, type: ANIME, sort: POPULARITY_DESC) {
+        media(status_in: [RELEASING, NOT_YET_RELEASED], type: ANIME, sort: POPULARITY_DESC) {
             id
             idMal
             title {
