@@ -10,7 +10,6 @@ async function storeAiredEpisodes(episodes: AiringInfo[]): Promise<void> {
     if (airedEpisodes.length === 0) {
         return;
     }
-    debugger;
     try {
         const pipeline = redis.pipeline();
         for (const ep of airedEpisodes) {
