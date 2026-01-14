@@ -338,6 +338,9 @@
 }
 
 .timelineItemMeta {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
     font-size: 0.75rem;
     color: var(--text-secondary);
 

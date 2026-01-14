@@ -22,6 +22,7 @@ import { SubscribeButton } from "@/components/SubscribeButton/SubscribeButton";
 import { DAY_LABELS, DayOfWeek, DAYS_OF_WEEK, getCurrentDayOfWeek, mapScheduleAnimeToAnime } from "@/types/schedule";
 import { AIRING_BUCKET_LABELS } from "@/types/airing";
 import { PAGE_SIZE } from "@/constants/pagination";
+import { Badge } from "@/components/Badge/Badge";
 import styles from "./page.module.scss";
 
 type CalendarView = "seasonal" | "schedule" | "timeline";
@@ -452,6 +453,11 @@ export function CalendarPageClient() {
                                                                         )}
                                                                         <span className={styles.timelineItemMeta}>
                                                                             Episode {item.episode}
+                                                                            {item.episode === 1 && (
+                                                                                <Badge variant="premiere">
+                                                                                    Premiere
+                                                                                </Badge>
+                                                                            )}
                                                                         </span>
                                                                     </div>
                                                                     <div className={styles.timelineItemCountdown}>

@@ -1,0 +1,37 @@
+@use "../../styles/variables" as *;
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px $spacing-sm;
+    font-size: 0.625rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-radius: $radius-sm;
+    white-space: nowrap;
+
+    @include sm {
+        font-size: 0.688rem;
+    }
+}
+
+.premiere {
+    color: white;
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+
+.new {
+    color: white;
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+}
+
+.airing {
+    color: white;
+    background: var(--status-watching);
+}
+
+.finished {
+    color: white;
+    background: var(--status-completed);
+}
