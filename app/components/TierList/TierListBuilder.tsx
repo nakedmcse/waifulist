@@ -39,8 +39,10 @@ export function TierListBuilder({
     const [draggedCharacter, setDraggedCharacter] = useState<{
         character: TierListCharacter;
         fromTier: TierRank | "search";
+        fromIndex?: number;
     } | null>(null);
     const [dropTarget, setDropTarget] = useState<{ tier: TierRank; index: number } | null>(null);
+    const [allowDuplicates, setAllowDuplicates] = useState(false);
     const tierInputRef = useRef<HTMLTextAreaElement>(null);
 
     const {
@@ -148,10 +150,11 @@ export function TierListBuilder({
 
     const handleAddCharacter = useCallback(
         (character: AniListCharacter, tier: TierRank) => {
-            const existsInAnyTier = TIER_RANKS.some(rank => tiers[rank].some(c => c.anilistId === character.id));
-
-            if (existsInAnyTier) {
-                return;
+            if (!allowDuplicates) {
+                const existsInAnyTier = TIER_RANKS.some(rank => tiers[rank].some(c => c.anilistId === character.id));
+                if (existsInAnyTier) {
+                    return;
+                }
             }
 
             const tierListChar: TierListCharacter = {
@@ -170,37 +173,37 @@ export function TierListBuilder({
                 [tier]: [...prev[tier], tierListChar],
             }));
         },
-        [tiers],
+        [tiers, allowDuplicates],
     );
 
-    const handleRemoveCharacter = useCallback((anilistId: number, tier: TierRank) => {
+    const handleRemoveCharacter = useCallback((index: number, tier: TierRank) => {
         setTiers(prev => ({
             ...prev,
-            [tier]: prev[tier].filter(c => c.anilistId !== anilistId),
+            [tier]: prev[tier].filter((_, i) => i !== index),
         }));
     }, []);
 
-    const handleMoveCharacter = useCallback((anilistId: number, fromTier: TierRank, toTier: TierRank) => {
+    const handleMoveCharacter = useCallback((fromIndex: number, fromTier: TierRank, toTier: TierRank) => {
         if (fromTier === toTier) {
             return;
         }
 
         setTiers(prev => {
-            const character = prev[fromTier].find(c => c.anilistId === anilistId);
+            const character = prev[fromTier][fromIndex];
             if (!character) {
                 return prev;
             }
 
             return {
                 ...prev,
-                [fromTier]: prev[fromTier].filter(c => c.anilistId !== anilistId),
+                [fromTier]: prev[fromTier].filter((_, i) => i !== fromIndex),
                 [toTier]: [...prev[toTier], character],
             };
         });
     }, []);
 
-    const handleDragStart = (character: TierListCharacter, fromTier: TierRank | "search") => {
-        setDraggedCharacter({ character, fromTier });
+    const handleDragStart = (character: TierListCharacter, fromTier: TierRank | "search", fromIndex?: number) => {
+        setDraggedCharacter({ character, fromTier, fromIndex });
     };
 
     const handleDragEnd = () => {
@@ -223,18 +226,24 @@ export function TierListBuilder({
             return;
         }
 
-        const { character, fromTier } = draggedCharacter;
+        const { character, fromTier, fromIndex } = draggedCharacter;
 
         if (fromTier === "search") {
-            const existsInAnyTier = TIER_RANKS.some(rank => tiers[rank].some(c => c.anilistId === character.anilistId));
-            if (!existsInAnyTier) {
-                setTiers(prev => ({
-                    ...prev,
-                    [toTier]: [...prev[toTier], character],
-                }));
+            if (!allowDuplicates) {
+                const existsInAnyTier = TIER_RANKS.some(rank =>
+                    tiers[rank].some(c => c.anilistId === character.anilistId),
+                );
+                if (existsInAnyTier) {
+                    setDraggedCharacter(null);
+                    return;
+                }
             }
-        } else if (fromTier !== toTier) {
-            handleMoveCharacter(character.anilistId, fromTier, toTier);
+            setTiers(prev => ({
+                ...prev,
+                [toTier]: [...prev[toTier], character],
+            }));
+        } else if (fromTier !== toTier && fromIndex !== undefined) {
+            handleMoveCharacter(fromIndex, fromTier, toTier);
         }
 
         setDraggedCharacter(null);
@@ -248,32 +257,37 @@ export function TierListBuilder({
             return;
         }
 
-        const { character, fromTier } = draggedCharacter;
+        const { character, fromTier, fromIndex } = draggedCharacter;
 
         if (fromTier === "search") {
-            const existsInAnyTier = TIER_RANKS.some(rank => tiers[rank].some(c => c.anilistId === character.anilistId));
-            if (!existsInAnyTier) {
-                setTiers(prev => {
-                    const newTier = [...prev[toTier]];
-                    newTier.splice(targetIndex, 0, character);
-                    return { ...prev, [toTier]: newTier };
-                });
+            if (!allowDuplicates) {
+                const existsInAnyTier = TIER_RANKS.some(rank =>
+                    tiers[rank].some(c => c.anilistId === character.anilistId),
+                );
+                if (existsInAnyTier) {
+                    setDraggedCharacter(null);
+                    return;
+                }
             }
-        } else if (fromTier === toTier) {
+            setTiers(prev => {
+                const newTier = [...prev[toTier]];
+                newTier.splice(targetIndex, 0, character);
+                return { ...prev, [toTier]: newTier };
+            });
+        } else if (fromTier === toTier && fromIndex !== undefined) {
             setTiers(prev => {
                 const tierChars = [...prev[toTier]];
-                const currentIndex = tierChars.findIndex(c => c.anilistId === character.anilistId);
-                if (currentIndex === -1 || currentIndex === targetIndex) {
+                if (fromIndex === targetIndex) {
                     return prev;
                 }
-                tierChars.splice(currentIndex, 1);
-                const insertIndex = currentIndex < targetIndex ? targetIndex - 1 : targetIndex;
+                tierChars.splice(fromIndex, 1);
+                const insertIndex = fromIndex < targetIndex ? targetIndex - 1 : targetIndex;
                 tierChars.splice(insertIndex, 0, character);
                 return { ...prev, [toTier]: tierChars };
             });
-        } else {
+        } else if (fromIndex !== undefined) {
             setTiers(prev => {
-                const fromChars = prev[fromTier].filter(c => c.anilistId !== character.anilistId);
+                const fromChars = prev[fromTier].filter((_, i) => i !== fromIndex);
                 const toChars = [...prev[toTier]];
                 toChars.splice(targetIndex, 0, character);
                 return { ...prev, [fromTier]: fromChars, [toTier]: toChars };
@@ -329,6 +343,19 @@ export function TierListBuilder({
         return TIER_RANKS.some(rank => tiers[rank].some(c => c.anilistId === anilistId));
     };
 
+    const hasDuplicatesInTiers = useCallback(() => {
+        const allIds = TIER_RANKS.flatMap(rank => tiers[rank].map(c => c.anilistId));
+        const uniqueIds = new Set(allIds);
+        return allIds.length !== uniqueIds.size;
+    }, [tiers]);
+
+    const handleToggleDuplicates = () => {
+        if (allowDuplicates && hasDuplicatesInTiers()) {
+            return;
+        }
+        setAllowDuplicates(prev => !prev);
+    };
+
     return (
         <div className={styles.builder}>
             <div className={styles.header}>
@@ -378,10 +405,10 @@ export function TierListBuilder({
                                 <div className={styles.tierCharacters}>
                                     {tiers[rank].map((character, index) => (
                                         <div
-                                            key={character.anilistId}
+                                            key={`${character.anilistId}-${index}`}
                                             className={`${styles.characterCard} ${dropTarget?.tier === rank && dropTarget?.index === index ? styles.dropIndicator : ""}`}
                                             draggable
-                                            onDragStart={() => handleDragStart(character, rank)}
+                                            onDragStart={() => handleDragStart(character, rank, index)}
                                             onDragEnd={handleDragEnd}
                                             onDragOver={handleDragOver}
                                             onDragEnter={() => handleDragEnterCard(rank, index)}
@@ -396,7 +423,7 @@ export function TierListBuilder({
                                             />
                                             <button
                                                 className={styles.removeButton}
-                                                onClick={() => handleRemoveCharacter(character.anilistId, rank)}
+                                                onClick={() => handleRemoveCharacter(index, rank)}
                                                 title="Remove"
                                             >
                                                 <i className="bi bi-x" />
@@ -431,6 +458,29 @@ export function TierListBuilder({
                 <div className={styles.searchSection}>
                     <div className={styles.searchHeader}>
                         <h3>Add Characters</h3>
+                        <label
+                            className={`${styles.duplicateToggle} ${allowDuplicates && hasDuplicatesInTiers() ? styles.locked : ""}`}
+                            title={
+                                allowDuplicates && hasDuplicatesInTiers()
+                                    ? "Remove all duplicates to disable"
+                                    : "Allow adding the same character multiple times"
+                            }
+                        >
+                            <span className={styles.toggleLabel}>
+                                Allow dupes
+                                {allowDuplicates && hasDuplicatesInTiers() && <i className="bi bi-lock-fill" />}
+                            </span>
+                            <button
+                                type="button"
+                                role="switch"
+                                aria-checked={allowDuplicates}
+                                className={`${styles.toggleSwitch} ${allowDuplicates ? styles.active : ""}`}
+                                onClick={handleToggleDuplicates}
+                                disabled={allowDuplicates && hasDuplicatesInTiers()}
+                            >
+                                <span className={styles.toggleKnob} />
+                            </button>
+                        </label>
                     </div>
 
                     <div className={styles.mediaFilter} ref={mediaDropdownRef}>
@@ -525,6 +575,7 @@ export function TierListBuilder({
                     <div className={styles.searchResults}>
                         {results.map(character => {
                             const inTiers = isCharacterInTiers(character.id);
+                            const showAsAdded = inTiers && !allowDuplicates;
                             const tierListChar: TierListCharacter = {
                                 anilistId: character.id,
                                 name: character.name.full,
@@ -539,9 +590,9 @@ export function TierListBuilder({
                             return (
                                 <div
                                     key={character.id}
-                                    className={`${styles.searchResult} ${inTiers ? styles.added : ""}`}
-                                    draggable={!inTiers}
-                                    onDragStart={() => !inTiers && handleDragStart(tierListChar, "search")}
+                                    className={`${styles.searchResult} ${showAsAdded ? styles.added : ""}`}
+                                    draggable={!showAsAdded}
+                                    onDragStart={() => !showAsAdded && handleDragStart(tierListChar, "search")}
                                 >
                                     <Image
                                         src={character.image.large || character.image.medium}
@@ -559,7 +610,7 @@ export function TierListBuilder({
                                             </div>
                                         )}
                                     </div>
-                                    {!inTiers && (
+                                    {!showAsAdded && (
                                         <div className={styles.addButtons}>
                                             {TIER_RANKS.map(rank => (
                                                 <button
@@ -574,7 +625,7 @@ export function TierListBuilder({
                                             ))}
                                         </div>
                                     )}
-                                    {inTiers && <div className={styles.addedLabel}>Added</div>}
+                                    {showAsAdded && <div className={styles.addedLabel}>Added</div>}
                                 </div>
                             );
                         })}
