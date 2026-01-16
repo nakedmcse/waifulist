@@ -157,8 +157,7 @@ Redis is used as the primary cache and data store for anime data, enabling horiz
 | `anilist:manga:{malId}:characters:{page}` | Characters array (JSON)                | 24h     | Manga characters for tier list   |
 | `vsbattles:{name}`                        | VS Battles stats (JSON) or "not_found" | 24h     | Character power level data       |
 | `anime:schedule`                          | Weekly schedule by day (JSON)          | 12h     | Schedule tab airing times        |
-| `anime:airing`                            | Airing timeline data (JSON)            | 1 hour  | Timeline tab episode countdowns  |
-| `anime:aired:recently:{malId}:{episode}`  | Single aired episode (JSON)            | 24h     | Each episode has own TTL         |
+| `anime:airing`                            | Airing schedule + aired today (JSON)   | 1 hour  | Timeline tab episode data        |
 
 ### Data Flow
 
