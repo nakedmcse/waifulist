@@ -74,8 +74,8 @@ function TierRow({ rank, characters, customName }: TierRowProps) {
                 {displayName}
             </div>
             <div className={styles.tierCharacters}>
-                {characters.map(character => (
-                    <CharacterCard key={character.anilistId} character={character} />
+                {characters.map((character, index) => (
+                    <CharacterCard key={`${character.anilistId}-${index}`} character={character} />
                 ))}
             </div>
         </div>
