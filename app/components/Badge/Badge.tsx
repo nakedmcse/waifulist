@@ -3,7 +3,7 @@
 import React from "react";
 import styles from "./Badge.module.scss";
 
-export type BadgeVariant = "premiere" | "new" | "airing" | "finished";
+export type BadgeVariant = "premiere" | "new" | "airing" | "finished" | "info";
 
 interface BadgeProps {
     variant: BadgeVariant;

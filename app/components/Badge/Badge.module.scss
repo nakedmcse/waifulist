@@ -35,3 +35,9 @@
     color: white;
     background: var(--status-completed);
 }
+
+.info {
+    color: var(--text-primary);
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+}

@@ -1,6 +1,5 @@
 export enum ScraperType {
     STREAMING = "streaming",
-    SCHEDULE = "schedule",
 }
 
 export interface ScraperResult<T> {
@@ -25,5 +24,3 @@ export interface RateLimitConfig {
 export interface StreamingScraperArgs {
     malId: number;
 }
-
-export type ScheduleScraperArgs = void;

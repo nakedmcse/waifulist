@@ -441,18 +441,24 @@ async function fetchAiringSchedulesInternal(options: FetchAiringOptions): Promis
     return results;
 }
 
-export async function fetchAiringSchedules(): Promise<{ airing: AiringInfo[]; airedToday: AiringInfo[] }> {
+async function fetchUpcomingAiringScheduleInternal(): Promise<AiringInfo[]> {
     const now = Math.floor(Date.now() / 1000);
-    const twentyFourHoursAgo = now - 60 * 60 * 24;
     const oneWeekFromNow = now + 60 * 60 * 24 * 7;
 
+    return fetchAiringSchedulesInternal({
+        airingAtGreater: now,
+        airingAtLesser: oneWeekFromNow,
+        sort: "TIME",
+        maxPages: 3,
+    });
+}
+
+async function fetchAiringSchedulesFromAniListInternal(): Promise<{ airing: AiringInfo[]; airedToday: AiringInfo[] }> {
+    const now = Math.floor(Date.now() / 1000);
+    const twentyFourHoursAgo = now - 60 * 60 * 24;
+
     const [airing, airedToday] = await Promise.all([
-        fetchAiringSchedulesInternal({
-            airingAtGreater: now,
-            airingAtLesser: oneWeekFromNow,
-            sort: "TIME",
-            maxPages: 3,
-        }),
+        fetchUpcomingAiringScheduleInternal(),
         fetchAiringSchedulesInternal({
             airingAtGreater: twentyFourHoursAgo,
             airingAtLesser: now,
@@ -470,3 +476,5 @@ export const fetchCharacterById = cache(fetchCharacterByIdInternal);
 export const searchCharactersFromAniList = cache(searchCharactersFromAniListInternal);
 export const searchMangaFromAniList = cache(searchMangaFromAniListInternal);
 export const fetchAnimeStatusByMalIds = cache(fetchAnimeStatusByMalIdsInternal);
+export const fetchUpcomingAiringSchedule = cache(fetchUpcomingAiringScheduleInternal);
+export const fetchAiringSchedules = cache(fetchAiringSchedulesFromAniListInternal);

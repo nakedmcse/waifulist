@@ -1,10 +1,7 @@
 import { getRedis, REDIS_KEYS, REDIS_TTL } from "@/lib/redis";
-import { fetchScheduleFromJikan } from "@/lib/jikanApi";
-import { hydrateWithCachedAnime } from "@/lib/utils/hydrationUtils";
-import { DayFilter, DayOfWeek, DAYS_OF_WEEK, ScheduleAnime, ScheduleByDay, ScheduleResponse } from "@/types/schedule";
-import { scrapeSchedule } from "./scraper";
-
-const WEEKDAYS: DayFilter[] = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];
+import { fetchUpcomingAiringSchedule } from "@/lib/anilist";
+import { AiringInfo } from "@/types/airing";
+import { DayOfWeek, DAYS_OF_WEEK, ScheduleAnime, ScheduleByDay, ScheduleResponse } from "@/types/schedule";
 
 function createEmptySchedule(): ScheduleByDay {
     const schedule: ScheduleByDay = {} as ScheduleByDay;
@@ -14,48 +11,45 @@ function createEmptySchedule(): ScheduleByDay {
     return schedule;
 }
 
-function hasData(schedule: ScheduleByDay): boolean {
-    for (const day of DAYS_OF_WEEK) {
-        if (schedule[day] && schedule[day].length > 0) {
-            return true;
-        }
-    }
-    return false;
+function getDayOfWeek(timestamp: number): DayOfWeek {
+    const date = new Date(timestamp * 1000);
+    const days: DayOfWeek[] = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
+    return days[date.getDay()];
 }
 
-async function hydrateScheduleWithCachedTitles(schedule: ScheduleByDay): Promise<void> {
-    const allAnime: ScheduleAnime[] = [];
-    for (const day of DAYS_OF_WEEK) {
-        for (const anime of schedule[day]) {
-            allAnime.push(anime);
-        }
-    }
-
-    const hydratedCount = await hydrateWithCachedAnime(allAnime, (item, cached) => {
-        if (cached.title_english && !item.title_english) {
-            item.title_english = cached.title_english;
-            return true;
-        }
-        return false;
-    });
-
-    if (hydratedCount > 0) {
-        console.log(`[ScheduleService] Hydrated ${hydratedCount} anime with English titles`);
-    }
+function airingInfoToScheduleAnime(info: AiringInfo): ScheduleAnime {
+    return {
+        mal_id: info.malId,
+        title: info.title,
+        title_english: info.titleEnglish ?? undefined,
+        images: {
+            jpg: {
+                image_url: info.coverImage,
+                small_image_url: info.coverImage,
+                large_image_url: info.coverImage,
+            },
+            webp: {
+                image_url: info.coverImage,
+                small_image_url: info.coverImage,
+                large_image_url: info.coverImage,
+            },
+        },
+        status: "Currently Airing",
+    };
 }
 
-async function fetchFromJikan(): Promise<ScheduleByDay> {
+function groupByLocalDay(airingList: AiringInfo[]): ScheduleByDay {
     const schedule = createEmptySchedule();
+    const seen = new Set<number>();
 
-    for (const day of WEEKDAYS) {
-        try {
-            const animeList = await fetchScheduleFromJikan(day);
-            if (animeList.length > 0) {
-                schedule[day as DayOfWeek] = animeList as ScheduleAnime[];
-            }
-        } catch (error) {
-            console.error(`[ScheduleService] Failed to fetch ${day} from Jikan:`, error);
+    for (const info of airingList) {
+        if (seen.has(info.malId)) {
+            continue;
         }
+        seen.add(info.malId);
+
+        const day = getDayOfWeek(info.airingAt);
+        schedule[day].push(airingInfoToScheduleAnime(info));
     }
 
     return schedule;
@@ -63,46 +57,35 @@ async function fetchFromJikan(): Promise<ScheduleByDay> {
 
 export async function getSchedule(): Promise<ScheduleResponse> {
     const redis = getRedis();
+
     try {
         const cached = await redis.get(REDIS_KEYS.SCHEDULE);
         if (cached) {
-            console.log("[ScheduleService] Returning cached schedule");
             return JSON.parse(cached) as ScheduleResponse;
         }
     } catch (error) {
         console.error("[ScheduleService] Failed to get cached schedule:", error);
     }
-    const scraped = await scrapeSchedule();
-    let schedule: ScheduleByDay;
-
-    if (scraped && hasData(scraped)) {
-        console.log("[ScheduleService] Using scraped MAL data");
-        schedule = scraped;
-        await hydrateScheduleWithCachedTitles(schedule);
-    } else {
-        console.log("[ScheduleService] Scraper returned empty, falling back to Jikan");
-        schedule = await fetchFromJikan();
-    }
-
-    for (const day of DAYS_OF_WEEK) {
-        if (!schedule[day]) {
-            schedule[day] = [];
-        }
-    }
-
-    const response: ScheduleResponse = {
-        schedule,
-        lastUpdated: new Date().toISOString(),
-    };
 
     try {
-        await redis.setex(REDIS_KEYS.SCHEDULE, REDIS_TTL.SCHEDULE, JSON.stringify(response));
-        console.log("[ScheduleService] Cached schedule");
-    } catch (error) {
-        console.error("[ScheduleService] Failed to cache schedule:", error);
-    }
+        const airing = await fetchUpcomingAiringSchedule();
+        const schedule = groupByLocalDay(airing);
 
-    return response;
+        const response: ScheduleResponse = {
+            schedule,
+            lastUpdated: new Date().toISOString(),
+        };
+
+        await redis.setex(REDIS_KEYS.SCHEDULE, REDIS_TTL.SCHEDULE, JSON.stringify(response));
+
+        return response;
+    } catch (error) {
+        console.error("[ScheduleService] Failed to fetch schedule:", error);
+        return {
+            schedule: createEmptySchedule(),
+            lastUpdated: new Date().toISOString(),
+        };
+    }
 }
 
 export async function refreshSchedule(): Promise<ScheduleResponse> {
