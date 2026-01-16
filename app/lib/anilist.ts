@@ -125,29 +125,30 @@ query ($id: Int!) {
 }
 `;
 
-const AIRING_SCHEDULE_QUERY = `
-query ($page: Int, $perPage: Int) {
+const AIRING_SCHEDULES_QUERY = `
+query ($page: Int, $perPage: Int, $airingAtGreater: Int, $airingAtLesser: Int, $sort: [AiringSort]) {
     Page(page: $page, perPage: $perPage) {
         pageInfo {
             hasNextPage
             currentPage
         }
-        media(status_in: [RELEASING, NOT_YET_RELEASED], type: ANIME, sort: POPULARITY_DESC) {
+        airingSchedules(airingAt_greater: $airingAtGreater, airingAt_lesser: $airingAtLesser, sort: $sort) {
             id
-            idMal
-            title {
-                romaji
-                english
-            }
-            coverImage {
-                large
-                medium
-            }
-            duration
-            nextAiringEpisode {
-                airingAt
-                timeUntilAiring
-                episode
+            airingAt
+            timeUntilAiring
+            episode
+            media {
+                id
+                idMal
+                title {
+                    romaji
+                    english
+                }
+                coverImage {
+                    large
+                    medium
+                }
+                duration
             }
         }
     }
@@ -171,37 +172,6 @@ type CharacterByIdResponse = {
     };
 };
 
-interface AiringScheduleMedia {
-    id: number;
-    idMal: number | null;
-    title: {
-        romaji: string;
-        english: string | null;
-    };
-    coverImage: {
-        large: string | null;
-        medium: string | null;
-    };
-    duration: number | null;
-    nextAiringEpisode: {
-        airingAt: number;
-        timeUntilAiring: number;
-        episode: number;
-    } | null;
-}
-
-interface AniListAiringScheduleResponse {
-    data: {
-        Page: {
-            pageInfo: {
-                hasNextPage: boolean;
-                currentPage: number;
-            };
-            media: AiringScheduleMedia[];
-        };
-    };
-}
-
 export type AnimeStatus = "RELEASING" | "FINISHED" | "NOT_YET_RELEASED" | "CANCELLED" | "HIATUS";
 
 interface AnimeStatusResponse {
@@ -211,6 +181,38 @@ interface AnimeStatusResponse {
                 idMal: number;
                 status: AnimeStatus;
             }>;
+        };
+    };
+}
+
+interface AiringScheduleItem {
+    id: number;
+    airingAt: number;
+    timeUntilAiring: number;
+    episode: number;
+    media: {
+        id: number;
+        idMal: number | null;
+        title: {
+            romaji: string;
+            english: string | null;
+        };
+        coverImage: {
+            large: string | null;
+            medium: string | null;
+        };
+        duration: number | null;
+    };
+}
+
+interface AniListAiringSchedulesResponse {
+    data: {
+        Page: {
+            pageInfo: {
+                hasNextPage: boolean;
+                currentPage: number;
+            };
+            airingSchedules: AiringScheduleItem[];
         };
     };
 }
@@ -390,33 +392,44 @@ async function fetchAnimeStatusByMalIdsInternal(malIds: number[]): Promise<Map<n
     return statusMap;
 }
 
-const fetchAiringScheduleFromAniListInternal = async function (maxPages: number = 3): Promise<AiringInfo[]> {
+interface FetchAiringOptions {
+    airingAtGreater: number;
+    airingAtLesser?: number;
+    sort: "TIME" | "TIME_DESC";
+    maxPages?: number;
+}
+
+async function fetchAiringSchedulesInternal(options: FetchAiringOptions): Promise<AiringInfo[]> {
+    const { airingAtGreater, airingAtLesser, sort, maxPages = 3 } = options;
     const results: AiringInfo[] = [];
     let page = 1;
     let hasNextPage = true;
 
     while (hasNextPage && page <= maxPages) {
-        const response = await fetchFromAniList<AniListAiringScheduleResponse>(AIRING_SCHEDULE_QUERY, {
+        const response = await fetchFromAniList<AniListAiringSchedulesResponse>(AIRING_SCHEDULES_QUERY, {
             page,
             perPage: 50,
+            airingAtGreater,
+            airingAtLesser,
+            sort: [sort],
         });
 
-        if (!response?.data?.Page?.media) {
+        if (!response?.data?.Page?.airingSchedules) {
             break;
         }
 
-        for (const media of response.data.Page.media) {
-            if (media.idMal && media.nextAiringEpisode) {
+        for (const schedule of response.data.Page.airingSchedules) {
+            if (schedule.media.idMal) {
                 results.push({
-                    malId: media.idMal,
-                    anilistId: media.id,
-                    title: media.title.romaji,
-                    titleEnglish: media.title.english,
-                    coverImage: media.coverImage.large || media.coverImage.medium || "",
-                    duration: media.duration,
-                    episode: media.nextAiringEpisode.episode,
-                    airingAt: media.nextAiringEpisode.airingAt,
-                    timeUntilAiring: media.nextAiringEpisode.timeUntilAiring,
+                    malId: schedule.media.idMal,
+                    anilistId: schedule.media.id,
+                    title: schedule.media.title.romaji,
+                    titleEnglish: schedule.media.title.english,
+                    coverImage: schedule.media.coverImage.large || schedule.media.coverImage.medium || "",
+                    duration: schedule.media.duration,
+                    episode: schedule.episode,
+                    airingAt: schedule.airingAt,
+                    timeUntilAiring: schedule.timeUntilAiring,
                 });
             }
         }
@@ -425,15 +438,35 @@ const fetchAiringScheduleFromAniListInternal = async function (maxPages: number 
         page++;
     }
 
-    results.sort((a, b) => a.airingAt - b.airingAt);
-
     return results;
-};
+}
+
+export async function fetchAiringSchedules(): Promise<{ airing: AiringInfo[]; airedToday: AiringInfo[] }> {
+    const now = Math.floor(Date.now() / 1000);
+    const twentyFourHoursAgo = now - 60 * 60 * 24;
+    const oneWeekFromNow = now + 60 * 60 * 24 * 7;
+
+    const [airing, airedToday] = await Promise.all([
+        fetchAiringSchedulesInternal({
+            airingAtGreater: now,
+            airingAtLesser: oneWeekFromNow,
+            sort: "TIME",
+            maxPages: 3,
+        }),
+        fetchAiringSchedulesInternal({
+            airingAtGreater: twentyFourHoursAgo,
+            airingAtLesser: now,
+            sort: "TIME_DESC",
+            maxPages: 2,
+        }),
+    ]);
+
+    return { airing, airedToday };
+}
 
 export const fetchCharactersByMalId = cache(fetchCharactersByMalIdInternal);
 export const fetchMangaCharactersByMalId = cache(fetchMangaCharactersByMalIdInternal);
 export const fetchCharacterById = cache(fetchCharacterByIdInternal);
 export const searchCharactersFromAniList = cache(searchCharactersFromAniListInternal);
 export const searchMangaFromAniList = cache(searchMangaFromAniListInternal);
-export const fetchAiringScheduleFromAniList = cache(fetchAiringScheduleFromAniListInternal);
 export const fetchAnimeStatusByMalIds = cache(fetchAnimeStatusByMalIdsInternal);

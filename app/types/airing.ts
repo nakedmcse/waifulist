@@ -16,19 +16,10 @@ export interface AiringScheduleResponse {
     fetchedAt: string;
 }
 
-export type AiringBucket =
-    | "airing_now"
-    | "recently_aired"
-    | "aired_today"
-    | "next_hour"
-    | "today"
-    | "tomorrow"
-    | "this_week"
-    | "later";
+export type AiringBucket = "airing_now" | "aired_today" | "next_hour" | "today" | "tomorrow" | "this_week" | "later";
 
 export const AIRING_BUCKET_LABELS: Record<AiringBucket, string> = {
     airing_now: "Airing Now",
-    recently_aired: "Recently Aired",
     aired_today: "Aired in the Last 24 Hours",
     next_hour: "Next Hour",
     today: "Today",

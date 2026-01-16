@@ -407,7 +407,7 @@ export function CalendarPageClient() {
                                             <div key={group.bucket} className={styles.timelineSection}>
                                                 <div className={styles.timelineSectionHeader}>
                                                     <span
-                                                        className={`${styles.timelineSectionLabel} ${group.bucket === "airing_now" ? styles.airingNow : group.bucket === "recently_aired" ? styles.recentlyAired : group.bucket === "aired_today" ? styles.airedToday : ""}`}
+                                                        className={`${styles.timelineSectionLabel} ${group.bucket === "airing_now" ? styles.airingNow : group.bucket === "aired_today" ? styles.airedToday : ""}`}
                                                     >
                                                         {AIRING_BUCKET_LABELS[group.bucket]}
                                                     </span>

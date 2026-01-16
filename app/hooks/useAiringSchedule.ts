@@ -11,7 +11,7 @@ function getBucket(timeUntilAiring: number, duration: number | null): AiringBuck
         if (minutesAgo <= episodeDuration) {
             return "airing_now";
         }
-        return "recently_aired";
+        return "aired_today";
     }
 
     const hours = timeUntilAiring / 3600;
@@ -56,7 +56,6 @@ function getBucket(timeUntilAiring: number, duration: number | null): AiringBuck
 function groupAiringByBucket(airing: AiringInfo[], airedToday: AiringInfo[]): GroupedAiring[] {
     const buckets: Record<AiringBucket, AiringInfo[]> = {
         airing_now: [],
-        recently_aired: [],
         aired_today: [],
         next_hour: [],
         today: [],
@@ -95,7 +94,6 @@ function groupAiringByBucket(airing: AiringInfo[], airedToday: AiringInfo[]): Gr
 
     const bucketOrder: AiringBucket[] = [
         "airing_now",
-        "recently_aired",
         "aired_today",
         "next_hour",
         "today",

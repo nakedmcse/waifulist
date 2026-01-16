@@ -1,8 +1,8 @@
 import { getRedis, REDIS_KEYS, REDIS_TTL } from "@/lib/redis";
 import { fetchScheduleFromJikan } from "@/lib/jikanApi";
+import { hydrateWithCachedAnime } from "@/lib/utils/hydrationUtils";
 import { DayFilter, DayOfWeek, DAYS_OF_WEEK, ScheduleAnime, ScheduleByDay, ScheduleResponse } from "@/types/schedule";
 import { scrapeSchedule } from "./scraper";
-import { getAnimeFromRedisByIds } from "./animeData";
 
 const WEEKDAYS: DayFilter[] = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];
 
@@ -23,33 +23,24 @@ function hasData(schedule: ScheduleByDay): boolean {
     return false;
 }
 
-async function enrichWithEnglishTitles(schedule: ScheduleByDay): Promise<void> {
-    const allIds: number[] = [];
+async function hydrateScheduleWithCachedTitles(schedule: ScheduleByDay): Promise<void> {
+    const allAnime: ScheduleAnime[] = [];
     for (const day of DAYS_OF_WEEK) {
         for (const anime of schedule[day]) {
-            allIds.push(anime.mal_id);
+            allAnime.push(anime);
         }
     }
 
-    if (allIds.length === 0) {
-        return;
-    }
-
-    const animeMap = await getAnimeFromRedisByIds(allIds);
-    let enrichedCount = 0;
-
-    for (const day of DAYS_OF_WEEK) {
-        for (const anime of schedule[day]) {
-            const cached = animeMap.get(anime.mal_id);
-            if (cached?.title_english && !anime.title_english) {
-                anime.title_english = cached.title_english;
-                enrichedCount++;
-            }
+    const hydratedCount = await hydrateWithCachedAnime(allAnime, (item, cached) => {
+        if (cached.title_english && !item.title_english) {
+            item.title_english = cached.title_english;
+            return true;
         }
-    }
+        return false;
+    });
 
-    if (enrichedCount > 0) {
-        console.log(`[ScheduleService] Enriched ${enrichedCount} anime with English titles`);
+    if (hydratedCount > 0) {
+        console.log(`[ScheduleService] Hydrated ${hydratedCount} anime with English titles`);
     }
 }
 
@@ -87,7 +78,7 @@ export async function getSchedule(): Promise<ScheduleResponse> {
     if (scraped && hasData(scraped)) {
         console.log("[ScheduleService] Using scraped MAL data");
         schedule = scraped;
-        await enrichWithEnglishTitles(schedule);
+        await hydrateScheduleWithCachedTitles(schedule);
     } else {
         console.log("[ScheduleService] Scraper returned empty, falling back to Jikan");
         schedule = await fetchFromJikan();
