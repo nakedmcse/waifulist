@@ -1,59 +1,6 @@
 import { getRedis, REDIS_KEYS, REDIS_TTL } from "@/lib/redis";
 import { fetchUpcomingAiringSchedule } from "@/lib/anilist";
-import { AiringInfo } from "@/types/airing";
-import { DayOfWeek, DAYS_OF_WEEK, ScheduleAnime, ScheduleByDay, ScheduleResponse } from "@/types/schedule";
-
-function createEmptySchedule(): ScheduleByDay {
-    const schedule: ScheduleByDay = {} as ScheduleByDay;
-    for (const day of DAYS_OF_WEEK) {
-        schedule[day] = [];
-    }
-    return schedule;
-}
-
-function getDayOfWeek(timestamp: number): DayOfWeek {
-    const date = new Date(timestamp * 1000);
-    const days: DayOfWeek[] = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
-    return days[date.getDay()];
-}
-
-function airingInfoToScheduleAnime(info: AiringInfo): ScheduleAnime {
-    return {
-        mal_id: info.malId,
-        title: info.title,
-        title_english: info.titleEnglish ?? undefined,
-        images: {
-            jpg: {
-                image_url: info.coverImage,
-                small_image_url: info.coverImage,
-                large_image_url: info.coverImage,
-            },
-            webp: {
-                image_url: info.coverImage,
-                small_image_url: info.coverImage,
-                large_image_url: info.coverImage,
-            },
-        },
-        status: "Currently Airing",
-    };
-}
-
-function groupByLocalDay(airingList: AiringInfo[]): ScheduleByDay {
-    const schedule = createEmptySchedule();
-    const seen = new Set<number>();
-
-    for (const info of airingList) {
-        if (seen.has(info.malId)) {
-            continue;
-        }
-        seen.add(info.malId);
-
-        const day = getDayOfWeek(info.airingAt);
-        schedule[day].push(airingInfoToScheduleAnime(info));
-    }
-
-    return schedule;
-}
+import { ScheduleResponse } from "@/types/schedule";
 
 export async function getSchedule(): Promise<ScheduleResponse> {
     const redis = getRedis();
@@ -69,10 +16,9 @@ export async function getSchedule(): Promise<ScheduleResponse> {
 
     try {
         const airing = await fetchUpcomingAiringSchedule();
-        const schedule = groupByLocalDay(airing);
 
         const response: ScheduleResponse = {
-            schedule,
+            airing,
             lastUpdated: new Date().toISOString(),
         };
 
@@ -82,7 +28,7 @@ export async function getSchedule(): Promise<ScheduleResponse> {
     } catch (error) {
         console.error("[ScheduleService] Failed to fetch schedule:", error);
         return {
-            schedule: createEmptySchedule(),
+            airing: [],
             lastUpdated: new Date().toISOString(),
         };
     }

@@ -19,7 +19,7 @@ import { AnimeCard } from "@/components/AnimeCard/AnimeCard";
 import { Pagination } from "@/components/Pagination/Pagination";
 import { Spinner } from "@/components/Spinner/Spinner";
 import { SubscribeButton } from "@/components/SubscribeButton/SubscribeButton";
-import { DAY_LABELS, DayOfWeek, DAYS_OF_WEEK, getCurrentDayOfWeek, mapScheduleAnimeToAnime } from "@/types/schedule";
+import { DAY_LABELS, DayOfWeek, DAYS_OF_WEEK, getCurrentDayOfWeek, scheduleAnimeToAnime } from "@/types/schedule";
 import { AIRING_BUCKET_LABELS } from "@/types/airing";
 import { PAGE_SIZE } from "@/constants/pagination";
 import { Badge } from "@/components/Badge/Badge";
@@ -80,7 +80,7 @@ export function CalendarPageClient() {
 
     const totalPages = Math.ceil(filteredCount / PAGE_SIZE);
     const animeForDay = getAnimeForDay(activeDay);
-    const displayDays = DAYS_OF_WEEK.filter(day => day !== "other" && day !== "unknown");
+    const displayDays = DAYS_OF_WEEK;
     const todayDay = getCurrentDayOfWeek();
 
     useEffect(() => {
@@ -316,7 +316,7 @@ export function CalendarPageClient() {
                                             <div className={styles.grid}>
                                                 {filteredAnime.map(anime => (
                                                     <div key={anime.mal_id} className={styles.cardWrapper}>
-                                                        <AnimeCard anime={mapScheduleAnimeToAnime(anime)} />
+                                                        <AnimeCard anime={scheduleAnimeToAnime(anime)} />
                                                         {user && (
                                                             <SubscribeButton
                                                                 malId={anime.mal_id}

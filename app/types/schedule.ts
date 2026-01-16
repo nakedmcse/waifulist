@@ -1,27 +1,9 @@
-import { Anime } from "./anime";
+import { AiringInfo } from "./airing";
+import { Anime, AnimePicture } from "./anime";
 
-export type DayOfWeek =
-    | "monday"
-    | "tuesday"
-    | "wednesday"
-    | "thursday"
-    | "friday"
-    | "saturday"
-    | "sunday"
-    | "other"
-    | "unknown";
+export type DayOfWeek = "monday" | "tuesday" | "wednesday" | "thursday" | "friday" | "saturday" | "sunday";
 
-export const DAYS_OF_WEEK: DayOfWeek[] = [
-    "monday",
-    "tuesday",
-    "wednesday",
-    "thursday",
-    "friday",
-    "saturday",
-    "sunday",
-    "other",
-    "unknown",
-];
+export const DAYS_OF_WEEK: DayOfWeek[] = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
 
 export const DAY_LABELS: Record<DayOfWeek, string> = {
     monday: "Monday",
@@ -31,29 +13,21 @@ export const DAY_LABELS: Record<DayOfWeek, string> = {
     friday: "Friday",
     saturday: "Saturday",
     sunday: "Sunday",
-    other: "Other",
-    unknown: "Unknown",
 };
 
-export interface Broadcast {
-    day?: string;
-    time?: string;
-    timezone?: string;
-    string?: string;
-}
-
-export interface ScheduleAnime extends Anime {
-    broadcast?: Broadcast;
+export interface ScheduleAnime {
+    mal_id: number;
+    title: string;
+    title_english?: string;
+    images: AnimePicture;
 }
 
 export type ScheduleByDay = Record<DayOfWeek, ScheduleAnime[]>;
 
 export interface ScheduleResponse {
-    schedule: ScheduleByDay;
+    airing: AiringInfo[];
     lastUpdated: string;
 }
-
-export type DayFilter = "monday" | "tuesday" | "wednesday" | "thursday" | "friday" | "saturday" | "sunday";
 
 export function getCurrentDayOfWeek(): DayOfWeek {
     const days: DayOfWeek[] = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
@@ -61,20 +35,61 @@ export function getCurrentDayOfWeek(): DayOfWeek {
     return days[today];
 }
 
-export function mapScheduleAnimeToAnime(scheduleAnime: ScheduleAnime): Anime {
+function airingInfoToScheduleAnime(info: AiringInfo): ScheduleAnime {
+    return {
+        mal_id: info.malId,
+        title: info.title,
+        title_english: info.titleEnglish ?? undefined,
+        images: {
+            jpg: {
+                image_url: info.coverImage,
+                small_image_url: info.coverImage,
+                large_image_url: info.coverImage,
+            },
+            webp: {
+                image_url: info.coverImage,
+                small_image_url: info.coverImage,
+                large_image_url: info.coverImage,
+            },
+        },
+    };
+}
+
+export function getDayOfWeekFromTimestamp(timestamp: number): DayOfWeek {
+    const date = new Date(timestamp * 1000);
+    return DAYS_OF_WEEK[date.getDay()];
+}
+
+export function groupAiringByDay(airingList: AiringInfo[]): ScheduleByDay {
+    const schedule: ScheduleByDay = {
+        sunday: [],
+        monday: [],
+        tuesday: [],
+        wednesday: [],
+        thursday: [],
+        friday: [],
+        saturday: [],
+    };
+    const seen = new Set<number>();
+
+    for (const info of airingList) {
+        if (seen.has(info.malId)) {
+            continue;
+        }
+        seen.add(info.malId);
+
+        const day = getDayOfWeekFromTimestamp(info.airingAt);
+        schedule[day].push(airingInfoToScheduleAnime(info));
+    }
+
+    return schedule;
+}
+
+export function scheduleAnimeToAnime(scheduleAnime: ScheduleAnime): Anime {
     return {
         mal_id: scheduleAnime.mal_id,
         title: scheduleAnime.title,
         title_english: scheduleAnime.title_english,
-        title_japanese: scheduleAnime.title_japanese,
         images: scheduleAnime.images,
-        score: scheduleAnime.score,
-        episodes: scheduleAnime.episodes,
-        type: scheduleAnime.type,
-        source: scheduleAnime.source,
-        status: scheduleAnime.status,
-        synopsis: scheduleAnime.synopsis,
-        genres: scheduleAnime.genres,
-        studios: scheduleAnime.studios,
     };
 }

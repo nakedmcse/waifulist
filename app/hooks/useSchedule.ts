@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { DayOfWeek, ScheduleAnime, ScheduleByDay } from "@/types/schedule";
+import { useEffect, useMemo, useState } from "react";
+import { DayOfWeek, groupAiringByDay, ScheduleAnime } from "@/types/schedule";
+import { AiringInfo } from "@/types/airing";
 import { fetchSchedule } from "@/services/scheduleClientService";
 
 export function useSchedule() {
-    const [schedule, setSchedule] = useState<ScheduleByDay | null>(null);
+    const [airing, setAiring] = useState<AiringInfo[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [lastUpdated, setLastUpdated] = useState<string | null>(null);
@@ -22,7 +23,7 @@ export function useSchedule() {
                 if (cancelled) {
                     return;
                 }
-                setSchedule(data.schedule);
+                setAiring(data.airing);
                 setLastUpdated(data.lastUpdated);
             } catch (err) {
                 if (cancelled) {
@@ -42,6 +43,13 @@ export function useSchedule() {
             cancelled = true;
         };
     }, []);
+
+    const schedule = useMemo(() => {
+        if (airing.length === 0) {
+            return null;
+        }
+        return groupAiringByDay(airing);
+    }, [airing]);
 
     const getAnimeForDay = (day: DayOfWeek): ScheduleAnime[] => {
         return schedule?.[day] || [];
