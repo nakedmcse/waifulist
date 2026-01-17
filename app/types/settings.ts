@@ -21,4 +21,5 @@ export interface UserSettings {
     myList?: MyListSettings;
     calendar?: CalendarSettings;
     display?: DisplaySettings;
+    _f7?: boolean;
 }

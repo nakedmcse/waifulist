@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useTheme } from "@/contexts/ThemeContext";
 import { themes } from "@/types/theme";
 import styles from "./ThemeSelector.module.scss";
@@ -11,9 +11,11 @@ interface ThemeSelectorProps {
 }
 
 export function ThemeSelector({ className, align = "right" }: ThemeSelectorProps) {
-    const { theme, setTheme } = useTheme();
+    const { theme, setTheme, isSecretUnlocked } = useTheme();
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
+
+    const visibleThemes = useMemo(() => themes.filter(t => !t.isSecret || isSecretUnlocked), [isSecretUnlocked]);
 
     const currentTheme = themes.find(t => t.id === theme);
 
@@ -43,7 +45,7 @@ export function ThemeSelector({ className, align = "right" }: ThemeSelectorProps
 
             {isOpen && (
                 <div className={`${styles.dropdown} ${align === "left" ? styles.alignLeft : ""}`} role="listbox">
-                    {themes.map(t => (
+                    {visibleThemes.map(t => (
                         <button
                             key={t.id}
                             className={`${styles.option} ${t.id === theme ? styles.active : ""}`}
