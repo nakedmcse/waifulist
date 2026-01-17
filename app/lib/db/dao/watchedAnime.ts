@@ -13,16 +13,6 @@ export interface WatchedAnimeRow {
     date_updated: string;
 }
 
-export interface WatchedAnimeDTO {
-    anime_id: number;
-    status: WatchStatus;
-    episodes_watched: number;
-    rating: number | null;
-    notes: string | null;
-    date_added: string;
-    date_updated: string;
-}
-
 export function addToWatchList(userId: number, animeId: number, status: string): WatchedAnimeRow {
     const addToListTransaction = db.transaction(() => {
         const stmt = db.prepare(`
@@ -50,7 +40,7 @@ export function addToWatchList(userId: number, animeId: number, status: string):
     }
 }
 
-export function restoreWatchList(userId: number, rows: WatchedAnimeDTO[]): number {
+export function restoreWatchList(userId: number, rows: Partial<WatchedAnimeRow>[]): number {
     const stmt = db.prepare(`
         INSERT INTO watched_anime (user_id, anime_id, status, episodes_watched, rating, notes, date_added, date_updated)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?)
@@ -63,7 +53,7 @@ export function restoreWatchList(userId: number, rows: WatchedAnimeDTO[]): numbe
         date_updated = excluded.date_updated
     `);
 
-    const restoreMany = db.transaction((watched: WatchedAnimeDTO[]) => {
+    const restoreMany = db.transaction((watched: Partial<WatchedAnimeRow>[]) => {
         let count = 0;
         for (const w of watched) {
             const result = stmt.run(

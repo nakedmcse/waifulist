@@ -3,7 +3,7 @@ import path from "path";
 import fs from "fs";
 import crypto from "crypto";
 import { isBuildPhase } from "@/lib/utils/runtimeUtils";
-import { updateSchema } from "@/lib/schema";
+import { updateSchema } from "@/lib/db/schema";
 
 export class DatabaseError extends Error {
     public constructor(

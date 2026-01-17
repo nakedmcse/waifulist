@@ -1,11 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
-import {
-    createComment,
-    getCommentsByTierListId,
-    getReactionsForComments,
-    getTierListByPublicId,
-} from "@/lib/db/dao/tierList";
+import { getTierListByPublicId } from "@/lib/db/dao/tierList";
+import { createComment, getCommentsByTierListId } from "@/lib/db/dao/tierListComments";
+import { getReactionsForComments } from "@/lib/db/dao/commentReactions";
 import { DatabaseError } from "@/lib/db/datasource";
 import { verifyTurnstileToken } from "@/lib/utils/turnstile";
 

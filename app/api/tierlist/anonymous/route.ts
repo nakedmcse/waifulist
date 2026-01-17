@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { DatabaseError } from "@/lib/db/datasource";
-import { createAnonymousTierList } from "@/lib/db/dao/tierList";
+import { createAnonymousTierList } from "@/lib/db/dao/anonymousTierList";
 import { TIER_RANKS, TierListData } from "@/types/tierlist";
 
 export async function POST(request: NextRequest): Promise<NextResponse> {

@@ -8,13 +8,7 @@ export interface AiringSubscriptionRow {
     created_at: string;
 }
 
-export interface AiringSubscriptionDTO {
-    mal_id: number;
-    title: string;
-    created_at: string;
-}
-
-export function restoreAiringSubscriptions(userId: number, rows: AiringSubscriptionDTO[]) {
+export function restoreAiringSubscriptions(userId: number, rows: Partial<AiringSubscriptionRow>[]) {
     const stmt = db.prepare(`
         INSERT INTO airing_subscriptions (user_id, mal_id, title, created_at)
         VALUES (?, ?, ?, ?)
@@ -22,7 +16,7 @@ export function restoreAiringSubscriptions(userId: number, rows: AiringSubscript
         title = excluded.title,
         created_at = excluded.created_at  
     `);
-    const restoreMany = db.transaction((airings: AiringSubscriptionDTO[]) => {
+    const restoreMany = db.transaction((airings: Partial<AiringSubscriptionRow>[]) => {
         let count = 0;
         for (const a of airings) {
             const result = stmt.run(userId, a.mal_id, a.title, a.created_at);

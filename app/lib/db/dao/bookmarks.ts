@@ -18,11 +18,6 @@ export interface BookmarkRow {
     created_at: string;
 }
 
-export interface BookmarkDTO {
-    bookmarked_user_id: number;
-    created_at: string;
-}
-
 export function addBookmark(userId: number, bookmarkedUserId: number): boolean {
     if (userId === bookmarkedUserId) {
         return false;
@@ -79,13 +74,13 @@ export function getAllBookmarks(userId: number): BookmarkRow[] {
     return stmt.all(userId) as BookmarkRow[];
 }
 
-export function restoreBookmarks(userId: number, rows: BookmarkDTO[]) {
+export function restoreBookmarks(userId: number, rows: Partial<BookmarkRow>[]) {
     const stmt = db.prepare(`
         INSERT INTO bookmarks (user_id, bookmarked_user_id, created_at) VALUES (?, ?, ?)
         ON CONFLICT(user_id, bookmarked_user_id) DO UPDATE SET
         created_at = excluded.created_at
     `);
-    const restoreMany = db.transaction((bookmarks: BookmarkDTO[]) => {
+    const restoreMany = db.transaction((bookmarks: Partial<BookmarkRow>[]) => {
         let count = 0;
         for (const b of bookmarks) {
             const result = stmt.run(userId, b.bookmarked_user_id, b.created_at);

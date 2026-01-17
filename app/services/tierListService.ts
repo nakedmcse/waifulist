@@ -1,7 +1,6 @@
 import {
     createTierList,
     deleteTierList,
-    getAnonymousTierListByPublicId,
     getPublicTierLists,
     getTierListByPublicId,
     getTierListsByUserId,
@@ -10,6 +9,7 @@ import {
     TierListWithUsername,
     updateTierList,
 } from "@/lib/db/dao/tierList";
+import { getAnonymousTierListByPublicId } from "@/lib/db/dao/anonymousTierList";
 import { getCharactersForTierList } from "@/services/anilistData";
 import { TIER_RANKS, TierListCharacter, TierListData, TierListWithCharacters, TierRank } from "@/types/tierlist";
 
