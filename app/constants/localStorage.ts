@@ -2,6 +2,8 @@ export const STORAGE_KEYS = {
     THEME: "waifulist-theme",
     WATCHED_LIST: "waifulist-watched",
     PUBLIC_LIST_SORT: "waifulist-public-list-sort",
+    WL_M3: "wl-m3",
+    WL_F7_OLD: "wl-f7",
 } as const;
 
 export const LocalStorage = {

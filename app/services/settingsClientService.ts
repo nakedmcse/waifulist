@@ -41,3 +41,11 @@ export async function updateDisplaySettingsApi(updates: Partial<DisplaySettings>
         body: JSON.stringify({ display: updates }),
     });
 }
+
+export async function updateM3Api(value: boolean): Promise<void> {
+    await fetch("/api/settings", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ _m3: value }),
+    });
+}

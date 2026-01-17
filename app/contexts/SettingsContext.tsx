@@ -8,8 +8,10 @@ import {
     updateBrowseSettingsApi,
     updateCalendarSettingsApi,
     updateDisplaySettingsApi,
+    updateM3Api,
     updateMyListSettingsApi,
 } from "@/services/settingsClientService";
+import { LocalStorage, STORAGE_KEYS } from "@/constants/localStorage";
 
 export type { BrowseSettings, CalendarSettings, DisplaySettings, MyListSettings, UserSettings };
 
@@ -97,6 +99,15 @@ export function SettingsProvider({ children }: React.PropsWithChildren) {
                         calendar: { ...DEFAULT_SETTINGS.calendar, ...userSettings.calendar },
                         display: { ...DEFAULT_SETTINGS.display, ...userSettings.display },
                     });
+
+                    const localM3 = LocalStorage.getString(STORAGE_KEYS.WL_M3) === "1";
+                    const dbM3 = userSettings._m3 === true;
+
+                    if (dbM3 && !localM3) {
+                        LocalStorage.setString(STORAGE_KEYS.WL_M3, "1");
+                    } else if (localM3 && !dbM3) {
+                        updateM3Api(true).catch(() => {});
+                    }
                 }
             } catch (error) {
                 console.error(error);
