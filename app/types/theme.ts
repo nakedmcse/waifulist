@@ -1,4 +1,4 @@
-export type ThemeType = "anime" | "sakura" | "ocean" | "midnight" | "forest";
+export type ThemeType = "anime" | "sakura" | "ocean" | "midnight" | "forest" | "featherine";
 
 export interface Theme {
     id: ThemeType;
@@ -7,6 +7,7 @@ export interface Theme {
     icon: string;
     preview: string;
     isLightTheme: boolean;
+    isSecret?: boolean;
 }
 
 export const themes: Theme[] = [
@@ -49,6 +50,15 @@ export const themes: Theme[] = [
         icon: "bi-tree",
         preview: "🌲",
         isLightTheme: false,
+    },
+    {
+        id: "featherine",
+        name: "Featherine",
+        description: "The Witch of Theatergoing, Drama and Spectating",
+        icon: "bi-book",
+        preview: "📖",
+        isLightTheme: false,
+        isSecret: true,
     },
 ];
 
