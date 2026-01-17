@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
-import { DatabaseError, getWatchedAnime, removeFromWatchList, updateWatchStatus } from "@/lib/db";
+import { DatabaseError } from "@/lib/db/datasource";
+import { getWatchedAnime, removeFromWatchList, updateWatchStatus } from "@/lib/db/dao/watchedAnime";
 
 interface RouteParams {
     params: Promise<{ animeId: string }>;

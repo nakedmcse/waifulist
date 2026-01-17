@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getUserByUsername, verifyPassword } from "@/lib/db";
+import { getUserByUsername, verifyPassword } from "@/lib/db/dao/user";
 import { createAuthResponse, validateAuthRequest } from "@/lib/utils/authHelpers";
 
 export async function POST(request: NextRequest) {

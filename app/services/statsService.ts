@@ -1,4 +1,5 @@
-import { getAllWatched, getUserById } from "@/lib/db";
+import { getAllWatched } from "@/lib/db/dao/watchedAnime";
+import { getUserById } from "@/lib/db/dao/user";
 import { getAnimeFromRedisByIds } from "@/services/animeData";
 import { UserStats } from "@/types/stats";
 

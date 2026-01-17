@@ -1,4 +1,5 @@
-import { getRecentAnime, getTopRatedAnime, getUserByPublicId, getWatchedCount } from "@/lib/db";
+import { getRecentAnime, getTopRatedAnime, getWatchedCount } from "@/lib/db/dao/watchedAnime";
+import { getUserByPublicId } from "@/lib/db/dao/user";
 import { getAnimeFromRedisByIds } from "@/services/animeData";
 import { REDIS_KEYS } from "@/lib/redis";
 import { createNotFoundResponse, createOGHash, generateOGImage, OG_SIZE, OG_THEMES } from "@/services/opengraphService";

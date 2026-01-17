@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
-import { DatabaseError, getUserSettings, updateUserSettings } from "@/lib/db";
+import { DatabaseError } from "@/lib/db/datasource";
+import { getUserSettings, updateUserSettings } from "@/lib/db/dao/settings";
 import type { UserSettings } from "@/types/settings";
 
 export async function GET() {

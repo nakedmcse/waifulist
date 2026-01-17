@@ -1,4 +1,4 @@
-import { getAnonymousTierListByPublicId, getTierListByPublicId } from "@/lib/db";
+import { getAnonymousTierListByPublicId, getTierListByPublicId } from "@/lib/db/dao/tierList";
 import { getCharactersForTierList } from "@/services/anilistData";
 import { REDIS_KEYS } from "@/lib/redis";
 import { countCharacters, getPreviewCharacterIds, parseTierListData } from "@/services/tierListService";

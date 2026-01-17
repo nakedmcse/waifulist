@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
-import { hasAiringSubscription } from "@/lib/db";
+import { hasAiringSubscription } from "@/lib/db/dao/airingSubscription";
 
 interface RouteParams {
     params: Promise<{ malId: string }>;

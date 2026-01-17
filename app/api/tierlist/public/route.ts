@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { browsePublicTierLists } from "@/services/tierListService";
-import { PublicTierListSort } from "@/lib/db";
+import { PublicTierListSort } from "@/lib/db/dao/tierList";
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
     const searchParams = request.nextUrl.searchParams;

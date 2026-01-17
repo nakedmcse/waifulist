@@ -1,4 +1,4 @@
-import { deleteSubscriptionsByMalIds, getUniqueSubscribedMalIds } from "@/lib/db";
+import { deleteSubscriptionsByMalIds, getUniqueSubscribedMalIds } from "@/lib/db/dao/airingSubscription";
 import { fetchAnimeStatusByMalIds } from "@/lib/anilist";
 
 export async function cleanupEndedSubscriptions(): Promise<{ deleted: number }> {

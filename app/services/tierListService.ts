@@ -9,7 +9,7 @@ import {
     TierListRow,
     TierListWithUsername,
     updateTierList,
-} from "@/lib/db";
+} from "@/lib/db/dao/tierList";
 import { getCharactersForTierList } from "@/services/anilistData";
 import { TIER_RANKS, TierListCharacter, TierListData, TierListWithCharacters, TierRank } from "@/types/tierlist";
 

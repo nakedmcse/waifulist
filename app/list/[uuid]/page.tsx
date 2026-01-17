@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getAllWatched, getUserByPublicId } from "@/lib/db";
+import { getAllWatched } from "@/lib/db/dao/watchedAnime";
+import { getUserByPublicId } from "@/lib/db/dao/user";
 import { PublicListClient } from "./PublicListClient";
 
 interface PageProps {

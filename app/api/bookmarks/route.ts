@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
-import { addBookmark, getBookmarkedUsers, getUserByPublicId, removeBookmark } from "@/lib/db";
+import { addBookmark, getBookmarkedUsers, removeBookmark } from "@/lib/db/dao/bookmarks";
+import { getUserByPublicId } from "@/lib/db/dao/user";
 
 export async function GET() {
     const user = await getCurrentUser();

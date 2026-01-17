@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createUser, DatabaseError, getUserByUsername } from "@/lib/db";
+import { DatabaseError } from "@/lib/db/datasource";
+import { createUser, getUserByUsername } from "@/lib/db/dao/user";
 import { createAuthResponse, validateAuthRequest } from "@/lib/utils/authHelpers";
 
 export async function POST(request: NextRequest) {

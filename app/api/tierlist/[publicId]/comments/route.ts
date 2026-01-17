@@ -2,11 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
 import {
     createComment,
-    DatabaseError,
     getCommentsByTierListId,
     getReactionsForComments,
     getTierListByPublicId,
-} from "@/lib/db";
+} from "@/lib/db/dao/tierList";
+import { DatabaseError } from "@/lib/db/datasource";
 import { verifyTurnstileToken } from "@/lib/utils/turnstile";
 
 interface RouteParams {

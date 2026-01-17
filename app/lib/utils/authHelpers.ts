@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { User } from "@/lib/db";
+import { User } from "@/lib/db/dao/user";
 import { setSessionCookie, signToken } from "@/lib/auth";
 import { verifyTurnstileToken } from "@/lib/utils/turnstile";
 

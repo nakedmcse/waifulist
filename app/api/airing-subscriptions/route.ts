@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
-import { addAiringSubscription, getAiringSubscriptions, removeAiringSubscription } from "@/lib/db";
+import {
+    addAiringSubscription,
+    getAiringSubscriptions,
+    removeAiringSubscription,
+} from "@/lib/db/dao/airingSubscription";
 import { AiringSubscription } from "@/types/subscription";
 
 export async function GET() {

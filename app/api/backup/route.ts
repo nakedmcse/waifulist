@@ -1,5 +1,8 @@
 import { getCurrentUser } from "@/lib/auth";
-import { getAiringSubscriptions, getAllBookmarks, getAllWatched, getTierListsByUserId } from "@/lib/db";
+import { getAiringSubscriptions } from "@/lib/db/dao/airingSubscription";
+import { getAllBookmarks } from "@/lib/db/dao/bookmarks";
+import { getAllWatched } from "@/lib/db/dao/watchedAnime";
+import { getTierListsByUserId } from "@/lib/db/dao/tierList";
 import { BackupData } from "@/types/backup";
 import { NextResponse } from "next/server";
 

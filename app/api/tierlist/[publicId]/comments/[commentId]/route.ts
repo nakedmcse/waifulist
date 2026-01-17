@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
-import { DatabaseError, deleteComment, getCommentById, getTierListByPublicId } from "@/lib/db";
+import { DatabaseError } from "@/lib/db/datasource";
+import { deleteComment, getCommentById, getTierListByPublicId } from "@/lib/db/dao/tierList";
 
 interface RouteParams {
     params: Promise<{ publicId: string; commentId: string }>;

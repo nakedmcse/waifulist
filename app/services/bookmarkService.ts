@@ -1,4 +1,4 @@
-import type { BookmarkedUser } from "@/lib/db";
+import type { BookmarkedUser } from "@/lib/db/dao/bookmarks";
 
 export async function fetchBookmarks(): Promise<BookmarkedUser[]> {
     try {

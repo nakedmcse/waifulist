@@ -1,4 +1,5 @@
-import { getUserByPublicId, getWatchedByStatus, WatchedAnimeRow } from "@/lib/db";
+import { getUserByPublicId } from "@/lib/db/dao/user";
+import { getWatchedByStatus, WatchedAnimeRow } from "@/lib/db/dao/watchedAnime";
 import { getAnimeFromRedisByIds } from "@/services/animeData";
 import { CompareAnimeItem, ComparisonData, ComparisonStats, UserWatchData } from "@/types/compare";
 import { WatchStatus } from "@/types/anime";

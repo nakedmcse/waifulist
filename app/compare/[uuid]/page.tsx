@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
-import { getUserByPublicId } from "@/lib/db";
+import { getUserByPublicId } from "@/lib/db/dao/user";
 import { ComparePageClient } from "./ComparePageClient";
 
 interface PageProps {

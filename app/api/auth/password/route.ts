@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser, setSessionCookie, signToken } from "@/lib/auth";
-import { updatePassword, verifyPassword } from "@/lib/db";
+import { updatePassword, verifyPassword } from "@/lib/db/dao/user";
 
 export async function PATCH(request: Request) {
     const user = await getCurrentUser();
