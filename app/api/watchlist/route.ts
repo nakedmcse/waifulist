@@ -5,11 +5,11 @@ import {
     bulkAddToWatchList,
     BulkImportEntry,
     bulkImportToWatchList,
-    DatabaseError,
     getAllWatched,
     getWatchedByStatus,
     getWatchedCountByStatus,
-} from "@/lib/db";
+} from "@/lib/db/dao/watchedAnime";
+import { DatabaseError } from "@/lib/db/datasource";
 import { WatchStatus } from "@/types/anime";
 
 const validStatuses: WatchStatus[] = ["watching", "completed", "plan_to_watch", "on_hold", "dropped"];

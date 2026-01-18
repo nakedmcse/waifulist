@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
-import { getUserByPublicId, hasBookmark } from "@/lib/db";
+import { getUserByPublicId } from "@/lib/db/dao/user";
+import { hasBookmark } from "@/lib/db/dao/bookmarks";
 
 interface RouteParams {
     params: Promise<{ uuid: string }>;

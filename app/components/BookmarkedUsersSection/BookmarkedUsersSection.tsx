@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import type { BookmarkedUser } from "@/lib/db";
+import type { BookmarkedUser } from "@/lib/db/dao/bookmarks";
 import styles from "./BookmarkedUsersSection.module.scss";
 import { formatDate } from "@/lib/utils/dateUtils";
 

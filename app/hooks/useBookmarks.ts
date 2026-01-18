@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import type { BookmarkedUser } from "@/lib/db";
+import type { BookmarkedUser } from "@/lib/db/dao/bookmarks";
 import {
     addBookmark as addBookmarkService,
     checkBookmark,

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getUserByPublicId } from "@/lib/db";
+import { getUserByPublicId } from "@/lib/db/dao/user";
 import { getFilteredWatchList } from "@/services/watchListService";
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ uuid: string }> }) {

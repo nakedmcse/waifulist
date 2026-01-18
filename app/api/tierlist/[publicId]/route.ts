@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
-import { DatabaseError, getTierListByPublicId } from "@/lib/db";
+import { DatabaseError } from "@/lib/db/datasource";
+import { getTierListByPublicId } from "@/lib/db/dao/tierList";
 import { deleteUserTierList, getTierListWithCharacters, updateUserTierList } from "@/services/tierListService";
 import { TIER_RANKS, TierListData } from "@/types/tierlist";
 

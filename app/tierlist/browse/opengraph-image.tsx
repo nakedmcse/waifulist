@@ -1,4 +1,4 @@
-import { getPublicTierLists } from "@/lib/db";
+import { getPublicTierLists } from "@/lib/db/dao/tierList";
 import { getCharactersForTierList } from "@/services/anilistData";
 import { REDIS_KEYS } from "@/lib/redis";
 import { getPreviewCharacterIds, parseTierListData } from "@/services/tierListService";

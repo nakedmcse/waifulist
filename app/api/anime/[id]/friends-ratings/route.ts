@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
-import { getAllBookmarks, getUserById, getWatchedAnimeForUsers } from "@/lib/db";
+import { getAllBookmarks } from "@/lib/db/dao/bookmarks";
+import { getUserById } from "@/lib/db/dao/user";
+import { getWatchedAnimeForUsers } from "@/lib/db/dao/watchedAnime";
 import type { FriendRating } from "@/types/anime";
 
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {

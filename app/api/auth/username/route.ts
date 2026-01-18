@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser, setSessionCookie, signToken } from "@/lib/auth";
-import { DatabaseError, getUserByUsername, updateUsername, verifyPassword } from "@/lib/db";
+import { DatabaseError } from "@/lib/db/datasource";
+import { getUserByUsername, updateUsername, verifyPassword } from "@/lib/db/dao/user";
 import { invalidateOgImageCache } from "@/lib/redis";
 
 export async function PATCH(request: Request) {

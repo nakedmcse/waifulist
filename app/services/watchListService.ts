@@ -6,7 +6,7 @@ import {
     WatchListQueryParams,
     WatchListResponse,
 } from "@/types/filter";
-import { getAllWatched } from "@/lib/db";
+import { getAllWatched } from "@/lib/db/dao/watchedAnime";
 import { getAnimeFromRedisByIds } from "@/services/animeData";
 import { filterAnime } from "@/services/animeFilter";
 import { PAGE_SIZE } from "@/constants/pagination";

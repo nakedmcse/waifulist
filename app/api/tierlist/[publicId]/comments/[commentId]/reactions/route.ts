@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
-import { getCommentById, toggleReaction } from "@/lib/db";
+import { getCommentById } from "@/lib/db/dao/tierListComments";
+import { toggleReaction } from "@/lib/db/dao/commentReactions";
 import { REACTION_EMOJIS } from "@/types/tierlist";
 
 interface RouteParams {

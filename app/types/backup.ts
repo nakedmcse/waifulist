@@ -1,4 +1,4 @@
-import { BookmarkDTO, TierListDTO, WatchedAnimeDTO, AiringSubscriptionDTO } from "@/lib/db";
+import { BookmarkDTO, WatchedAnimeDTO, TierListDTO, AiringSubscriptionDTO } from "@/types/dtos";
 
 export interface BackupData {
     Anime: WatchedAnimeDTO[];

@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 import { cookies } from "next/headers";
-import { getUserById, User } from "./db";
+import { getUserById, User } from "@/lib/db/dao/user";
 
 const JWT_SECRET = process.env.JWT_SECRET ?? "waifulist-super-secret-key-change-in-production";
 

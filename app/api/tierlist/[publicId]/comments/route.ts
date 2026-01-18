@@ -1,12 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
-import {
-    createComment,
-    DatabaseError,
-    getCommentsByTierListId,
-    getReactionsForComments,
-    getTierListByPublicId,
-} from "@/lib/db";
+import { getTierListByPublicId } from "@/lib/db/dao/tierList";
+import { createComment, getCommentsByTierListId } from "@/lib/db/dao/tierListComments";
+import { getReactionsForComments } from "@/lib/db/dao/commentReactions";
+import { DatabaseError } from "@/lib/db/datasource";
 import { verifyTurnstileToken } from "@/lib/utils/turnstile";
 
 interface RouteParams {

@@ -2,7 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
 import { BackupData } from "@/types/backup";
 import { cleanupEndedSubscriptions } from "@/services/subscriptionCleanupService";
-import { restoreAiringSubscriptions, restoreBookmarks, restoreTierLists, restoreWatchList } from "@/lib/db";
+import { restoreAiringSubscriptions } from "@/lib/db/dao/airingSubscription";
+import { restoreBookmarks } from "@/lib/db/dao/bookmarks";
+import { restoreTierLists } from "@/lib/db/dao/tierList";
+import { restoreWatchList } from "@/lib/db/dao/watchedAnime";
 
 export async function POST(request: NextRequest): Promise<Response> {
     const user = await getCurrentUser();
