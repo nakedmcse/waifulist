@@ -42,10 +42,10 @@ export async function updateDisplaySettingsApi(updates: Partial<DisplaySettings>
     });
 }
 
-export async function updateF7Api(value: boolean): Promise<void> {
+export async function updateM3Api(value: boolean): Promise<void> {
     await fetch("/api/settings", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ _f7: value }),
+        body: JSON.stringify({ _m3: value }),
     });
 }

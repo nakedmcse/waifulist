@@ -2,8 +2,8 @@
 
 import { useCallback, useEffect, useRef } from "react";
 
-const SEQUENCE_HASH = "ca741ffeeed687b076e465621ff569b1ba3157e3c7bba3fe6809ba76bdaaabb9";
-const SEQUENCE_LENGTH = 8;
+const SEQUENCE_HASH = process.env.NEXT_PUBLIC_THEME_KEY ?? null;
+const SEQUENCE_LENGTH = 10;
 
 async function computeHash(input: string): Promise<string> {
     const encoder = new TextEncoder();
@@ -19,7 +19,7 @@ export function useInputValidation(onValidated: () => void) {
 
     const handleKeyDown = useCallback(
         async (event: KeyboardEvent) => {
-            if (validatedRef.current) {
+            if (validatedRef.current || !SEQUENCE_HASH) {
                 return;
             }
 

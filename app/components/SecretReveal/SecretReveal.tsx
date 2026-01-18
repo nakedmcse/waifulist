@@ -58,7 +58,7 @@ export function SecretReveal({ isActive, onComplete }: SecretRevealProps) {
             <div className={styles.vignette} />
             <div className={styles.content}>
                 <p className={styles.quote}>
-                    <em>&ldquo;I shall permit you to witness my tale.&rdquo;</em>
+                    <em>&ldquo;There are no miracles.&rdquo;</em>
                 </p>
             </div>
         </div>

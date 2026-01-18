@@ -5,6 +5,8 @@ import { defaultTheme, themes, ThemeType } from "@/types/theme";
 import { LocalStorage, STORAGE_KEYS } from "@/constants/localStorage";
 import { useInputValidation } from "@/hooks/useInputValidation";
 import { SecretReveal } from "@/components/SecretReveal/SecretReveal";
+import { ThemeSparkles } from "@/components/ThemeSparkles/ThemeSparkles";
+import { updateM3Api } from "@/services/settingsClientService";
 
 interface ThemeContextType {
     theme: ThemeType;
@@ -29,7 +31,8 @@ function checkSecretUnlocked(): boolean {
     if (typeof window === "undefined") {
         return false;
     }
-    return LocalStorage.getString(STORAGE_KEYS.WL_F7) === "1";
+    LocalStorage.remove(STORAGE_KEYS.WL_F7_OLD);
+    return LocalStorage.getString(STORAGE_KEYS.WL_M3) === "1";
 }
 
 export function ThemeProvider({ children }: React.PropsWithChildren) {
@@ -40,7 +43,12 @@ export function ThemeProvider({ children }: React.PropsWithChildren) {
             return defaultTheme;
         }
         const savedTheme = LocalStorage.getString(STORAGE_KEYS.THEME) as ThemeType | null;
+        const secretUnlocked = checkSecretUnlocked();
         if (savedTheme && themes.find(t => t.id === savedTheme)) {
+            if (savedTheme === "bernkastel" && !secretUnlocked) {
+                LocalStorage.setString(STORAGE_KEYS.THEME, defaultTheme);
+                return defaultTheme;
+            }
             return savedTheme;
         }
         return defaultTheme;
@@ -56,10 +64,16 @@ export function ThemeProvider({ children }: React.PropsWithChildren) {
         document.documentElement.setAttribute("data-theme", theme);
     }, [theme]);
 
-    const setTheme = useCallback((newTheme: ThemeType) => {
-        setThemeState(newTheme);
-        LocalStorage.setString(STORAGE_KEYS.THEME, newTheme);
-    }, []);
+    const setTheme = useCallback(
+        (newTheme: ThemeType) => {
+            if (newTheme === "bernkastel" && !isSecretUnlocked) {
+                return;
+            }
+            setThemeState(newTheme);
+            LocalStorage.setString(STORAGE_KEYS.THEME, newTheme);
+        },
+        [isSecretUnlocked],
+    );
 
     const getThemeClass = useCallback((): string => {
         return `theme${theme.charAt(0).toUpperCase() + theme.slice(1)}`;
@@ -80,9 +94,11 @@ export function ThemeProvider({ children }: React.PropsWithChildren) {
     const handleRevealComplete = useCallback(() => {
         setShowReveal(false);
         setIsSecretUnlocked(true);
-        LocalStorage.setString(STORAGE_KEYS.WL_F7, "1");
-        setTheme("featherine");
-    }, [setTheme]);
+        LocalStorage.setString(STORAGE_KEYS.WL_M3, "1");
+        setThemeState("bernkastel");
+        LocalStorage.setString(STORAGE_KEYS.THEME, "bernkastel");
+        updateM3Api(true).catch(() => {});
+    }, []);
 
     useInputValidation(handleSecretUnlock);
 
@@ -98,6 +114,7 @@ export function ThemeProvider({ children }: React.PropsWithChildren) {
                 isSecretUnlocked,
             }}
         >
+            <ThemeSparkles />
             {children}
             <SecretReveal isActive={showReveal} onComplete={handleRevealComplete} />
         </ThemeContext.Provider>

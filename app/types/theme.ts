@@ -1,4 +1,4 @@
-export type ThemeType = "anime" | "sakura" | "ocean" | "midnight" | "forest" | "featherine";
+export type ThemeType = "anime" | "sakura" | "ocean" | "midnight" | "forest" | "bernkastel";
 
 export interface Theme {
     id: ThemeType;
@@ -52,11 +52,11 @@ export const themes: Theme[] = [
         isLightTheme: false,
     },
     {
-        id: "featherine",
-        name: "Featherine",
-        description: "The Witch of Theatergoing, Drama and Spectating",
-        icon: "bi-book",
-        preview: "📖",
+        id: "bernkastel",
+        name: "Bernkastel",
+        description: "The Witch of Miracles",
+        icon: "bi-snow",
+        preview: "🐱",
         isLightTheme: false,
         isSecret: true,
     },

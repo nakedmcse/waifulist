@@ -8,7 +8,7 @@ import {
     updateBrowseSettingsApi,
     updateCalendarSettingsApi,
     updateDisplaySettingsApi,
-    updateF7Api,
+    updateM3Api,
     updateMyListSettingsApi,
 } from "@/services/settingsClientService";
 import { LocalStorage, STORAGE_KEYS } from "@/constants/localStorage";
@@ -100,13 +100,13 @@ export function SettingsProvider({ children }: React.PropsWithChildren) {
                         display: { ...DEFAULT_SETTINGS.display, ...userSettings.display },
                     });
 
-                    const localF7 = LocalStorage.getString(STORAGE_KEYS.WL_F7) === "1";
-                    const dbF7 = userSettings._f7 === true;
+                    const localM3 = LocalStorage.getString(STORAGE_KEYS.WL_M3) === "1";
+                    const dbM3 = userSettings._m3 === true;
 
-                    if (dbF7 && !localF7) {
-                        LocalStorage.setString(STORAGE_KEYS.WL_F7, "1");
-                    } else if (localF7 && !dbF7) {
-                        updateF7Api(true).catch(() => {});
+                    if (dbM3 && !localM3) {
+                        LocalStorage.setString(STORAGE_KEYS.WL_M3, "1");
+                    } else if (localM3 && !dbM3) {
+                        updateM3Api(true).catch(() => {});
                     }
                 }
             } catch (error) {
