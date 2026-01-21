@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/Button/Button";
@@ -9,7 +9,7 @@ import styles from "./page.module.scss";
 
 export default function LoginPage() {
     const router = useRouter();
-    const { login, register } = useAuth();
+    const { login, register, user, loading: authLoading } = useAuth();
     const [isRegister, setIsRegister] = useState(false);
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
@@ -18,6 +18,12 @@ export default function LoginPage() {
     const [turnstileReset, setTurnstileReset] = useState(0);
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        if (!authLoading && user) {
+            router.push("/my-list");
+        }
+    }, [user, authLoading, router]);
 
     const handleTurnstileVerify = useCallback((token: string) => {
         setTurnstileToken(token);
