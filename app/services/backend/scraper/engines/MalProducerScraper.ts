@@ -1,78 +1,32 @@
-import { JSDOM } from "jsdom";
-import {
-    AnimeType,
-    ProducerAnimeEntry,
-    ProducerScraperArgs,
-    ScraperEngine,
-    ScraperResult,
-    ScraperType,
-} from "../types";
+import { AnimeType, ProducerAnimeEntry, ProducerScraperArgs, ScraperType } from "../types";
+import { AbstractMalScraperEngine } from "./AbstractMalScraperEngine";
 
-const SCRAPE_TIMEOUT = 15000;
+class MalProducerScraper extends AbstractMalScraperEngine<ProducerAnimeEntry, ProducerScraperArgs> {
+    private readonly TYPE_MAP: Record<string, AnimeType> = {
+        "1": "TV",
+        "2": "OVA",
+        "3": "Movie",
+        "4": "Special",
+        "5": "ONA",
+        "6": "Music",
+    };
 
-const TYPE_MAP: Record<string, AnimeType> = {
-    "1": "TV",
-    "2": "OVA",
-    "3": "Movie",
-    "4": "Special",
-    "5": "ONA",
-    "6": "Music",
-};
+    public override readonly name = "mal";
+    public override readonly type = ScraperType.PRODUCER;
+    public override readonly priority = 10;
 
-class MalProducerScraper implements ScraperEngine<ProducerAnimeEntry, ProducerScraperArgs> {
-    public readonly name = "mal";
-    public readonly type = ScraperType.PRODUCER;
-    public readonly priority = 10;
-
-    public isEnabled(): boolean {
+    public override isEnabled(): boolean {
         return true;
     }
 
-    public async scrape({ producerId }: ProducerScraperArgs): Promise<ScraperResult<ProducerAnimeEntry>> {
-        try {
-            const controller = new AbortController();
-            const timeout = setTimeout(() => controller.abort(), SCRAPE_TIMEOUT);
-
-            const response = await fetch(`https://myanimelist.net/anime/producer/${producerId}`, {
-                signal: controller.signal,
-                headers: {
-                    "User-Agent": "Mozilla/5.0 (compatible; Waifulist/1.0)",
-                    Accept: "text/html",
-                },
-            });
-            clearTimeout(timeout);
-
-            if (!response.ok) {
-                return {
-                    source: this.name,
-                    data: [],
-                    error: `HTTP ${response.status}`,
-                };
-            }
-
-            const html = await response.text();
-            const data = this.parseProducerAnime(html);
-
-            return {
-                source: this.name,
-                data,
-            };
-        } catch (error) {
-            const message = error instanceof Error ? error.message : String(error);
-            return {
-                source: this.name,
-                data: [],
-                error: message,
-            };
-        }
+    protected override getUrlPath({ producerId }: ProducerScraperArgs): string {
+        return `anime/producer/${producerId}`;
     }
 
-    private parseProducerAnime(html: string): ProducerAnimeEntry[] {
-        const dom = new JSDOM(html);
-        const document = dom.window.document;
-
+    protected override parseDocument(document: Document): ProducerAnimeEntry[] {
         const entries: ProducerAnimeEntry[] = [];
         const animeCards = document.querySelectorAll(".js-anime-category-producer, .js-anime-category-studio");
+
         for (const card of animeCards) {
             const linkElement = card.querySelector(".image a, .title a");
             if (!linkElement) {
@@ -114,7 +68,7 @@ class MalProducerScraper implements ScraperEngine<ProducerAnimeEntry, ProducerSc
             const classList = card.className || "";
             const typeMatch = classList.match(/js-anime-type-(\d+)/);
             const typeCode = typeMatch ? typeMatch[1] : null;
-            const type: AnimeType = typeCode && TYPE_MAP[typeCode] ? TYPE_MAP[typeCode] : "Other";
+            const type: AnimeType = typeCode && this.TYPE_MAP[typeCode] ? this.TYPE_MAP[typeCode] : "Other";
 
             if (malId && title) {
                 entries.push({
@@ -129,7 +83,6 @@ class MalProducerScraper implements ScraperEngine<ProducerAnimeEntry, ProducerSc
                 });
             }
         }
-
         return entries;
     }
 }
