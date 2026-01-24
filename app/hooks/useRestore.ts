@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback } from "react";
-import { dispatchRestore } from "@/services/backupService";
+import { dispatchRestore } from "@/services/frontend/backupService";
 import { WatchedAnimeRow } from "@/lib/db/dao/watchedAnime";
 import { BackupChoices, BackupData } from "@/types/backup";
 

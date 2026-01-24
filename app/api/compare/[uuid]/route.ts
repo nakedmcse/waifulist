@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
 import { getUserByPublicId } from "@/lib/db/dao/user";
-import { getComparison } from "@/services/compareService";
+import { getComparison } from "@/services/backend/compareService";
 import { CompareApiResponse } from "@/types/compare";
 
 export async function GET(

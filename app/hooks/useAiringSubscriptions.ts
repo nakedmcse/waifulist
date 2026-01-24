@@ -6,7 +6,7 @@ import {
     addSubscription as addSub,
     fetchSubscriptions,
     removeSubscription as removeSub,
-} from "@/services/airingSubscriptionService";
+} from "@/services/frontend/airingSubscriptionService";
 
 export function useAiringSubscriptions() {
     const [subscriptions, setSubscriptions] = useState<AiringSubscription[]>([]);

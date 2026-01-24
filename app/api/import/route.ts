@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
-import { runImport } from "@/services/import/ImportManager";
-import type { ImportType } from "@/services/import/engines/IImportEngine";
+import { runImport } from "@/services/backend/import/ImportManager";
+import type { ImportType } from "@/services/backend/import/engines/IImportEngine";
 
 const VALID_IMPORT_TYPES: ImportType[] = ["txt", "mal"];
 

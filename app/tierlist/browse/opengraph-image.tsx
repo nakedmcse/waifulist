@@ -1,8 +1,8 @@
 import { getPublicTierLists } from "@/lib/db/dao/tierList";
-import { getCharactersForTierList } from "@/services/anilistData";
+import { getCharactersForTierList } from "@/services/backend/anilistData";
 import { REDIS_KEYS } from "@/lib/redis";
-import { getPreviewCharacterIds, parseTierListData } from "@/services/tierListService";
-import { generateOGImage, OG_SIZE, OG_THEMES } from "@/services/opengraphService";
+import { getPreviewCharacterIds, parseTierListData } from "@/services/backend/tierListService";
+import { generateOGImage, OG_SIZE, OG_THEMES } from "@/services/backend/opengraphService";
 
 export const dynamic = "force-dynamic";
 export const size = OG_SIZE;

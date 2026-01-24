@@ -1028,3 +1028,14 @@
         font-size: 0.7rem;
     }
 }
+
+.studioLink {
+    color: var(--accent-primary);
+    text-decoration: none;
+    transition: color $transition-fast;
+
+    &:hover {
+        color: var(--accent-secondary, var(--accent-primary));
+        text-decoration: underline;
+    }
+}

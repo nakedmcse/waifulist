@@ -1,6 +1,6 @@
 import { getAllWatched } from "@/lib/db/dao/watchedAnime";
 import { getUserById } from "@/lib/db/dao/user";
-import { getAnimeFromRedisByIds } from "@/services/animeData";
+import { getAnimeFromRedisByIds } from "@/services/backend/animeData";
 import { UserStats } from "@/types/stats";
 
 export async function getUserStats(userId: number): Promise<UserStats | null> {

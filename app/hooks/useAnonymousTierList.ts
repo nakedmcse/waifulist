@@ -2,7 +2,7 @@
 
 import { useCallback, useState } from "react";
 import { TierListData } from "@/types/tierlist";
-import { createAnonymousTierListApi } from "@/services/tierListClientService";
+import { createAnonymousTierListApi } from "@/services/frontend/tierListClientService";
 
 export function useAnonymousTierList() {
     const [status, setStatus] = useState<"idle" | "sharing" | "error">("idle");

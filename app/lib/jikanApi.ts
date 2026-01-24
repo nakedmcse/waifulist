@@ -29,6 +29,7 @@ import {
     MangaStatistics,
     MangaStatisticsResponse,
 } from "@/types/manga";
+import { ProducerFull, ProducerFullResponse } from "@/types/producer";
 import { getRequestContext } from "@/lib/requestContext";
 
 const JIKAN_API_URL = process.env.JIKAN_API_URL || "http://jikan:8080/v4";
@@ -115,11 +116,11 @@ const fetchFromJikanInternal = async function <T>(endpoint: string, fallback: T)
 
 const fetchFromJikan = cache(fetchFromJikanInternal);
 
-interface JikanResponse {
-    data: Anime;
-}
-
 async function fetchAnimeFromJikan(id: number): Promise<Anime | null> {
+    type JikanResponse = {
+        data: Anime;
+    };
+
     function sortRelations(relations: AnimeRelation[]): AnimeRelation[] {
         return [...relations].sort((a, b) => {
             const priorityA = RELATION_PRIORITY[a.relation] ?? 99;
@@ -249,4 +250,9 @@ export async function fetchMangaStatistics(id: number): Promise<MangaStatistics 
 export async function fetchMangaRecommendations(id: number): Promise<MangaRecommendation[]> {
     const response = await fetchFromJikan<MangaRecommendationsResponse | null>(`/manga/${id}/recommendations`, null);
     return response?.data || [];
+}
+
+export async function fetchProducerById(id: number): Promise<ProducerFull | null> {
+    const response = await fetchFromJikan<ProducerFullResponse | null>(`/producers/${id}/full`, null);
+    return response?.data || null;
 }

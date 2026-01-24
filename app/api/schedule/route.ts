@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getSchedule } from "@/services/scheduleService";
+import { getSchedule } from "@/services/backend/scheduleService";
 
 export async function GET() {
     try {

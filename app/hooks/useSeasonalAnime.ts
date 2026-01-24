@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Anime } from "@/types/anime";
-import { fetchSeasonalAnime, SeasonalResponse } from "@/services/seasonalClientService";
+import { fetchSeasonalAnime, SeasonalResponse } from "@/services/frontend/seasonalClientService";
 
 interface UseSeasonalAnimeOptions {
     year: number;

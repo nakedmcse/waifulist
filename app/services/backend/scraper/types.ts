@@ -1,5 +1,6 @@
 export enum ScraperType {
     STREAMING = "streaming",
+    PRODUCER = "producer",
 }
 
 export interface ScraperResult<T> {
@@ -23,4 +24,21 @@ export interface RateLimitConfig {
 
 export interface StreamingScraperArgs {
     malId: number;
+}
+
+export interface ProducerScraperArgs {
+    producerId: number;
+}
+
+export type AnimeType = "TV" | "OVA" | "Movie" | "Special" | "ONA" | "Music" | "Other";
+
+export interface ProducerAnimeEntry {
+    mal_id: number;
+    title: string;
+    image_url: string | null;
+    score: number | null;
+    members: number | null;
+    start_date: string | null;
+    role: string;
+    type: AnimeType;
 }

@@ -3,7 +3,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { formatSimilarity, formatTimestamp } from "@/services/traceMoe";
+import { formatSimilarity, formatTimestamp } from "@/services/backend/traceMoe";
 import { useTrace } from "@/hooks";
 import { Spinner } from "@/components/Spinner/Spinner";
 import styles from "./page.module.scss";

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { UserStats } from "@/types/stats";
-import { fetchUserStats } from "@/services/statsClientService";
+import { fetchUserStats } from "@/services/frontend/statsClientService";
 
 export function useStats() {
     const [stats, setStats] = useState<UserStats | null>(null);

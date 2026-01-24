@@ -1,9 +1,15 @@
 import { getTierListByPublicId } from "@/lib/db/dao/tierList";
 import { getAnonymousTierListByPublicId } from "@/lib/db/dao/anonymousTierList";
-import { getCharactersForTierList } from "@/services/anilistData";
+import { getCharactersForTierList } from "@/services/backend/anilistData";
 import { REDIS_KEYS } from "@/lib/redis";
-import { countCharacters, getPreviewCharacterIds, parseTierListData } from "@/services/tierListService";
-import { createNotFoundResponse, createOGHash, generateOGImage, OG_SIZE, OG_THEMES } from "@/services/opengraphService";
+import { countCharacters, getPreviewCharacterIds, parseTierListData } from "@/services/backend/tierListService";
+import {
+    createNotFoundResponse,
+    createOGHash,
+    generateOGImage,
+    OG_SIZE,
+    OG_THEMES,
+} from "@/services/backend/opengraphService";
 
 export const size = OG_SIZE;
 

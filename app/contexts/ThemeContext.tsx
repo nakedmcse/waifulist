@@ -6,7 +6,7 @@ import { LocalStorage, STORAGE_KEYS } from "@/constants/localStorage";
 import { useInputValidation } from "@/hooks/useInputValidation";
 import { SecretReveal } from "@/components/SecretReveal/SecretReveal";
 import { ThemeSparkles } from "@/components/ThemeSparkles/ThemeSparkles";
-import { updateM3Api } from "@/services/settingsClientService";
+import { updateM3Api } from "@/services/frontend/settingsClientService";
 
 interface ThemeContextType {
     theme: ThemeType;

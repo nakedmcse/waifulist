@@ -10,7 +10,7 @@ import {
     updateDisplaySettingsApi,
     updateM3Api,
     updateMyListSettingsApi,
-} from "@/services/settingsClientService";
+} from "@/services/frontend/settingsClientService";
 import { LocalStorage, STORAGE_KEYS } from "@/constants/localStorage";
 
 export type { BrowseSettings, CalendarSettings, DisplaySettings, MyListSettings, UserSettings };

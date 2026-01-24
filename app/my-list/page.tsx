@@ -14,7 +14,7 @@ import { GenreFilter } from "@/components/GenreFilter/GenreFilter";
 import { Button } from "@/components/Button/Button";
 import { Pill } from "@/components/Pill/Pill";
 import { Spinner } from "@/components/Spinner/Spinner";
-import type { ImportType } from "@/services/import/engines/IImportEngine";
+import type { ImportType } from "@/services/backend/import/engines/IImportEngine";
 import styles from "./page.module.scss";
 
 const IMPORT_TYPE_CONFIG: Record<ImportType, { label: string; description: string; accept: string }> = {

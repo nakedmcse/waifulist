@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getQuotaInfo } from "@/services/traceMoe";
+import { getQuotaInfo } from "@/services/backend/traceMoe";
 
 export async function GET(): Promise<NextResponse> {
     try {

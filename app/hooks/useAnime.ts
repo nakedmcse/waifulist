@@ -2,8 +2,8 @@
 
 import { useCallback } from "react";
 import { Anime, TopReviewWithAnime } from "@/types/anime";
-import * as animeService from "@/services/animeService";
-import { BrowseSortType } from "@/services/animeService";
+import * as animeService from "@/services/frontend/animeService";
+import { BrowseSortType } from "@/services/frontend/animeService";
 import { useLoading } from "@/contexts/LoadingContext";
 
 export type { BrowseSortType };

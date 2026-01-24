@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
 import { DatabaseError } from "@/lib/db/datasource";
-import { createUserTierList, getUserTierLists } from "@/services/tierListService";
+import { createUserTierList, getUserTierLists } from "@/services/backend/tierListService";
 
 export async function GET() {
     const user = await getCurrentUser();

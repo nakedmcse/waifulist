@@ -1,5 +1,5 @@
 import { Anime, WatchStatus } from "@/types/anime";
-import { ensureSearchIndex } from "@/services/animeData";
+import { ensureSearchIndex } from "@/services/backend/animeData";
 import { getImportEngine } from "./ImportEngineFactory";
 import type { ImportType } from "./engines/IImportEngine";
 

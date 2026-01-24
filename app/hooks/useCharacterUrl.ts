@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import { resolveCharacterUrl } from "@/services/characterLookupClientService";
+import { resolveCharacterUrl } from "@/services/frontend/characterLookupClientService";
 
 export function useCharacterUrl() {
     const [loading, setLoading] = useState(false);

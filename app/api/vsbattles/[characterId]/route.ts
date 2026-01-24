@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { fetchCharacterById } from "@/lib/jikanApi";
-import { getVSBattlesStats } from "@/services/vsbattlesService";
+import { getVSBattlesStats } from "@/services/backend/vsbattlesService";
 
 interface RouteParams {
     params: Promise<{ characterId: string }>;

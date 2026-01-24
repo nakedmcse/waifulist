@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
-import { getTierListWithCharacters } from "@/services/tierListService";
+import { getTierListWithCharacters } from "@/services/backend/tierListService";
 import { TierListView } from "@/components/TierList";
 import { CommentsSection } from "@/components/Comments";
 import styles from "./page.module.scss";

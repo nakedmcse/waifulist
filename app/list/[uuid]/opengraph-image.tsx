@@ -1,8 +1,14 @@
 import { getRecentAnime, getTopRatedAnime, getWatchedCount } from "@/lib/db/dao/watchedAnime";
 import { getUserByPublicId } from "@/lib/db/dao/user";
-import { getAnimeFromRedisByIds } from "@/services/animeData";
+import { getAnimeFromRedisByIds } from "@/services/backend/animeData";
 import { REDIS_KEYS } from "@/lib/redis";
-import { createNotFoundResponse, createOGHash, generateOGImage, OG_SIZE, OG_THEMES } from "@/services/opengraphService";
+import {
+    createNotFoundResponse,
+    createOGHash,
+    generateOGImage,
+    OG_SIZE,
+    OG_THEMES,
+} from "@/services/backend/opengraphService";
 
 export const size = OG_SIZE;
 

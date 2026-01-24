@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { WatchStatus } from "@/types/anime";
 import { UnifiedSortType, WatchListResponse } from "@/types/filter";
-import { fetchFilteredList } from "@/services/filterClientService";
+import { fetchFilteredList } from "@/services/frontend/filterClientService";
 
 interface FilteredItem {
     anime: WatchListResponse["items"][0]["anime"];

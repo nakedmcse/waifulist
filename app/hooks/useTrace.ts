@@ -2,9 +2,9 @@
 
 import { useCallback } from "react";
 import { TraceQuotaInfo } from "@/types/traceMoe";
-import * as traceService from "@/services/traceService";
+import * as traceService from "@/services/frontend/traceService";
 
-export type { TraceSearchResponse } from "@/services/traceService";
+export type { TraceSearchResponse } from "@/services/frontend/traceService";
 
 export function useTrace() {
     const getQuota = useCallback(async (): Promise<TraceQuotaInfo | null> => {

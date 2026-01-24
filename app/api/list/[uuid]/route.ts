@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getUserByPublicId } from "@/lib/db/dao/user";
-import { getFilteredWatchList } from "@/services/watchListService";
+import { getFilteredWatchList } from "@/services/backend/watchListService";
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ uuid: string }> }) {
     const { uuid } = await params;

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { searchCharacters } from "@/services/anilistData";
+import { searchCharacters } from "@/services/backend/anilistData";
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
     const searchParams = request.nextUrl.searchParams;

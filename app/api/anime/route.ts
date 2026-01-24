@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { browseAnime, BrowseSortType, getHomePageAnime, searchAnime } from "@/services/animeData";
+import { browseAnime, BrowseSortType, getHomePageAnime, searchAnime } from "@/services/backend/animeData";
 
 export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;

@@ -8,7 +8,7 @@ import {
     fetchComments,
     postComment,
     toggleReactionApi,
-} from "@/services/tierListClientService";
+} from "@/services/frontend/tierListClientService";
 
 export function useComments(publicId: string) {
     const [comments, setComments] = useState<TierListComment[]>([]);

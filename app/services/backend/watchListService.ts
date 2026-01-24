@@ -7,8 +7,8 @@ import {
     WatchListResponse,
 } from "@/types/filter";
 import { getAllWatched } from "@/lib/db/dao/watchedAnime";
-import { getAnimeFromRedisByIds } from "@/services/animeData";
-import { filterAnime } from "@/services/animeFilter";
+import { getAnimeFromRedisByIds } from "@/services/backend/animeData";
+import { filterAnime } from "@/services/backend/animeFilter";
 import { PAGE_SIZE } from "@/constants/pagination";
 
 export async function getFilteredWatchList(userId: number, url: URL): Promise<WatchListResponse> {

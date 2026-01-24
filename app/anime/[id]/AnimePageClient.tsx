@@ -788,7 +788,16 @@ export function AnimePageClient({
             )}
 
             {anime.studios && anime.studios.length > 0 && (
-                <MetaRow label="Studios:">{anime.studios.map(s => s.name).join(", ")}</MetaRow>
+                <MetaRow label="Studios:">
+                    {anime.studios.map((s, i) => (
+                        <React.Fragment key={s.mal_id}>
+                            <Link href={`/producer/${s.mal_id}`} className={styles.studioLink}>
+                                {s.name}
+                            </Link>
+                            {i < anime.studios!.length - 1 && ", "}
+                        </React.Fragment>
+                    ))}
+                </MetaRow>
             )}
 
             <div className={styles.actions}>

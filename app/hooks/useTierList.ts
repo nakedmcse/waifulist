@@ -16,7 +16,7 @@ import {
     updateCommentsEnabled,
     updateTierListApi,
     updateTierListVisibility,
-} from "@/services/tierListClientService";
+} from "@/services/frontend/tierListClientService";
 
 export function useTierLists() {
     const { user } = useAuth();

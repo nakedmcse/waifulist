@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { searchByImage } from "@/services/traceMoe";
+import { searchByImage } from "@/services/backend/traceMoe";
 import { TraceApiError } from "@/types/traceMoe";
 
 const MAX_FILE_SIZE = 25 * 1024 * 1024; // 25MB

@@ -11,7 +11,7 @@ import {
     ImportEntry,
     removeFromWatchlistApi,
     updateWatchlistItemApi,
-} from "@/services/watchlistClientService";
+} from "@/services/frontend/watchlistClientService";
 
 export type { ImportEntry };
 

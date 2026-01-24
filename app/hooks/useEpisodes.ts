@@ -2,7 +2,7 @@
 
 import { useCallback, useState } from "react";
 import { AnimeEpisode, AnimeEpisodeDetail } from "@/types/anime";
-import { getEpisodeDetail, getEpisodes } from "@/services/animeService";
+import { getEpisodeDetail, getEpisodes } from "@/services/frontend/animeService";
 
 interface EpisodesData {
     episodes: AnimeEpisode[];

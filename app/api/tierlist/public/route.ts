@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { browsePublicTierLists } from "@/services/tierListService";
+import { browsePublicTierLists } from "@/services/backend/tierListService";
 import { PublicTierListSort } from "@/lib/db/dao/tierList";
 
 export async function GET(request: NextRequest): Promise<NextResponse> {

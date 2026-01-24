@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { AiringBucket, AiringInfo, GroupedAiring } from "@/types/airing";
-import { fetchAiringSchedule } from "@/services/airingClientService";
+import { fetchAiringSchedule } from "@/services/frontend/airingClientService";
 
 function getBucket(airingAt: number, timeUntilAiring: number, duration: number | null): AiringBucket {
     if (timeUntilAiring <= 0) {

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { resolveCharacterMalId } from "@/services/characterLookupService";
+import { resolveCharacterMalId } from "@/services/backend/characterLookupService";
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
     const searchParams = request.nextUrl.searchParams;

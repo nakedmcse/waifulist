@@ -9,7 +9,7 @@ import {
     updateUserPassword,
     updateUserUsername,
     User,
-} from "@/services/authClientService";
+} from "@/services/frontend/authClientService";
 
 interface AuthContextType {
     user: User | null;

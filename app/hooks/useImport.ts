@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import { ImportComplete, ImportProgress, streamImport } from "@/services/importClientService";
+import { ImportComplete, ImportProgress, streamImport } from "@/services/frontend/importClientService";
 
 export function useImport() {
     const [importing, setImporting] = useState(false);

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { ComparisonData } from "@/types/compare";
-import { fetchComparison } from "@/services/compareClientService";
+import { fetchComparison } from "@/services/frontend/compareClientService";
 
 export function useComparison(targetUuid: string) {
     const [data, setData] = useState<ComparisonData | null>(null);

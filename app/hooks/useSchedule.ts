@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { DayOfWeek, groupAiringByDay, ScheduleAnime } from "@/types/schedule";
 import { AiringInfo } from "@/types/airing";
-import { fetchSchedule } from "@/services/scheduleClientService";
+import { fetchSchedule } from "@/services/frontend/scheduleClientService";
 
 export function useSchedule() {
     const [airing, setAiring] = useState<AiringInfo[]>([]);

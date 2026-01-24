@@ -1,4 +1,4 @@
-import { findAnimeByTitle, lookupByTitle } from "@/services/animeData";
+import { findAnimeByTitle, lookupByTitle } from "@/services/backend/animeData";
 import type { IImportEngine, ImportResult, ImportType } from "../IImportEngine";
 
 class TxtImportEngine implements IImportEngine {

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getCharacterIds, getMangaIds, getPeopleIds } from "@/services/animeData";
+import { getCharacterIds, getMangaIds, getPeopleIds } from "@/services/backend/animeData";
 
 export const dynamic = "force-dynamic";
 

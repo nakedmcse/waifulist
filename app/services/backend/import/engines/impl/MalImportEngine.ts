@@ -1,5 +1,5 @@
 import { WatchStatus } from "@/types/anime";
-import { getAnimeById } from "@/services/animeData";
+import { getAnimeById } from "@/services/backend/animeData";
 import type { IImportEngine, ImportResult, ImportType, ImportWatchData } from "../IImportEngine";
 
 interface MalAnimeEntry {

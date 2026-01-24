@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
-import { getUserStats } from "@/services/statsService";
+import { getUserStats } from "@/services/backend/statsService";
 import { StatsApiResponse } from "@/types/stats";
 
 export async function GET(): Promise<NextResponse<StatsApiResponse>> {

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import type { FriendRating } from "@/types/anime";
-import { fetchFriendsRatings } from "@/services/friendsRatingsService";
+import { fetchFriendsRatings } from "@/services/frontend/friendsRatingsService";
 
 export function useFriendsRatings(animeId: number) {
     const { user } = useAuth();

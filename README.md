@@ -10,6 +10,7 @@ A personal anime tracking application built with Next.js. Track your watched ani
 - **Rating System** - Rate anime from 1-5 stars, with a special "masterpiece" rating
 - **Import Lists** - Bulk import anime titles from a text file
 - **User Accounts** - Secure authentication with JWT sessions
+- **Producer Pages** - View studio/producer info and their complete anime catalog
 
 ## Tech Stack
 
@@ -158,6 +159,7 @@ Redis is used as the primary cache and data store for anime data, enabling horiz
 | `vsbattles:{name}`                        | VS Battles stats (JSON) or "not_found" | 24h     | Character power level data       |
 | `anime:schedule`                          | Weekly schedule by day (JSON)          | 12h     | Schedule tab airing times        |
 | `anime:airing`                            | Airing schedule + aired today (JSON)   | 1 hour  | Timeline tab episode data        |
+| `producer:{id}:anime`                     | Producer anime list (JSON)             | 7 days  | Studio/producer anime catalog    |
 
 ### Data Flow
 
@@ -247,6 +249,21 @@ This ensures:
 - Browse/search always works (CSV fallback)
 - Detail pages get fresh MAL data within 24 hours
 - Jikan's MongoDB builds up over time as users visit pages
+
+### Web Scrapers
+
+Some data isn't available through Jikan's API and must be scraped directly from MyAnimeList:
+
+| Scraper              | Source URL                              | Data                           | Cache TTL |
+|----------------------|-----------------------------------------|--------------------------------|-----------|
+| MalStreamingScraper  | `myanimelist.net/anime/{id}`            | Streaming platform links       | -         |
+| MalProducerScraper   | `myanimelist.net/anime/producer/{id}`   | Studio's anime catalog         | 7 days    |
+
+Scrapers are located in `app/services/scraper/engines/` and implement a common `ScraperEngine` interface with:
+- Rate limiting (30 requests/minute)
+- Timeout handling (10-15 seconds)
+- JSDOM for HTML parsing
+- Priority-based execution for multiple scrapers of the same type
 
 ### In-Memory State
 

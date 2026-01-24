@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getAiringSchedule } from "@/services/airingService";
+import { getAiringSchedule } from "@/services/backend/airingService";
 
 export async function GET() {
     try {

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getCharactersByMedia } from "@/services/anilistData";
+import { getCharactersByMedia } from "@/services/backend/anilistData";
 
 interface RouteParams {
     params: Promise<{ type: string; malId: string }>;

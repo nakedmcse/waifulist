@@ -8,7 +8,7 @@ import {
     checkBookmark,
     fetchBookmarks,
     removeBookmark as removeBookmarkService,
-} from "@/services/bookmarkService";
+} from "@/services/backend/bookmarkService";
 
 export function useBookmarks() {
     const { user } = useAuth();

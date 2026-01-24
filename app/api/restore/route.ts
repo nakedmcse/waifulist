@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
 import { BackupData } from "@/types/backup";
-import { cleanupEndedSubscriptions } from "@/services/subscriptionCleanupService";
+import { cleanupEndedSubscriptions } from "@/services/backend/subscriptionCleanupService";
 import { restoreAiringSubscriptions } from "@/lib/db/dao/airingSubscription";
 import { restoreBookmarks } from "@/lib/db/dao/bookmarks";
 import { restoreTierLists } from "@/lib/db/dao/tierList";

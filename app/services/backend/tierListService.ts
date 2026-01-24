@@ -10,7 +10,7 @@ import {
     updateTierList,
 } from "@/lib/db/dao/tierList";
 import { getAnonymousTierListByPublicId } from "@/lib/db/dao/anonymousTierList";
-import { getCharactersForTierList } from "@/services/anilistData";
+import { getCharactersForTierList } from "@/services/backend/anilistData";
 import { TIER_RANKS, TierListCharacter, TierListData, TierListWithCharacters, TierRank } from "@/types/tierlist";
 
 export interface TierListSummary {

@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getAnimeById } from "@/services/animeData";
+import { getAnimeById } from "@/services/backend/animeData";
 import {
     fetchAnimeCharacters,
     fetchAnimeEpisodes,
