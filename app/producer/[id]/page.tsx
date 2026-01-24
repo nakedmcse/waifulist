@@ -54,11 +54,14 @@ export default async function ProducerPage({ params }: PageProps) {
         notFound();
     }
 
-    const [producer, anime] = await Promise.all([fetchProducerById(producerId), getProducerAnime(producerId)]);
+    const [producer, { entries, animeList }] = await Promise.all([
+        fetchProducerById(producerId),
+        getProducerAnime(producerId),
+    ]);
 
     if (!producer) {
         notFound();
     }
 
-    return <ProducerPageClient producer={producer} anime={anime} />;
+    return <ProducerPageClient producer={producer} entries={entries} animeList={animeList} />;
 }

@@ -34,11 +34,6 @@ export type AnimeType = "TV" | "OVA" | "Movie" | "Special" | "ONA" | "Music" | "
 
 export interface ProducerAnimeEntry {
     mal_id: number;
-    title: string;
-    image_url: string | null;
-    score: number | null;
-    members: number | null;
-    start_date: string | null;
-    role: string;
     type: AnimeType;
+    role: string;
 }
