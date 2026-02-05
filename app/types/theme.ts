@@ -8,6 +8,12 @@ export interface Theme {
     preview: string;
     isLightTheme: boolean;
     isSecret?: boolean;
+    cssKey?: string;
+}
+
+export function getDataThemeValue(themeId: ThemeType): string {
+    const theme = themes.find(t => t.id === themeId);
+    return theme?.cssKey ?? themeId;
 }
 
 export const themes: Theme[] = [
@@ -59,6 +65,7 @@ export const themes: Theme[] = [
         preview: "🐱",
         isLightTheme: false,
         isSecret: true,
+        cssKey: "_0x4e33f7",
     },
 ];
 

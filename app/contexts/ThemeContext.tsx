@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useCallback, useContext, useLayoutEffect, useState, useSyncExternalStore } from "react";
-import { defaultTheme, themes, ThemeType } from "@/types/theme";
+import { defaultTheme, getDataThemeValue, themes, ThemeType } from "@/types/theme";
 import { LocalStorage, STORAGE_KEYS } from "@/constants/localStorage";
 import { useInputValidation } from "@/hooks/useInputValidation";
 import { SecretReveal } from "@/components/SecretReveal/SecretReveal";
@@ -61,7 +61,7 @@ export function ThemeProvider({ children }: React.PropsWithChildren) {
     const [showReveal, setShowReveal] = useState(false);
 
     useLayoutEffect(() => {
-        document.documentElement.setAttribute("data-theme", theme);
+        document.documentElement.setAttribute("data-theme", getDataThemeValue(theme));
     }, [theme]);
 
     const setTheme = useCallback(
